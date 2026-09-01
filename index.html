@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://accounts.google.com/gsi/client" async></script>
   <style>
     /* ── tokens ── */
     :root {
@@ -59,6 +58,7 @@
     .btn:hover { background:#f0f3f7; }
     .btn.primary { background:var(--primary); border-color:var(--primary); color:#fff; }
     .btn.primary:hover { filter:brightness(1.07); }
+    .btn.success { background:var(--green); border-color:var(--green); color:#fff; }
     .btn:disabled { opacity:.55; cursor:wait; }
 
     /* ── banner ── */
@@ -88,6 +88,26 @@
       flex:1; min-width:220px; padding:.45rem .65rem; border:1px solid var(--line);
       border-radius:8px; font:inherit; color:var(--text); background:#fff;
     }
+
+    /* ── modal overlay ── */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(20,30,40,.4);
+      display:grid; place-items:center; z-index:60; padding:1rem;
+    }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1.25rem 1.5rem;
+      width:min(480px,100%); border:1px solid var(--line);
+    }
+    .modal-box h3 { margin:0 0 .75rem; font-size:1.05rem; }
+    .modal-field { margin-bottom:.75rem; }
+    .modal-label { display:block; font-size:.75rem; color:var(--muted); margin-bottom:.28rem; }
+    .modal-input {
+      width:100%; padding:.45rem .6rem; border:1px solid var(--line);
+      border-radius:8px; font:inherit; font-size:.85rem;
+    }
+    .modal-input:focus { outline:none; border-color:var(--primary); }
+    .modal-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:.85rem; }
+    .modal-error { color:var(--red); font-size:.78rem; margin-top:.35rem; }
 
     /* ── pages ── */
     .page { padding:1.2rem 1.5rem 3rem; max-width:1280px; margin:0 auto; }
@@ -200,6 +220,12 @@
     .saving { opacity:.55; pointer-events:none; }
     .save-ok  { color:var(--green); font-size:.72rem; margin-left:.3rem; }
     .save-err { color:var(--red);   font-size:.72rem; margin-left:.3rem; }
+
+    /* ── edit key badge ── */
+    #edit-badge {
+      font-size:.78rem; padding:.3rem .6rem; border-radius:6px;
+      background:var(--green-bg); color:var(--green); font-weight:600;
+    }
   </style>
 </head>
 <body>
@@ -209,16 +235,13 @@
     <div class="logo">AN3</div>
     <div>
       <h1>Migration Dashboard</h1>
-      <p class="sub">Read-only · Live from Google Sheet</p>
+      <p class="sub" id="mode-label">Read-only · Live from Google Sheet</p>
     </div>
   </div>
   <div class="hdr-right">
     <span id="last-updated" style="font-size:.78rem;color:var(--muted)"></span>
-    <div id="signin-area">
-      <div id="g-signin-btn"></div>
-    </div>
-    <span id="user-badge" style="display:none;font-size:.78rem;padding:.3rem .6rem;border-radius:6px;background:var(--green-bg);color:var(--green);font-weight:600"></span>
-    <button class="btn" id="btn-signout" style="display:none;font-size:.78rem">Sign out</button>
+    <span id="edit-badge" style="display:none">✎ Edit mode</span>
+    <button class="btn" id="btn-edit-toggle">🔒 Edit</button>
     <button class="btn" id="btn-config">⚙ Sheet</button>
     <button class="btn primary" id="btn-refresh">↻ Refresh</button>
   </div>
@@ -226,9 +249,9 @@
 
 <div id="banner"></div>
 
-<!-- Setup card (shown when sheet not configured or on error) -->
+<!-- Sheet setup card (shown when not configured or on error) -->
 <div id="setup-card" class="hidden">
-  <h3>📋 Connect your Google Sheet</h3>
+  <h3>Connect your Google Sheet</h3>
   <p>This is a <strong>read-only</strong> live view. It reads the <code>Deliveries</code> tab directly from your sheet.</p>
   <p>
     <strong>Before connecting:</strong> open the sheet → <em>Share</em> → set to <strong>"Anyone with the link can view"</strong>.
@@ -294,16 +317,12 @@
 const STORAGE_KEY  = 'an3_sheet_id';
 const SHEET_NAME   = 'Deliveries';
 const DEFAULT_ID   = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
-const ALLOWED_EDIT = ['varun.ks@amagi.com','girish.tammanagoudar@amagi.com','venkatesha.tr@amagi.com'];
 const STATUSES     = ['switchover completed','ready for switchover','in-progress','blocked','not-started','non-ssai pending'];
 
-// Paste your Apps Script Web App URL here after deploying:
+// Apps Script Web App URL — set once via ⚙ Sheet modal or localStorage
 let APPS_SCRIPT_URL = localStorage.getItem('an3_script_url') || '';
 
-// Google OAuth Client ID — paste yours here (from GCP → Credentials):
-const GOOGLE_CLIENT_ID = localStorage.getItem('an3_client_id') || '';
-
-// Known column header names (all lowercase_underscore variants the sheet may use)
+// Column label → canonical key aliases
 const ALIASES = {
   amg_id:              ['amg_id','amg id','amgid'],
   channel_id:          ['channel_id','channel id','channel'],
@@ -323,15 +342,18 @@ const ALIASES = {
   migration_resources: ['migration_resources','resources','migration resources'],
 };
 
-// Known status values — used to detect and skip header rows
 const KNOWN_HEADER_MARKERS = new Set([
   'status','amg_id','amg id','account_name','account name',
   'channel_id','channel id','distribution_id','eta_provided_date',
 ]);
 
-// ── Auth state ──────────────────────────────────────────────────────────────
-let currentUser = null;   // { email, idToken } when signed in
+// ── Edit state ──────────────────────────────────────────────────────────────
+// editKey is stored in sessionStorage — must re-enter per browser tab session
 let canEdit = false;
+
+function getEditKey()  { return sessionStorage.getItem('an3_edit_key') || ''; }
+function setEditKey(k) { sessionStorage.setItem('an3_edit_key', k); }
+function clearEditKey(){ sessionStorage.removeItem('an3_edit_key'); canEdit = false; }
 
 // ── State ───────────────────────────────────────────────────────────────────
 let rows = [];
@@ -349,7 +371,6 @@ function toast(msg) {
   el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
-// Read a field from an object row — always returns a trimmed string
 function f(row, key) { return (row[key] ?? '').toString().trim(); }
 
 function statusClass(s) {
@@ -390,12 +411,11 @@ async function fetchRows() {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} — share the sheet as "Anyone with the link can view"`);
   const txt = await res.text();
-  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);\s*$/);
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
   if (!m) throw new Error('Unexpected response format. Is the sheet publicly viewable?');
   const parsed = JSON.parse(m[1]);
   if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
 
-  // Build label → canonical key map from gviz column headers
   const gvizLabels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
 
   const labelToKey = {};
@@ -408,18 +428,15 @@ async function fetchRows() {
     }
   }
 
-  // Parse each gviz row → plain object, skip header-like rows
   const result = [];
   for (const gvizRow of parsed.table.rows) {
     const cells = gvizRow.c.map(c => (c ? (c.v ?? c.f ?? '') : '').toString().trim());
 
-    // Skip rows where key fields look like column header names
     const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k === 'status')?.[0]] || '';
     const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k === 'account_name')?.[0]] || '';
     if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) ||
         KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
 
-    // Skip entirely blank rows
     if (cells.every(v => !v)) continue;
 
     const obj = {};
@@ -437,7 +454,7 @@ function aggregate(data) {
   const map = {};
   for (const row of data) {
     const name = f(row, 'account_name');
-    if (!name) continue;                          // skip rows with no account name
+    if (!name) continue;
     const amg  = f(row, 'amg_id');
     const s    = f(row, 'status').toLowerCase();
 
@@ -574,11 +591,6 @@ function renderDetailTable() {
   });
 
   $('#detail-count').textContent = `${filtered.length} / ${detailRows.length}`;
-  if (canEdit) setTimeout(() => {
-    document.querySelectorAll('.status-select').forEach(sel => {
-      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.value, sel));
-    });
-  }, 0);
 
   $('#detail-table').innerHTML = `
     <table>
@@ -615,6 +627,12 @@ function renderDetailTable() {
         }
       </tbody>
     </table>`;
+
+  if (canEdit) {
+    document.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.value, sel));
+    });
+  }
 }
 
 // ── Load ────────────────────────────────────────────────────────────────────
@@ -629,7 +647,6 @@ async function load() {
     rows     = await fetchRows();
     accounts = aggregate(rows);
     $('#error-container').innerHTML = '';
-    $('#setup-card').classList.add('hidden');
 
     const done  = rows.filter(r => f(r,'status') === 'switchover completed').length;
     const total = rows.length;
@@ -663,6 +680,124 @@ async function load() {
   }
 }
 
+// ── Status update (write to sheet via Apps Script) ────────────────────────────
+async function updateStatus(distribution_id, new_status, selectEl) {
+  if (!canEdit || !APPS_SCRIPT_URL) return;
+  selectEl.classList.add('saving');
+  const feedback = selectEl.nextElementSibling;
+  if (feedback) feedback.textContent = '';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: getEditKey(), distribution_id, new_status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data.ok) {
+      const row = rows.find(r => f(r,'distribution_id') === distribution_id);
+      if (row) row.status = new_status;
+      if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
+      renderOverview();
+    } else {
+      if (data.error === 'Invalid key') {
+        // Key was wrong or expired — force re-auth
+        clearEditKey(); setEditMode(false);
+        toast('Edit key rejected. Please re-enter.');
+      }
+      if (feedback) { feedback.textContent = '✗ ' + (data.error || 'failed'); feedback.className = 'save-err'; }
+    }
+  } catch (err) {
+    if (feedback) { feedback.textContent = '✗ ' + err.message; feedback.className = 'save-err'; }
+  } finally {
+    selectEl.classList.remove('saving');
+  }
+}
+
+// ── Edit mode toggle ──────────────────────────────────────────────────────────
+function setEditMode(on) {
+  canEdit = on;
+  $('#edit-badge').style.display   = on ? 'inline' : 'none';
+  $('#btn-edit-toggle').textContent = on ? '🔓 Lock' : '🔒 Edit';
+  $('#mode-label').textContent      = on ? 'Edit mode · changes sync to sheet' : 'Read-only · Live from Google Sheet';
+  if (detailRows.length) renderDetailTable();
+}
+
+function showEditKeyModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Enter edit key</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
+        You need the shared edit key to change statuses. Changes sync directly to the Google Sheet.
+        ${!APPS_SCRIPT_URL ? '<br/><strong style="color:var(--yellow)">Apps Script URL not set — configure it below first.</strong>' : ''}
+      </p>
+      ${!APPS_SCRIPT_URL ? `
+      <div class="modal-field">
+        <label class="modal-label">Apps Script Web App URL (one-time setup)</label>
+        <input id="cfg-script-url" class="modal-input" placeholder="https://script.google.com/macros/s/…/exec"
+          value="${APPS_SCRIPT_URL}" />
+      </div>` : ''}
+      <div class="modal-field">
+        <label class="modal-label">Edit key</label>
+        <input id="cfg-edit-key" class="modal-input" type="password" placeholder="••••••••••••" autocomplete="off" />
+        <div id="cfg-key-error" class="modal-error" style="display:none">Incorrect key — check with the team.</div>
+      </div>
+      <div class="modal-actions">
+        <button id="cfg-cancel" class="btn">Cancel</button>
+        <button id="cfg-unlock" class="btn primary">Unlock</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const keyInput = overlay.querySelector('#cfg-edit-key');
+  const errEl    = overlay.querySelector('#cfg-key-error');
+  keyInput.focus();
+
+  overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#cfg-unlock').onclick = async () => {
+    const urlInput = overlay.querySelector('#cfg-script-url');
+    if (urlInput) {
+      const u = urlInput.value.trim();
+      if (u) { APPS_SCRIPT_URL = u; localStorage.setItem('an3_script_url', u); }
+    }
+    const k = keyInput.value.trim();
+    if (!k) return;
+    if (!APPS_SCRIPT_URL) { errEl.textContent = 'Set the Apps Script URL first.'; errEl.style.display = ''; return; }
+
+    // Verify the key by calling Apps Script with a no-op probe
+    const btn = overlay.querySelector('#cfg-unlock');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: k, distribution_id: '__probe__', new_status: '__probe__' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.error === 'Invalid key') {
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = 'Unlock';
+        return;
+      }
+      // Any other response (ok or "distribution_id not found") means key is valid
+      setEditKey(k);
+      overlay.remove();
+      setEditMode(true);
+      toast('Edit mode on — status changes will sync to the sheet');
+    } catch (err) {
+      errEl.textContent = 'Network error: ' + err.message;
+      errEl.style.display = '';
+      btn.disabled = false; btn.textContent = 'Unlock';
+    }
+  };
+
+  keyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') overlay.querySelector('#cfg-unlock').click();
+  });
+}
+
 // ── Wire up ─────────────────────────────────────────────────────────────────
 $('#btn-refresh').addEventListener('click', load);
 
@@ -692,123 +827,19 @@ $('#account-search').addEventListener('input', e => renderAccountCards(e.target.
 $('#filter-status').addEventListener('change', renderDetailTable);
 $('#filter-q').addEventListener('input', renderDetailTable);
 
-// ── Google Sign-In ────────────────────────────────────────────────────────────
-function initGoogleSignIn() {
-  if (!GOOGLE_CLIENT_ID) {
-    // Show config prompt in sign-in area
-    $('#signin-area').innerHTML = `<button class="btn" id="btn-setup-auth">⚙ Setup edit access</button>`;
-    $('#btn-setup-auth').addEventListener('click', showAuthSetup);
-    return;
+$('#btn-edit-toggle').addEventListener('click', () => {
+  if (canEdit) {
+    clearEditKey();
+    setEditMode(false);
+    toast('Edit mode off');
+  } else {
+    showEditKeyModal();
   }
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: onSignIn,
-    auto_select: true,
-  });
-  google.accounts.id.renderButton($('#g-signin-btn'), {
-    theme: 'outline', size: 'medium', text: 'signin', shape: 'rectangular',
-  });
-}
-
-function onSignIn(response) {
-  const payload = parseJwt(response.credential);
-  const email   = (payload.email || '').toLowerCase();
-  currentUser   = { email, idToken: response.credential };
-  canEdit       = ALLOWED_EDIT.includes(email);
-
-  $('#signin-area').style.display  = 'none';
-  $('#user-badge').style.display   = 'inline';
-  $('#user-badge').textContent     = canEdit ? '✎ ' + email : '👁 ' + email;
-  if (!canEdit) $('#user-badge').style.background = '#eef2f6', $('#user-badge').style.color = 'var(--muted)';
-  $('#btn-signout').style.display  = 'inline';
-
-  if (canEdit && !APPS_SCRIPT_URL) showAuthSetup();
-  if (detailRows.length) renderDetailTable(); // re-render with dropdowns
-}
-
-function parseJwt(token) {
-  try { return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
-  catch { return {}; }
-}
-
-$('#btn-signout').addEventListener('click', () => {
-  currentUser = null; canEdit = false;
-  $('#signin-area').style.display  = '';
-  $('#user-badge').style.display   = 'none';
-  $('#btn-signout').style.display  = 'none';
-  google.accounts.id.disableAutoSelect();
-  if (detailRows.length) renderDetailTable();
 });
 
-function showAuthSetup() {
-  const existing_url = APPS_SCRIPT_URL;
-  const existing_cid = GOOGLE_CLIENT_ID;
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,30,40,.4);display:grid;place-items:center;z-index:60;padding:1rem';
-  overlay.innerHTML = `
-    <div style="background:#fff;border-radius:12px;padding:1.25rem 1.5rem;width:min(520px,100%);border:1px solid var(--line)">
-      <h3 style="margin:0 0 .75rem">Edit access setup</h3>
-      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
-        Paste the two values below — both are one-time setup. See instructions in the repo.
-      </p>
-      <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:.25rem">Google OAuth Client ID</label>
-      <input id="cfg-cid" style="width:100%;padding:.45rem .6rem;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:.65rem"
-        placeholder="xxxxxxx.apps.googleusercontent.com" value="${existing_cid}" />
-      <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:.25rem">Apps Script Web App URL</label>
-      <input id="cfg-url" style="width:100%;padding:.45rem .6rem;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:.85rem"
-        placeholder="https://script.google.com/macros/s/…/exec" value="${existing_url}" />
-      <div style="display:flex;gap:.5rem;justify-content:flex-end">
-        <button id="cfg-cancel" class="btn">Cancel</button>
-        <button id="cfg-save" class="btn primary">Save</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
-  overlay.querySelector('#cfg-save').onclick = () => {
-    const cid = overlay.querySelector('#cfg-cid').value.trim();
-    const url = overlay.querySelector('#cfg-url').value.trim();
-    if (cid) localStorage.setItem('an3_client_id', cid);
-    if (url) { APPS_SCRIPT_URL = url; localStorage.setItem('an3_script_url', url); }
-    overlay.remove();
-    location.reload();
-  };
-}
+// Restore edit mode if key is already in sessionStorage from a prior action this session
+if (getEditKey() && APPS_SCRIPT_URL) setEditMode(true);
 
-// ── Status update (write to sheet via Apps Script) ────────────────────────────
-async function updateStatus(distribution_id, new_status, selectEl) {
-  if (!currentUser || !canEdit || !APPS_SCRIPT_URL) return;
-  selectEl.classList.add('saving');
-  const feedback = selectEl.nextElementSibling;
-  if (feedback) feedback.textContent = '';
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: currentUser.idToken, distribution_id, new_status }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (data.ok) {
-      // Update local row so UI stays in sync
-      const row = rows.find(r => f(r,'distribution_id') === distribution_id);
-      if (row) row.status = new_status;
-      if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
-      renderOverview();
-    } else {
-      if (feedback) { feedback.textContent = '✗ ' + (data.error || 'failed'); feedback.className = 'save-err'; }
-    }
-  } catch (err) {
-    if (feedback) { feedback.textContent = '✗ ' + err.message; feedback.className = 'save-err'; }
-  } finally {
-    selectEl.classList.remove('saving');
-  }
-}
-
-// ── Boot ─────────────────────────────────────────────────────────────────────
-window.addEventListener('load', () => {
-  if (typeof google !== 'undefined' && google.accounts) initGoogleSignIn();
-  else document.querySelector('script[src*="gsi"]')?.addEventListener('load', initGoogleSignIn);
-});
 load();
 </script>
 </body>
