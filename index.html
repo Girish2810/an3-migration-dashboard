@@ -319,8 +319,7 @@ const SHEET_NAME   = 'Deliveries';
 const DEFAULT_ID   = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const STATUSES     = ['switchover completed','ready for switchover','in-progress','blocked','not-started','non-ssai pending'];
 
-// Apps Script Web App URL — set once via ⚙ Sheet modal or localStorage
-let APPS_SCRIPT_URL = localStorage.getItem('an3_script_url') || '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
 
 // Column label → canonical key aliases
 const ALIASES = {
@@ -735,13 +734,8 @@ function showEditKeyModal() {
     <div class="modal-box">
       <h3>Enter edit key</h3>
       <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
-        You need the shared edit key to change statuses. Changes sync directly to the Google Sheet.
+        Enter the shared edit key to change statuses. Changes sync directly to the Google Sheet.
       </p>
-      <div class="modal-field">
-        <label class="modal-label">Apps Script Web App URL</label>
-        <input id="cfg-script-url" class="modal-input" placeholder="https://script.google.com/macros/s/…/exec"
-          value="${APPS_SCRIPT_URL}" />
-      </div>
       <div class="modal-field">
         <label class="modal-label">Edit key</label>
         <input id="cfg-edit-key" class="modal-input" type="password" placeholder="••••••••••••" autocomplete="off" />
@@ -760,14 +754,8 @@ function showEditKeyModal() {
 
   overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
   overlay.querySelector('#cfg-unlock').onclick = async () => {
-    const urlInput = overlay.querySelector('#cfg-script-url');
-    if (urlInput) {
-      const u = urlInput.value.trim();
-      if (u) { APPS_SCRIPT_URL = u; localStorage.setItem('an3_script_url', u); }
-    }
     const k = keyInput.value.trim();
     if (!k) return;
-    if (!APPS_SCRIPT_URL) { errEl.textContent = 'Set the Apps Script URL first.'; errEl.style.display = ''; return; }
 
     // Verify the key by calling Apps Script with a no-op probe
     const btn = overlay.querySelector('#cfg-unlock');
@@ -840,7 +828,7 @@ $('#btn-edit-toggle').addEventListener('click', () => {
 });
 
 // Restore edit mode if key is already in sessionStorage from a prior action this session
-if (getEditKey() && APPS_SCRIPT_URL) setEditMode(true);
+if (getEditKey()) setEditMode(true);
 
 load();
 </script>
