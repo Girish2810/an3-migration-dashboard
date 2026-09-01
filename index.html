@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://accounts.google.com/gsi/client" async></script>
   <style>
     /* ── tokens ── */
     :root {
@@ -188,6 +189,17 @@
     /* ── error ── */
     .error-box { background:#ffebe9; border:1px solid #ffc1c0; border-radius:8px; padding:.85rem 1rem; color:var(--red); font-size:.85rem; margin:.75rem 0; }
     .error-box a { color:var(--red); }
+
+    /* ── edit mode ── */
+    .status-select {
+      border:1px solid var(--line); border-radius:6px; padding:.28rem .4rem;
+      font:inherit; font-size:.78rem; background:#fff; color:var(--text);
+      cursor:pointer; max-width:170px;
+    }
+    .status-select:focus { outline:none; border-color:var(--primary); }
+    .saving { opacity:.55; pointer-events:none; }
+    .save-ok  { color:var(--green); font-size:.72rem; margin-left:.3rem; }
+    .save-err { color:var(--red);   font-size:.72rem; margin-left:.3rem; }
   </style>
 </head>
 <body>
@@ -202,6 +214,11 @@
   </div>
   <div class="hdr-right">
     <span id="last-updated" style="font-size:.78rem;color:var(--muted)"></span>
+    <div id="signin-area">
+      <div id="g-signin-btn"></div>
+    </div>
+    <span id="user-badge" style="display:none;font-size:.78rem;padding:.3rem .6rem;border-radius:6px;background:var(--green-bg);color:var(--green);font-weight:600"></span>
+    <button class="btn" id="btn-signout" style="display:none;font-size:.78rem">Sign out</button>
     <button class="btn" id="btn-config">⚙ Sheet</button>
     <button class="btn primary" id="btn-refresh">↻ Refresh</button>
   </div>
@@ -274,9 +291,17 @@
 
 <script>
 // ── Config ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'an3_sheet_id';
-const SHEET_NAME  = 'Deliveries';
-const DEFAULT_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const STORAGE_KEY  = 'an3_sheet_id';
+const SHEET_NAME   = 'Deliveries';
+const DEFAULT_ID   = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const ALLOWED_EDIT = ['varun.ks@amagi.com','girish.tammanagoudar@amagi.com','venkatesha.tr@amagi.com'];
+const STATUSES     = ['switchover completed','ready for switchover','in-progress','blocked','not-started','non-ssai pending'];
+
+// Paste your Apps Script Web App URL here after deploying:
+let APPS_SCRIPT_URL = localStorage.getItem('an3_script_url') || '';
+
+// Google OAuth Client ID — paste yours here (from GCP → Credentials):
+const GOOGLE_CLIENT_ID = localStorage.getItem('an3_client_id') || '';
 
 // Known column header names (all lowercase_underscore variants the sheet may use)
 const ALIASES = {
@@ -304,8 +329,12 @@ const KNOWN_HEADER_MARKERS = new Set([
   'channel_id','channel id','distribution_id','eta_provided_date',
 ]);
 
+// ── Auth state ──────────────────────────────────────────────────────────────
+let currentUser = null;   // { email, idToken } when signed in
+let canEdit = false;
+
 // ── State ───────────────────────────────────────────────────────────────────
-let rows = [];       // array of plain objects { amg_id, account_name, status, … }
+let rows = [];
 let accounts = [];
 let selected = null;
 let detailRows = [];
@@ -545,6 +574,11 @@ function renderDetailTable() {
   });
 
   $('#detail-count').textContent = `${filtered.length} / ${detailRows.length}`;
+  if (canEdit) setTimeout(() => {
+    document.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.value, sel));
+    });
+  }, 0);
 
   $('#detail-table').innerHTML = `
     <table>
@@ -567,7 +601,9 @@ function renderDetailTable() {
                 <td>${f(r,'distribution_id') || '—'}</td>
                 <td>${f(r,'platform') || f(r,'platform_id') || '—'}</td>
                 <td>${f(r,'stream_type') || 'hls'}</td>
-                <td>${chipHtml(f(r,'status'))}</td>
+                <td>${canEdit
+                  ? `<select class="status-select" data-dist="${f(r,'distribution_id')}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
+                  : chipHtml(f(r,'status'))}</td>
                 <td style="white-space:nowrap">${f(r,'initial_start_date') || '—'}</td>
                 <td style="white-space:nowrap">${f(r,'eta_provided_date') || '—'}</td>
                 <td style="white-space:nowrap">${f(r,'completed_date') || '—'}</td>
@@ -656,7 +692,123 @@ $('#account-search').addEventListener('input', e => renderAccountCards(e.target.
 $('#filter-status').addEventListener('change', renderDetailTable);
 $('#filter-q').addEventListener('input', renderDetailTable);
 
+// ── Google Sign-In ────────────────────────────────────────────────────────────
+function initGoogleSignIn() {
+  if (!GOOGLE_CLIENT_ID) {
+    // Show config prompt in sign-in area
+    $('#signin-area').innerHTML = `<button class="btn" id="btn-setup-auth">⚙ Setup edit access</button>`;
+    $('#btn-setup-auth').addEventListener('click', showAuthSetup);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: onSignIn,
+    auto_select: true,
+  });
+  google.accounts.id.renderButton($('#g-signin-btn'), {
+    theme: 'outline', size: 'medium', text: 'signin', shape: 'rectangular',
+  });
+}
+
+function onSignIn(response) {
+  const payload = parseJwt(response.credential);
+  const email   = (payload.email || '').toLowerCase();
+  currentUser   = { email, idToken: response.credential };
+  canEdit       = ALLOWED_EDIT.includes(email);
+
+  $('#signin-area').style.display  = 'none';
+  $('#user-badge').style.display   = 'inline';
+  $('#user-badge').textContent     = canEdit ? '✎ ' + email : '👁 ' + email;
+  if (!canEdit) $('#user-badge').style.background = '#eef2f6', $('#user-badge').style.color = 'var(--muted)';
+  $('#btn-signout').style.display  = 'inline';
+
+  if (canEdit && !APPS_SCRIPT_URL) showAuthSetup();
+  if (detailRows.length) renderDetailTable(); // re-render with dropdowns
+}
+
+function parseJwt(token) {
+  try { return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+  catch { return {}; }
+}
+
+$('#btn-signout').addEventListener('click', () => {
+  currentUser = null; canEdit = false;
+  $('#signin-area').style.display  = '';
+  $('#user-badge').style.display   = 'none';
+  $('#btn-signout').style.display  = 'none';
+  google.accounts.id.disableAutoSelect();
+  if (detailRows.length) renderDetailTable();
+});
+
+function showAuthSetup() {
+  const existing_url = APPS_SCRIPT_URL;
+  const existing_cid = GOOGLE_CLIENT_ID;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,30,40,.4);display:grid;place-items:center;z-index:60;padding:1rem';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:1.25rem 1.5rem;width:min(520px,100%);border:1px solid var(--line)">
+      <h3 style="margin:0 0 .75rem">Edit access setup</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
+        Paste the two values below — both are one-time setup. See instructions in the repo.
+      </p>
+      <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:.25rem">Google OAuth Client ID</label>
+      <input id="cfg-cid" style="width:100%;padding:.45rem .6rem;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:.65rem"
+        placeholder="xxxxxxx.apps.googleusercontent.com" value="${existing_cid}" />
+      <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:.25rem">Apps Script Web App URL</label>
+      <input id="cfg-url" style="width:100%;padding:.45rem .6rem;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:.85rem"
+        placeholder="https://script.google.com/macros/s/…/exec" value="${existing_url}" />
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button id="cfg-cancel" class="btn">Cancel</button>
+        <button id="cfg-save" class="btn primary">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#cfg-save').onclick = () => {
+    const cid = overlay.querySelector('#cfg-cid').value.trim();
+    const url = overlay.querySelector('#cfg-url').value.trim();
+    if (cid) localStorage.setItem('an3_client_id', cid);
+    if (url) { APPS_SCRIPT_URL = url; localStorage.setItem('an3_script_url', url); }
+    overlay.remove();
+    location.reload();
+  };
+}
+
+// ── Status update (write to sheet via Apps Script) ────────────────────────────
+async function updateStatus(distribution_id, new_status, selectEl) {
+  if (!currentUser || !canEdit || !APPS_SCRIPT_URL) return;
+  selectEl.classList.add('saving');
+  const feedback = selectEl.nextElementSibling;
+  if (feedback) feedback.textContent = '';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: currentUser.idToken, distribution_id, new_status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data.ok) {
+      // Update local row so UI stays in sync
+      const row = rows.find(r => f(r,'distribution_id') === distribution_id);
+      if (row) row.status = new_status;
+      if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
+      renderOverview();
+    } else {
+      if (feedback) { feedback.textContent = '✗ ' + (data.error || 'failed'); feedback.className = 'save-err'; }
+    }
+  } catch (err) {
+    if (feedback) { feedback.textContent = '✗ ' + err.message; feedback.className = 'save-err'; }
+  } finally {
+    selectEl.classList.remove('saving');
+  }
+}
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (typeof google !== 'undefined' && google.accounts) initGoogleSignIn();
+  else document.querySelector('script[src*="gsi"]')?.addEventListener('load', initGoogleSignIn);
+});
 load();
 </script>
 </body>
