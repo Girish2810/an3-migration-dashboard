@@ -688,11 +688,11 @@ async function updateStatus(distribution_id, new_status, selectEl) {
   if (feedback) feedback.textContent = '';
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ key: getEditKey(), distribution_id, new_status }),
-    });
+    const updateUrl = new URL(APPS_SCRIPT_URL);
+    updateUrl.searchParams.set('key', getEditKey());
+    updateUrl.searchParams.set('distribution_id', distribution_id);
+    updateUrl.searchParams.set('new_status', new_status);
+    const res = await fetch(updateUrl.toString());
     const data = await res.json().catch(() => ({}));
     if (data.ok) {
       const row = rows.find(r => f(r,'distribution_id') === distribution_id);
@@ -770,11 +770,10 @@ function showEditKeyModal() {
     const btn = overlay.querySelector('#cfg-unlock');
     btn.disabled = true; btn.textContent = 'Checking…';
     try {
-      const res = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ key: k, distribution_id: '__probe__', new_status: '__probe__' }),
-      });
+      const probeUrl = new URL(APPS_SCRIPT_URL);
+      probeUrl.searchParams.set('key', k);
+      probeUrl.searchParams.set('distribution_id', '__probe__');
+      const res = await fetch(probeUrl.toString());
       const data = await res.json().catch(() => ({}));
       if (data.error === 'Invalid key') {
         errEl.style.display = '';
