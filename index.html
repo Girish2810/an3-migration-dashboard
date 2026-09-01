@@ -681,21 +681,36 @@ async function load() {
   }
 }
 
+// ── JSONP helper (bypasses CORS entirely — script tags load cross-origin freely) ──
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_as' + Math.random().toString(36).slice(2);
+    const url = new URL(APPS_SCRIPT_URL);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+    url.searchParams.set('callback', cbName);
+
+    const script = document.createElement('script');
+    const cleanup = () => { delete window[cbName]; script.remove(); };
+    window[cbName] = data => { cleanup(); resolve(data); };
+    script.onerror  = () => { cleanup(); reject(new Error('Script load failed')); };
+    script.src = url.toString();
+    document.head.appendChild(script);
+  });
+}
+
 // ── Status update (write to sheet via Apps Script) ────────────────────────────
 async function updateStatus(distribution_id, row_num, new_status, selectEl) {
-  if (!canEdit || !APPS_SCRIPT_URL) return;
+  if (!canEdit) return;
   selectEl.classList.add('saving');
   const feedback = selectEl.nextElementSibling;
   if (feedback) feedback.textContent = '';
 
   try {
-    const updateUrl = new URL(APPS_SCRIPT_URL);
-    updateUrl.searchParams.set('key', getEditKey());
-    updateUrl.searchParams.set('new_status', new_status);
-    if (distribution_id) updateUrl.searchParams.set('distribution_id', distribution_id);
-    else if (row_num)    updateUrl.searchParams.set('row_num', row_num);
-    const res = await fetch(updateUrl.toString());
-    const data = await res.json().catch(() => ({}));
+    const params = { key: getEditKey(), new_status };
+    if (distribution_id) params.distribution_id = distribution_id;
+    else if (row_num)    params.row_num = row_num;
+
+    const data = await jsonp(params);
     if (data.ok) {
       const row = distribution_id
         ? rows.find(r => f(r,'distribution_id') === distribution_id)
@@ -705,7 +720,6 @@ async function updateStatus(distribution_id, row_num, new_status, selectEl) {
       renderOverview();
     } else {
       if (data.error === 'Invalid key') {
-        // Key was wrong or expired — force re-auth
         clearEditKey(); setEditMode(false);
         toast('Edit key rejected. Please re-enter.');
       }
@@ -761,17 +775,12 @@ function showEditKeyModal() {
     const btn = overlay.querySelector('#cfg-unlock');
     btn.disabled = true; btn.textContent = 'Checking…';
     try {
-      const probeUrl = new URL(APPS_SCRIPT_URL);
-      probeUrl.searchParams.set('key', k);
-      probeUrl.searchParams.set('distribution_id', '__probe__');
-      const res = await fetch(probeUrl.toString());
-      const data = await res.json().catch(() => ({}));
+      const data = await jsonp({ key: k, distribution_id: '__probe__' });
       if (data.error === 'Invalid key') {
         errEl.style.display = '';
         btn.disabled = false; btn.textContent = 'Unlock';
         return;
       }
-      // Any other response (ok or "distribution_id not found") means key is valid
       setEditKey(k);
       overlay.remove();
       setEditMode(true);
