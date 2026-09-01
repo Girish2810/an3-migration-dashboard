@@ -690,7 +690,7 @@ async function updateStatus(distribution_id, new_status, selectEl) {
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ key: getEditKey(), distribution_id, new_status }),
     });
     const data = await res.json().catch(() => ({}));
@@ -772,7 +772,7 @@ function showEditKeyModal() {
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ key: k, distribution_id: '__probe__', new_status: '__probe__' }),
       });
       const data = await res.json().catch(() => ({}));
