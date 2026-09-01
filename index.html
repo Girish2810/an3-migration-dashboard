@@ -731,14 +731,12 @@ function showEditKeyModal() {
       <h3>Enter edit key</h3>
       <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
         You need the shared edit key to change statuses. Changes sync directly to the Google Sheet.
-        ${!APPS_SCRIPT_URL ? '<br/><strong style="color:var(--yellow)">Apps Script URL not set — configure it below first.</strong>' : ''}
       </p>
-      ${!APPS_SCRIPT_URL ? `
       <div class="modal-field">
-        <label class="modal-label">Apps Script Web App URL (one-time setup)</label>
+        <label class="modal-label">Apps Script Web App URL</label>
         <input id="cfg-script-url" class="modal-input" placeholder="https://script.google.com/macros/s/…/exec"
           value="${APPS_SCRIPT_URL}" />
-      </div>` : ''}
+      </div>
       <div class="modal-field">
         <label class="modal-label">Edit key</label>
         <input id="cfg-edit-key" class="modal-input" type="password" placeholder="••••••••••••" autocomplete="off" />
