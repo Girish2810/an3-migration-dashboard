@@ -429,7 +429,8 @@ async function fetchRows() {
   }
 
   const result = [];
-  for (const gvizRow of parsed.table.rows) {
+  for (let gvizIdx = 0; gvizIdx < parsed.table.rows.length; gvizIdx++) {
+    const gvizRow = parsed.table.rows[gvizIdx];
     const cells = gvizRow.c.map(c => (c ? (c.v ?? c.f ?? '') : '').toString().trim());
 
     const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k === 'status')?.[0]] || '';
@@ -443,6 +444,7 @@ async function fetchRows() {
     for (const [colIdx, key] of Object.entries(labelToKey)) {
       obj[key] = cells[colIdx] || '';
     }
+    obj._row_num = gvizIdx + 2; // +1 for 1-based, +1 for header row
     result.push(obj);
   }
 
@@ -614,7 +616,7 @@ function renderDetailTable() {
                 <td>${f(r,'platform') || f(r,'platform_id') || '—'}</td>
                 <td>${f(r,'stream_type') || 'hls'}</td>
                 <td>${canEdit
-                  ? `<select class="status-select" data-dist="${f(r,'distribution_id')}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
+                  ? `<select class="status-select" data-dist="${f(r,'distribution_id')}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
                   : chipHtml(f(r,'status'))}</td>
                 <td style="white-space:nowrap">${f(r,'initial_start_date') || '—'}</td>
                 <td style="white-space:nowrap">${f(r,'eta_provided_date') || '—'}</td>
@@ -630,7 +632,7 @@ function renderDetailTable() {
 
   if (canEdit) {
     document.querySelectorAll('.status-select').forEach(sel => {
-      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.value, sel));
+      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.dataset.row, sel.value, sel));
     });
   }
 }
@@ -681,7 +683,7 @@ async function load() {
 }
 
 // ── Status update (write to sheet via Apps Script) ────────────────────────────
-async function updateStatus(distribution_id, new_status, selectEl) {
+async function updateStatus(distribution_id, row_num, new_status, selectEl) {
   if (!canEdit || !APPS_SCRIPT_URL) return;
   selectEl.classList.add('saving');
   const feedback = selectEl.nextElementSibling;
@@ -690,12 +692,15 @@ async function updateStatus(distribution_id, new_status, selectEl) {
   try {
     const updateUrl = new URL(APPS_SCRIPT_URL);
     updateUrl.searchParams.set('key', getEditKey());
-    updateUrl.searchParams.set('distribution_id', distribution_id);
     updateUrl.searchParams.set('new_status', new_status);
+    if (distribution_id) updateUrl.searchParams.set('distribution_id', distribution_id);
+    else if (row_num)    updateUrl.searchParams.set('row_num', row_num);
     const res = await fetch(updateUrl.toString());
     const data = await res.json().catch(() => ({}));
     if (data.ok) {
-      const row = rows.find(r => f(r,'distribution_id') === distribution_id);
+      const row = distribution_id
+        ? rows.find(r => f(r,'distribution_id') === distribution_id)
+        : rows.find(r => String(r._row_num) === String(row_num));
       if (row) row.status = new_status;
       if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
       renderOverview();
