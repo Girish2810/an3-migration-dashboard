@@ -357,7 +357,7 @@ function normalizeLabel(s) {
 
 async function fetchRows() {
   const id  = getSheetId();
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} — share the sheet as "Anyone with the link can view"`);
   const txt = await res.text();
