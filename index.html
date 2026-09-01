@@ -278,18 +278,36 @@ const STORAGE_KEY = 'an3_sheet_id';
 const SHEET_NAME  = 'Deliveries';
 const DEFAULT_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 
-// Column indices from config.yaml order
-const COL = {
-  amg_id: 0, initial_start_date: 1, eta_provided_date: 2, completed_date: 3,
-  account_name: 4, channel_id: 5, distribution_id: 6, status: 7,
-  remarks: 8, platform: 9, platform_id: 10, channel_name: 11,
-  stream_type: 12, jira_creation_key: 13, jira_switchover_key: 14, migration_resources: 15
+// Known column header names (all lowercase_underscore variants the sheet may use)
+const ALIASES = {
+  amg_id:              ['amg_id','amg id','amgid'],
+  channel_id:          ['channel_id','channel id','channel'],
+  distribution_id:     ['distribution_id','distribution id','distribution','dist_id'],
+  initial_start_date:  ['initial_start_date','initial start date','start_date','start date'],
+  eta_provided_date:   ['eta_provided_date','eta provided date','eta date','eta'],
+  completed_date:      ['completed_date','completed date','date_completed','completion_date'],
+  account_name:        ['account_name','account name','account','client','network','customer','org'],
+  status:              ['status','migration_status','migration status'],
+  remarks:             ['remarks','notes','comment','comments','note'],
+  platform:            ['platform','platform_name'],
+  platform_id:         ['platform_id','platform id'],
+  channel_name:        ['channel_name','channel name'],
+  stream_type:         ['stream_type','stream type','type','stream'],
+  jira_creation_key:   ['jira_creation_key','jira creation key','jira_creation','jira nm','jira creation','nm_jira'],
+  jira_switchover_key: ['jira_switchover_key','jira switchover key','jira_switchover','jira sw','jira switchover','sw_jira'],
+  migration_resources: ['migration_resources','resources','migration resources'],
 };
 
+// Known status values — used to detect and skip header rows
+const KNOWN_HEADER_MARKERS = new Set([
+  'status','amg_id','amg id','account_name','account name',
+  'channel_id','channel id','distribution_id','eta_provided_date',
+]);
+
 // ── State ───────────────────────────────────────────────────────────────────
-let rows = [];       // raw row arrays
-let accounts = [];   // aggregated per account
-let selected = null; // currently open account
+let rows = [];       // array of plain objects { amg_id, account_name, status, … }
+let accounts = [];
+let selected = null;
 let detailRows = [];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -302,22 +320,22 @@ function toast(msg) {
   el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
-function cell(row, col) { return (row[col] ?? '').toString().trim(); }
+// Read a field from an object row — always returns a trimmed string
+function f(row, key) { return (row[key] ?? '').toString().trim(); }
+
 function statusClass(s) {
-  if (!s) return 'other';
-  if (s === 'switchover completed') return 'done';
-  if (s === 'ready for switchover') return 'ready';
-  if (s === 'blocked') return 'blocked';
-  if (s.includes('pending')) return 'pending';
+  const v = (s || '').toLowerCase();
+  if (v === 'switchover completed') return 'done';
+  if (v === 'ready for switchover') return 'ready';
+  if (v === 'blocked') return 'blocked';
+  if (v.includes('pending')) return 'pending';
+  if (v === 'in-progress' || v === 'in progress') return 'inprog';
   return 'other';
 }
-function statusIcon(s) {
-  const cls = statusClass(s);
-  return { done:'✓', ready:'→', blocked:'✗', pending:'⏳', other:'○' }[cls] || '○';
-}
+const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'⏳', inprog:'⚡', other:'○' };
 function chipHtml(s) {
   const cls = statusClass(s);
-  return `<span class="chip ${cls}">${statusIcon(s)} ${s || '—'}</span>`;
+  return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${s || '—'}</span>`;
 }
 function ringSvg(percent) {
   const r = 42, c = 2 * Math.PI * r, offset = c - (percent / 100) * c;
@@ -331,98 +349,92 @@ function ringSvg(percent) {
 }
 
 // ── Sheet fetch ─────────────────────────────────────────────────────────────
-function getSheetId() {
-  return localStorage.getItem(STORAGE_KEY) || DEFAULT_ID;
+function getSheetId() { return localStorage.getItem(STORAGE_KEY) || DEFAULT_ID; }
+
+function normalizeLabel(s) {
+  return (s || '').trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, '');
 }
 
 async function fetchRows() {
   const id  = getSheetId();
   const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — make sure the sheet is shared as "Anyone with the link can view"`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — share the sheet as "Anyone with the link can view"`);
   const txt = await res.text();
   const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);\s*$/);
-  if (!m) throw new Error('Unexpected response — is the sheet accessible?');
+  if (!m) throw new Error('Unexpected response format. Is the sheet publicly viewable?');
   const parsed = JSON.parse(m[1]);
-  if (parsed.status === 'error') {
-    const msg = parsed.errors?.[0]?.message || 'Sheet error';
-    throw new Error(msg);
-  }
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
 
-  // Map gviz table → ordered arrays using column labels
-  const colLabels = parsed.table.cols.map(c => (c.label || c.id || '').toLowerCase().replace(/\s+/g,'_'));
+  // Build label → canonical key map from gviz column headers
+  const gvizLabels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
 
-  // Build a mapping from our COL keys → actual gviz column index
-  // (handles slight header variations)
-  const alias = {
-    amg_id:             ['amg_id','amg id'],
-    initial_start_date: ['initial_start_date','initial start date','start_date'],
-    eta_provided_date:  ['eta_provided_date','eta provided date','eta'],
-    completed_date:     ['completed_date','completed date','date_completed'],
-    account_name:       ['account_name','account name','client','network','customer'],
-    channel_id:         ['channel_id','channel id','channel'],
-    distribution_id:    ['distribution_id','distribution id','distribution'],
-    status:             ['status','migration_status'],
-    remarks:            ['remarks','notes','comment','comments'],
-    platform:           ['platform'],
-    platform_id:        ['platform_id','platform id'],
-    channel_name:       ['channel_name','channel name'],
-    stream_type:        ['stream_type','stream type','type'],
-    jira_creation_key:  ['jira_creation_key','jira creation key','jira_creation','jira nm'],
-    jira_switchover_key:['jira_switchover_key','jira switchover key','jira_switchover','jira sw'],
-    migration_resources:['migration_resources','resources','migration resources'],
-  };
-
-  const colMap = {};
-  for (const [key, names] of Object.entries(alias)) {
-    for (const name of names) {
-      const i = colLabels.indexOf(name);
-      if (i >= 0) { colMap[key] = i; break; }
-    }
-    if (!(key in colMap)) colMap[key] = COL[key]; // fallback to positional
-  }
-
-  return parsed.table.rows
-    .map(r => r.c.map(cell => cell ? (cell.v ?? cell.f ?? '') : ''))
-    .filter(r => r.some(v => v !== ''))
-    .map(r => {
-      // Normalize to fixed-order array matching COL
-      const out = new Array(16).fill('');
-      for (const [key, idx] of Object.entries(colMap)) {
-        if (idx !== undefined && r[idx] !== undefined) out[COL[key]] = (r[idx] ?? '').toString().trim();
+  const labelToKey = {};
+  for (const [key, aliases] of Object.entries(ALIASES)) {
+    for (let i = 0; i < gvizLabels.length; i++) {
+      if (aliases.includes(gvizLabels[i])) {
+        labelToKey[i] = key;
+        break;
       }
-      return out;
-    });
+    }
+  }
+
+  // Parse each gviz row → plain object, skip header-like rows
+  const result = [];
+  for (const gvizRow of parsed.table.rows) {
+    const cells = gvizRow.c.map(c => (c ? (c.v ?? c.f ?? '') : '').toString().trim());
+
+    // Skip rows where key fields look like column header names
+    const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k === 'status')?.[0]] || '';
+    const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k === 'account_name')?.[0]] || '';
+    if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) ||
+        KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
+
+    // Skip entirely blank rows
+    if (cells.every(v => !v)) continue;
+
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) {
+      obj[key] = cells[colIdx] || '';
+    }
+    result.push(obj);
+  }
+
+  return result;
 }
 
-// ── Aggregate accounts ──────────────────────────────────────────────────────
+// ── Aggregate per account ───────────────────────────────────────────────────
 function aggregate(data) {
   const map = {};
   for (const row of data) {
-    const name = cell(row, COL.account_name) || 'Unknown';
-    const amg  = cell(row, COL.amg_id);
-    const s    = cell(row, COL.status).toLowerCase();
-    if (!map[name]) map[name] = { account_name: name, amg_id: amg, total: 0, completed: 0, ready: 0, blocked: 0, pending: 0 };
+    const name = f(row, 'account_name');
+    if (!name) continue;                          // skip rows with no account name
+    const amg  = f(row, 'amg_id');
+    const s    = f(row, 'status').toLowerCase();
+
+    if (!map[name]) map[name] = { account_name: name, amg_id: amg, total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0 };
     const a = map[name];
     if (!a.amg_id && amg) a.amg_id = amg;
     a.total++;
-    if (s === 'switchover completed') a.completed++;
+    if (s === 'switchover completed')  a.completed++;
     else if (s === 'ready for switchover') a.ready++;
-    else if (s === 'blocked') a.blocked++;
-    else if (s.includes('pending')) a.pending++;
+    else if (s === 'blocked')          a.blocked++;
+    else if (s.includes('pending'))    a.pending++;
+    else if (s.includes('in-progress') || s.includes('in progress')) a.inprog++;
   }
-  return Object.values(map).map(a => ({ ...a, fully_migrated: a.completed === a.total && a.total > 0 }))
+  return Object.values(map)
+    .map(a => ({ ...a, fully_migrated: a.completed === a.total && a.total > 0 }))
     .sort((a, b) => b.total - a.total);
 }
 
 // ── Render overview ─────────────────────────────────────────────────────────
 function renderOverview() {
-  const total     = rows.length;
-  const done      = rows.filter(r => cell(r, COL.status) === 'switchover completed').length;
-  const ready     = rows.filter(r => cell(r, COL.status) === 'ready for switchover').length;
-  const blocked   = rows.filter(r => cell(r, COL.status) === 'blocked').length;
-  const pending   = rows.filter(r => cell(r, COL.status).includes('pending')).length;
-  const inprogress= rows.filter(r => cell(r, COL.status) === 'in-progress').length;
+  const total      = rows.length;
+  const done       = rows.filter(r => f(r,'status') === 'switchover completed').length;
+  const ready      = rows.filter(r => f(r,'status') === 'ready for switchover').length;
+  const blocked    = rows.filter(r => f(r,'status') === 'blocked').length;
+  const pending    = rows.filter(r => f(r,'status').includes('pending')).length;
+  const inprogress = rows.filter(r => { const s = f(r,'status'); return s === 'in-progress' || s === 'in progress'; }).length;
 
   $('#kpis').innerHTML = `
     <div class="kpi"><div class="label">Deliveries</div><div class="value">${total}</div></div>
@@ -434,11 +446,11 @@ function renderOverview() {
   `;
 
   const bars = [
-    ['Completed',         done,      '#1a7f37'],
-    ['Ready for switchover', ready,  '#d4a72c'],
-    ['Non-SSAI pending',  pending,   '#6e7781'],
-    ['Blocked',           blocked,   '#cf222e'],
-    ['In-progress',       inprogress,'#1f6feb'],
+    ['Completed',            done,       '#1a7f37'],
+    ['Ready for switchover', ready,      '#d4a72c'],
+    ['Non-SSAI pending',     pending,    '#6e7781'],
+    ['Blocked',              blocked,    '#cf222e'],
+    ['In-progress',          inprogress, '#1f6feb'],
   ];
   $('#status-chart').innerHTML = bars.map(([label, count, color]) => `
     <div class="bar-row">
@@ -453,8 +465,9 @@ function renderOverview() {
       <div class="progress-copy">
         <h3>${pct(done, total)}% switchover completed</h3>
         <p>${done} of ${total} deliveries across ${accounts.length} accounts.</p>
-        ${ready > 0 ? `<p style="margin-top:.5rem;color:var(--yellow)">⚡ ${ready} ready to switch</p>` : ''}
-        ${blocked > 0 ? `<p style="color:var(--red)">✗ ${blocked} blocked</p>` : ''}
+        ${ready > 0    ? `<p style="margin-top:.5rem;color:var(--yellow)">⚡ ${ready} ready to switch</p>` : ''}
+        ${blocked > 0  ? `<p style="color:var(--red)">✗ ${blocked} blocked</p>` : ''}
+        ${inprogress > 0 ? `<p style="color:var(--primary)">⚡ ${inprogress} in progress</p>` : ''}
       </div>
     </div>`;
 
@@ -463,7 +476,9 @@ function renderOverview() {
 
 function renderAccountCards(filter) {
   const q = filter.trim().toLowerCase();
-  const list = accounts.filter(a => !q || a.account_name.toLowerCase().includes(q) || a.amg_id.toLowerCase().includes(q));
+  const list = accounts.filter(a =>
+    !q || a.account_name.toLowerCase().includes(q) || a.amg_id.toLowerCase().includes(q)
+  );
   const grid = $('#accounts-grid');
   if (!list.length) {
     grid.innerHTML = `<p class="muted">${accounts.length ? 'No matches.' : 'No data — click Refresh.'}</p>`;
@@ -482,12 +497,16 @@ function renderAccountCards(filter) {
         <span style="width:${w(a.ready)};background:#d4a72c" title="ready"></span>
         <span style="width:${w(a.pending)};background:#6e7781" title="pending"></span>
         <span style="width:${w(a.blocked)};background:#cf222e" title="blocked"></span>
+        <span style="width:${w(a.inprog)};background:#1f6feb" title="in-progress"></span>
       </div>
       <div class="pills">
-        <span class="pill done">done ${a.completed}</span>
-        <span class="pill ready">ready ${a.ready}</span>
-        <span class="pill pending">pending ${a.pending}</span>
-        <span class="pill blocked">blocked ${a.blocked}</span>
+        ${a.completed ? `<span class="pill done">done ${a.completed}</span>` : ''}
+        ${a.ready     ? `<span class="pill ready">ready ${a.ready}</span>` : ''}
+        ${a.pending   ? `<span class="pill pending">pending ${a.pending}</span>` : ''}
+        ${a.blocked   ? `<span class="pill blocked">blocked ${a.blocked}</span>` : ''}
+        ${a.inprog    ? `<span class="pill">in-progress ${a.inprog}</span>` : ''}
+        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog
+            ? `<span class="pill">not started ${a.total}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -500,9 +519,9 @@ function renderAccountCards(filter) {
 // ── Detail view ─────────────────────────────────────────────────────────────
 function openAccount(name) {
   selected = name;
-  detailRows = rows.filter(r => cell(r, COL.account_name) === name);
-  const done = detailRows.filter(r => cell(r, COL.status) === 'switchover completed').length;
-  const amg  = detailRows.find(r => cell(r, COL.amg_id))?.[ COL.amg_id] || '';
+  detailRows = rows.filter(r => f(r, 'account_name') === name);
+  const done = detailRows.filter(r => f(r, 'status') === 'switchover completed').length;
+  const amg  = detailRows.find(r => f(r, 'amg_id'))?.amg_id || '';
 
   $('#detail-title').textContent = name;
   $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed · ${amg}`;
@@ -516,10 +535,10 @@ function renderDetailTable() {
   const q = ($('#filter-q').value || '').toLowerCase();
 
   const filtered = detailRows.filter(r => {
-    if (status && cell(r, COL.status) !== status) return false;
+    if (status && f(r,'status') !== status) return false;
     if (q) {
-      const hay = [COL.channel_id, COL.distribution_id, COL.platform, COL.channel_name, COL.remarks, COL.jira_creation_key, COL.jira_switchover_key]
-        .map(i => cell(r, i)).join(' ').toLowerCase();
+      const hay = ['channel_id','distribution_id','platform','platform_id','channel_name','remarks','jira_creation_key','jira_switchover_key']
+        .map(k => f(r,k)).join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -537,22 +556,23 @@ function renderDetailTable() {
       </thead>
       <tbody>
         ${filtered.length === 0
-          ? `<tr><td colspan="10" class="muted" style="text-align:center;padding:2rem">No rows match.</td></tr>`
+          ? `<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--muted)">No rows match.</td></tr>`
           : filtered.map(r => {
-              const jiraLinks = [COL.jira_creation_key, COL.jira_switchover_key]
-                .map(i => cell(r, i)).filter(Boolean)
+              const jiraLinks = ['jira_creation_key','jira_switchover_key']
+                .map(k => f(r,k)).filter(Boolean)
                 .map(k => `<a href="https://amagiengg.atlassian.net/browse/${k}" target="_blank" rel="noopener">${k}</a>`)
                 .join('<br>') || '—';
-              return `<tr class="${cell(r, COL.status) === 'switchover completed' ? 'row-done' : ''}">
-                <td><strong>${cell(r, COL.channel_id)}</strong><div class="muted">${cell(r, COL.channel_name)}</div></td>
-                <td>${cell(r, COL.distribution_id) || '—'}</td>
-                <td>${cell(r, COL.platform) || cell(r, COL.platform_id) || '—'}</td>
-                <td>${cell(r, COL.stream_type) || 'hls'}</td>
-                <td>${chipHtml(cell(r, COL.status))}</td>
-                <td style="white-space:nowrap">${cell(r, COL.initial_start_date) || '—'}</td>
-                <td style="white-space:nowrap">${cell(r, COL.eta_provided_date) || '—'}</td>
-                <td style="white-space:nowrap">${cell(r, COL.completed_date) || '—'}</td>
-                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${cell(r, COL.remarks).replace(/"/g,'&quot;')}">${cell(r, COL.remarks) || '—'}</td>
+              return `<tr class="${f(r,'status') === 'switchover completed' ? 'row-done' : ''}">
+                <td><strong>${f(r,'channel_id') || '—'}</strong><div class="muted">${f(r,'channel_name')}</div></td>
+                <td>${f(r,'distribution_id') || '—'}</td>
+                <td>${f(r,'platform') || f(r,'platform_id') || '—'}</td>
+                <td>${f(r,'stream_type') || 'hls'}</td>
+                <td>${chipHtml(f(r,'status'))}</td>
+                <td style="white-space:nowrap">${f(r,'initial_start_date') || '—'}</td>
+                <td style="white-space:nowrap">${f(r,'eta_provided_date') || '—'}</td>
+                <td style="white-space:nowrap">${f(r,'completed_date') || '—'}</td>
+                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${f(r,'remarks') || '—'}</td>
                 <td>${jiraLinks}</td>
               </tr>`;
             }).join('')
@@ -561,14 +581,13 @@ function renderDetailTable() {
     </table>`;
 }
 
-// ── Load & render ───────────────────────────────────────────────────────────
-async function load(showLoading = true) {
-  if (showLoading) {
-    $('#overview').classList.add('hidden');
-    $('#detail').classList.add('hidden');
-    $('#setup-card').classList.add('hidden');
-    $('#error-container').innerHTML = `<div class="page"><div class="spinner-wrap"><div class="spinner"></div> Fetching sheet…</div></div>`;
-  }
+// ── Load ────────────────────────────────────────────────────────────────────
+async function load() {
+  $('#overview').classList.add('hidden');
+  $('#detail').classList.add('hidden');
+  $('#setup-card').classList.add('hidden');
+  $('#error-container').innerHTML =
+    `<div class="page"><div class="spinner-wrap"><div class="spinner"></div> Fetching sheet…</div></div>`;
 
   try {
     rows     = await fetchRows();
@@ -576,9 +595,9 @@ async function load(showLoading = true) {
     $('#error-container').innerHTML = '';
     $('#setup-card').classList.add('hidden');
 
-    const done  = rows.filter(r => cell(r, COL.status) === 'switchover completed').length;
+    const done  = rows.filter(r => f(r,'status') === 'switchover completed').length;
     const total = rows.length;
-    const now   = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now   = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     $('#last-updated').textContent = `Updated ${now}`;
     $('#banner').innerHTML = `
       ${total} deliveries · ${accounts.length} accounts ·
@@ -587,19 +606,15 @@ async function load(showLoading = true) {
 
     $('#overview').classList.remove('hidden');
     $('#detail').classList.add('hidden');
-    if (selected) {
-      // re-apply account filter if back from detail
-      detailRows = rows.filter(r => cell(r, COL.account_name) === selected);
-    }
     renderOverview();
-    toast(`Loaded ${total} rows`);
+    toast(`Loaded ${total} rows across ${accounts.length} accounts`);
   } catch (err) {
     $('#error-container').innerHTML = `
       <div class="page">
         <div class="error-box">
           ⚠ Could not load sheet: ${err.message}<br/>
-          Make sure the sheet is shared as <strong>"Anyone with the link can view"</strong> then refresh.
-          <a href="#" id="err-config-link">Configure Sheet ID</a>
+          Share the sheet as <strong>"Anyone with the link can view"</strong> then refresh.
+          <a href="#" id="err-config-link" style="margin-left:.5rem">Configure Sheet ID</a>
         </div>
       </div>`;
     $('#overview').classList.add('hidden');
@@ -613,23 +628,21 @@ async function load(showLoading = true) {
 }
 
 // ── Wire up ─────────────────────────────────────────────────────────────────
-$('#btn-refresh').addEventListener('click', () => load(true));
+$('#btn-refresh').addEventListener('click', load);
 
 $('#btn-config').addEventListener('click', () => {
-  const card = $('#setup-card');
-  card.classList.toggle('hidden');
+  $('#setup-card').classList.toggle('hidden');
   $('#sheet-id-input').value = getSheetId();
 });
 
 $('#btn-sheet-save').addEventListener('click', () => {
   const raw = $('#sheet-id-input').value.trim();
-  // Accept full URL or bare ID
   const match = raw.match(/\/spreadsheets\/d\/([^/]+)/) || raw.match(/^([A-Za-z0-9_-]{20,})/);
   const id = match ? match[1] : raw;
   if (!id) return;
   localStorage.setItem(STORAGE_KEY, id);
   $('#setup-card').classList.add('hidden');
-  load(true);
+  load();
 });
 
 $('#btn-back').addEventListener('click', () => {
@@ -644,7 +657,7 @@ $('#filter-status').addEventListener('change', renderDetailTable);
 $('#filter-q').addEventListener('input', renderDetailTable);
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
-load(true);
+load();
 </script>
 </body>
 </html>
