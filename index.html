@@ -32,6 +32,9 @@
       --teal:       #0e7490;
       --teal-bg:    #cffafe;
       --teal-border:#67e8f9;
+      --grey:       #475569;
+      --grey-bg:    #f1f5f9;
+      --grey-border:#cbd5e1;
       --blue:       #1d4ed8;
       --blue-bg:    #dbeafe;
       --blue-border:#93c5fd;
@@ -173,6 +176,7 @@
     .kpi.pending  { border-top-color: var(--purple); }    .kpi.pending .k-value  { color: var(--purple); }
     .kpi.noneed   { border-top-color: var(--teal); }      .kpi.noneed .k-value   { color: var(--teal); }
     .kpi.inprog   { border-top-color: var(--blue); }      .kpi.inprog .k-value   { color: var(--blue); }
+    .kpi.notpicked{ border-top-color: var(--grey); }     .kpi.notpicked .k-value{ color: var(--grey); }
 
     /* ── GRID ── */
     .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: .85rem; margin-bottom: .85rem; }
@@ -235,7 +239,8 @@
     .pill.blocked { background: var(--red-bg);      color: var(--red);     border: 1px solid var(--red-border); }
     .pill.pending { background: var(--purple-bg);   color: var(--purple);  border: 1px solid var(--purple-border); }
     .pill.noneed  { background: var(--teal-bg);     color: var(--teal);    border: 1px solid var(--teal-border); }
-    .pill.inprog  { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
+    .pill.inprog   { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
+    .pill.notpicked{ background: var(--grey-bg);     color: var(--grey);    border: 1px solid var(--grey-border); }
 
     /* ── BLOCKED DETAIL PANEL ── */
     .blocked-detail {
@@ -290,8 +295,9 @@
     .chip.blocked { background: var(--red-bg);      color: var(--red);      border: 1px solid var(--red-border); }
     .chip.pending { background: var(--purple-bg);   color: var(--purple);   border: 1px solid var(--purple-border); }
     .chip.noneed  { background: var(--teal-bg);     color: var(--teal);     border: 1px solid var(--teal-border); }
-    .chip.inprog  { background: var(--blue-bg);     color: var(--blue);     border: 1px solid var(--blue-border); }
-    .chip.other   { background: #f1f5f9;            color: var(--muted); }
+    .chip.inprog   { background: var(--blue-bg);     color: var(--blue);     border: 1px solid var(--blue-border); }
+    .chip.notpicked{ background: var(--grey-bg);     color: var(--grey);     border: 1px solid var(--grey-border); }
+    .chip.other    { background: #f1f5f9;            color: var(--muted); }
 
     /* ── SPINNER ── */
     .spinner-wrap { display: flex; align-items: center; justify-content: center; padding: 5rem; gap: .85rem; color: var(--muted); flex-direction: column; }
@@ -399,6 +405,7 @@
         <option>blocked</option>
         <option>non-ssai pending</option>
         <option>no need of migration</option>
+        <option>not yet picked for migration</option>
       </select>
       <input id="filter-q" type="search" placeholder="Search channel / distribution / remarks…" />
       <span id="detail-count" style="font-size:.78rem;color:var(--muted);align-self:center;margin-left:.1rem"></span>
@@ -414,7 +421,7 @@
 const STORAGE_KEY = 'an3_sheet_id';
 const SHEET_NAME  = 'data';
 const DEFAULT_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
-const STATUSES    = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration'];
+const STATUSES    = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
 
@@ -466,10 +473,11 @@ function statusClass(s) {
   if (v === 'blocked')                return 'blocked';
   if (v.includes('pending'))          return 'pending';
   if (v === 'in-progress' || v === 'in progress') return 'inprog';
-  if (v === 'no need of migration')   return 'noneed';
+  if (v === 'no need of migration')           return 'noneed';
+  if (v === 'not yet picked for migration')   return 'notpicked';
   return 'other';
 }
-const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'◷', inprog:'⚡', noneed:'⊘', other:'○' };
+const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'◷', inprog:'⚡', noneed:'⊘', notpicked:'○', other:'○' };
 function chipHtml(s) {
   const cls = statusClass(s);
   return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${s || '—'}</span>`;
@@ -481,7 +489,8 @@ function donutPieChart(counts, total) {
     { label: 'In-progress',       count: counts.inprog,  color: '#1d4ed8' },
     { label: 'NM Pending',        count: counts.pending, color: '#7c3aed' },
     { label: 'Blocked',           count: counts.blocked, color: '#dc2626' },
-    { label: 'No migration',      count: counts.noneed,  color: '#0e7490' },
+    { label: 'No migration',      count: counts.noneed,    color: '#0e7490' },
+    { label: 'Not yet picked',    count: counts.notpicked, color: '#94a3b8' },
   ].filter(d => d.count > 0);
 
   const cx = 80, cy = 80, R = 66, ri = 38, gap = 0.018;
@@ -595,7 +604,7 @@ function aggregate(data) {
     const s   = f(row, 'status').toLowerCase();
     if (!map[name]) map[name] = {
       account_name: name, amg_id: amg,
-      total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0,
+      total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0, notpicked: 0,
       blockedRows: [],
     };
     const a = map[name];
@@ -610,6 +619,7 @@ function aggregate(data) {
     else if (s.includes('pending'))                                      a.pending++;
     else if (s.includes('in-progress') || s.includes('in progress'))    a.inprog++;
     else if (s === 'no need of migration')                               a.noneed++;
+    else if (s === 'not yet picked for migration')                       a.notpicked++;
   }
 
   return Object.values(map).map(a => {
@@ -627,7 +637,7 @@ function aggregate(data) {
       ...a,
       blockedTeams,
       actionable: a.total - a.completed - a.noneed,
-      fully_done: a.completed + a.noneed === a.total && a.total > 0,
+      fully_done: a.completed + a.noneed === a.total && a.total > 0 && a.notpicked === 0,
     };
   }).sort((a, b) => b.total - a.total);
 }
@@ -640,6 +650,7 @@ function renderOverview() {
   const blocked    = rows.filter(r => f(r,'status') === 'blocked').length;
   const pending    = rows.filter(r => f(r,'status').includes('pending')).length;
   const noneed     = rows.filter(r => f(r,'status') === 'no need of migration').length;
+  const notpicked  = rows.filter(r => f(r,'status') === 'not yet picked for migration').length;
   const inprog     = rows.filter(r => { const s = f(r,'status'); return s === 'in-progress' || s === 'in progress'; }).length;
   const donePct    = pct(done, total);
 
@@ -650,7 +661,8 @@ function renderOverview() {
     <div class="kpi inprog">  <div class="k-label">In Progress</div>    <div class="k-value">${inprog}</div>  <div class="k-sub">active migration</div></div>
     <div class="kpi blocked"> <div class="k-label">Blocked</div>        <div class="k-value">${blocked}</div> <div class="k-sub">needs attention</div></div>
     <div class="kpi pending"> <div class="k-label">NM Pending</div>     <div class="k-value">${pending}</div> <div class="k-sub">non-SSAI</div></div>
-    <div class="kpi noneed">  <div class="k-label">No Migration</div>   <div class="k-value">${noneed}</div>  <div class="k-sub">not applicable</div></div>
+    <div class="kpi noneed">    <div class="k-label">No Migration</div>    <div class="k-value">${noneed}</div>     <div class="k-sub">not applicable</div></div>
+    <div class="kpi notpicked"> <div class="k-label">Not Yet Picked</div>  <div class="k-value">${notpicked}</div>  <div class="k-sub">pending selection</div></div>
   `;
 
   const bars = [
@@ -659,7 +671,8 @@ function renderOverview() {
     ['In-progress',             inprog,  '#1d4ed8'],
     ['Non-SSAI pending',        pending, '#7c3aed'],
     ['Blocked',                 blocked, '#dc2626'],
-    ['No need of migration',    noneed,  '#0e7490'],
+    ['No need of migration',    noneed,     '#0e7490'],
+    ['Not yet picked',          notpicked,  '#94a3b8'],
   ];
   $('#status-chart').innerHTML = bars.map(([label, count, color]) => `
     <div class="bar-row">
@@ -669,7 +682,7 @@ function renderOverview() {
     </div>`).join('');
 
   $('#progress-block').innerHTML = donutPieChart(
-    { done, ready, inprog, pending, blocked, noneed },
+    { done, ready, inprog, pending, blocked, noneed, notpicked },
     total
   );
 
@@ -707,6 +720,7 @@ function renderAccountCards(filter) {
         <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
         <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
         <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
+        <span style="width:${w(a.notpicked)};background:#94a3b8" title="not yet picked"></span>
       </div>
       <div class="pills">
         ${a.completed ? `<span class="pill done">✓ ${a.completed} done</span>` : ''}
@@ -714,8 +728,9 @@ function renderAccountCards(filter) {
         ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
         ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
         ${a.blocked   ? `<span class="pill blocked">✗ ${a.blocked} blocked</span>` : ''}
-        ${a.noneed    ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
-        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
+        ${a.noneed     ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
+        ${a.notpicked  ? `<span class="pill notpicked">○ ${a.notpicked} not yet picked</span>` : ''}
+        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed && !a.notpicked
             ? `<span class="pill">○ ${a.total} not started</span>` : ''}
       </div>
       ${a.blocked > 0 ? `
