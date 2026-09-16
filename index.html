@@ -237,6 +237,24 @@
     .pill.noneed  { background: var(--teal-bg);     color: var(--teal);    border: 1px solid var(--teal-border); }
     .pill.inprog  { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
 
+    /* ── BLOCKED DETAIL PANEL ── */
+    .blocked-detail {
+      display: flex; align-items: flex-start; gap: .5rem;
+      margin-top: .65rem; padding: .55rem .7rem; border-radius: 8px;
+      background: #fff5f5; border: 1px solid #fca5a5;
+    }
+    .blocked-icon { font-size: .88rem; line-height: 1.4; flex-shrink: 0; }
+    .blocked-title { font-size: .75rem; font-weight: 700; color: var(--red); margin-bottom: .3rem; }
+    .blocked-teams { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .blocked-team {
+      font-size: .68rem; padding: .12rem .42rem; border-radius: 999px;
+      background: #fee2e2; color: var(--red); border: 1px solid #fca5a5;
+    }
+    .blocked-team.cx-team     { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .blocked-team.client      { background: #ede9fe; color: var(--purple); border-color: #c4b5fd; }
+    .blocked-team.dev-team    { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+    .blocked-team.infra       { background: #f0fdf4; color: var(--green); border-color: var(--green-border); }
+
     /* ── DETAIL VIEW ── */
     .detail-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin: .85rem 0 1.1rem; flex-wrap: wrap; }
     .detail-head h2 { font-size: 1.3rem; font-weight: 800; }
@@ -456,17 +474,56 @@ function chipHtml(s) {
   const cls = statusClass(s);
   return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${s || '—'}</span>`;
 }
-function ringSvg(percent, done, total) {
-  const r = 44, c = 2 * Math.PI * r, offset = c - (percent / 100) * c;
-  const color = percent >= 80 ? '#16a34a' : percent >= 50 ? '#2563eb' : '#b45309';
-  return `<svg width="116" height="116" viewBox="0 0 116 116">
-    <circle cx="58" cy="58" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="11"/>
-    <circle cx="58" cy="58" r="${r}" fill="none" stroke="${color}" stroke-width="11"
-      stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"
-      transform="rotate(-90 58 58)" style="transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)"/>
-    <text x="58" y="53" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${percent}%</text>
-    <text x="58" y="70" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Inter,sans-serif">${done}/${total}</text>
-  </svg>`;
+function donutPieChart(counts, total) {
+  const slices = [
+    { label: 'Completed',         count: counts.done,    color: '#16a34a' },
+    { label: 'Ready to switch',   count: counts.ready,   color: '#b45309' },
+    { label: 'In-progress',       count: counts.inprog,  color: '#1d4ed8' },
+    { label: 'NM Pending',        count: counts.pending, color: '#7c3aed' },
+    { label: 'Blocked',           count: counts.blocked, color: '#dc2626' },
+    { label: 'No migration',      count: counts.noneed,  color: '#0e7490' },
+  ].filter(d => d.count > 0);
+
+  const cx = 80, cy = 80, R = 66, ri = 38, gap = 0.018;
+  let angle = -Math.PI / 2;
+
+  const paths = slices.map(d => {
+    const sa = angle;
+    const sw = (d.count / total) * 2 * Math.PI;
+    angle += sw;
+    const ea = angle;
+    const x1  = cx + R  * Math.cos(sa + gap), y1  = cy + R  * Math.sin(sa + gap);
+    const x2  = cx + R  * Math.cos(ea - gap), y2  = cy + R  * Math.sin(ea - gap);
+    const xi1 = cx + ri * Math.cos(ea - gap), yi1 = cy + ri * Math.sin(ea - gap);
+    const xi2 = cx + ri * Math.cos(sa + gap), yi2 = cy + ri * Math.sin(sa + gap);
+    const lg  = sw > Math.PI ? 1 : 0;
+    return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
+  });
+
+  const donePct = pct(counts.done, total);
+
+  const legendRows = slices.map(d => `
+    <div style="display:flex;align-items:center;gap:.45rem;padding:.22rem 0">
+      <span style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></span>
+      <span style="font-size:.77rem;flex:1;color:var(--text);font-weight:500">${d.label}</span>
+      <span style="font-size:.78rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-width:24px;text-align:right">${d.count}</span>
+      <span style="font-size:.7rem;color:var(--muted2);min-width:34px;text-align:right">${pct(d.count, total)}%</span>
+    </div>`).join('');
+
+  return `
+    <div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap">
+      <div style="flex-shrink:0">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          ${paths.join('')}
+          <text x="80" y="73" text-anchor="middle" font-size="21" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${donePct}%</text>
+          <text x="80" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,sans-serif">complete</text>
+          <text x="80" y="101" text-anchor="middle" font-size="8.5" fill="#94a3b8" font-family="Inter,sans-serif">${counts.done} of ${total}</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:160px;border-left:1px solid var(--border);padding-left:1.1rem">
+        ${legendRows}
+      </div>
+    </div>`;
 }
 
 // ── Sheet fetch ─────────────────────────────────────────────────────────────
@@ -517,6 +574,18 @@ async function fetchRows() {
 }
 
 // ── Aggregate per account ───────────────────────────────────────────────────
+function parseBlockedWhere(remarks) {
+  const r = remarks.toLowerCase();
+  if (r.includes('cx team') || r.includes('cx-team')) return 'CX team';
+  if (/\bcx\b/.test(r)) return 'CX team';
+  if (r.includes('client')) return 'Client';
+  if (r.includes('dev team') || r.includes('engineering')) return 'Dev team';
+  if (r.includes('infra')) return 'Infra';
+  if (r.includes('legal') || r.includes('compliance')) return 'Legal';
+  if (r.includes('ops')) return 'Ops';
+  return null;
+}
+
 function aggregate(data) {
   const map = {};
   for (const row of data) {
@@ -524,24 +593,43 @@ function aggregate(data) {
     if (!name) continue;
     const amg = f(row, 'amg_id');
     const s   = f(row, 'status').toLowerCase();
-    if (!map[name]) map[name] = { account_name: name, amg_id: amg, total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0 };
+    if (!map[name]) map[name] = {
+      account_name: name, amg_id: amg,
+      total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0,
+      blockedRows: [],
+    };
     const a = map[name];
     if (!a.amg_id && amg) a.amg_id = amg;
     a.total++;
-    if (s === 'switchover completed')           a.completed++;
-    else if (s === 'ready for switchover')      a.ready++;
-    else if (s === 'blocked')                   a.blocked++;
-    else if (s.includes('pending'))             a.pending++;
-    else if (s.includes('in-progress') || s.includes('in progress')) a.inprog++;
-    else if (s === 'no need of migration')      a.noneed++;
+    if (s === 'switchover completed')                                    a.completed++;
+    else if (s === 'ready for switchover')                               a.ready++;
+    else if (s === 'blocked') {
+      a.blocked++;
+      a.blockedRows.push({ channel: f(row,'channel_id'), remark: f(row,'remarks') });
+    }
+    else if (s.includes('pending'))                                      a.pending++;
+    else if (s.includes('in-progress') || s.includes('in progress'))    a.inprog++;
+    else if (s === 'no need of migration')                               a.noneed++;
   }
-  return Object.values(map)
-    .map(a => ({
+
+  return Object.values(map).map(a => {
+    // Summarise blocked-by teams
+    const teamCounts = {};
+    for (const br of a.blockedRows) {
+      const where = parseBlockedWhere(br.remark) || 'Unknown';
+      teamCounts[where] = (teamCounts[where] || 0) + 1;
+    }
+    const blockedTeams = Object.entries(teamCounts)
+      .sort((x,y) => y[1] - x[1])
+      .map(([t, n]) => ({ team: t, count: n }));
+
+    return {
       ...a,
+      blockedTeams,
       actionable: a.total - a.completed - a.noneed,
       fully_done: a.completed + a.noneed === a.total && a.total > 0,
-    }))
-    .sort((a, b) => b.total - a.total);
+    };
+  }).sort((a, b) => b.total - a.total);
 }
 
 // ── Render overview ─────────────────────────────────────────────────────────
@@ -580,18 +668,10 @@ function renderOverview() {
       <div class="bar-count" style="color:${color}">${count}</div>
     </div>`).join('');
 
-  $('#progress-block').innerHTML = `
-    <div class="progress-ring-wrap">
-      ${ringSvg(donePct, done, total)}
-      <div class="progress-copy">
-        <h3>${donePct}% switchover complete</h3>
-        <p style="margin-top:.1rem">${done} of ${total} deliveries completed</p>
-        <p>${accounts.length} accounts · ${accounts.filter(a=>a.fully_done).length} fully done</p>
-        ${ready   > 0 ? `<p style="margin-top:.6rem;color:var(--yellow);font-weight:600">→ ${ready} ready to switch</p>` : ''}
-        ${blocked > 0 ? `<p style="color:var(--red);font-weight:600">✗ ${blocked} blocked</p>` : ''}
-        ${inprog  > 0 ? `<p style="color:var(--blue);font-weight:600">⚡ ${inprog} in progress</p>` : ''}
-      </div>
-    </div>`;
+  $('#progress-block').innerHTML = donutPieChart(
+    { done, ready, inprog, pending, blocked, noneed },
+    total
+  );
 
   renderAccountCards($('#account-search').value || '');
 }
@@ -616,7 +696,7 @@ function renderAccountCards(filter) {
         <div class="acct-avatar">${av}</div>
         <div style="flex:1;min-width:0">
           <div class="acct-name">${a.account_name}</div>
-          <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries</div>
+          <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
         </div>
         ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
       </div>
@@ -638,6 +718,18 @@ function renderAccountCards(filter) {
         ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
             ? `<span class="pill">○ ${a.total} not started</span>` : ''}
       </div>
+      ${a.blocked > 0 ? `
+      <div class="blocked-detail">
+        <span class="blocked-icon">⚠</span>
+        <div>
+          <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''}</div>
+          ${a.blockedTeams.length ? `<div class="blocked-teams">${
+            a.blockedTeams.map(t =>
+              `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${t.team} <strong>${t.count}</strong></span>`
+            ).join('')
+          }</div>` : ''}
+        </div>
+      </div>` : ''}
     </div>`;
   }).join('');
 
