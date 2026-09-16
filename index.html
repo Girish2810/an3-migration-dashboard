@@ -202,6 +202,12 @@
 
     /* ── ACCOUNT CARDS ── */
     .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
+    .section-label {
+      grid-column: 1 / -1; font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--muted); padding: .25rem 0 .1rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
     .account {
       border: 1px solid var(--border); border-radius: 12px; padding: 1rem;
       cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s, transform .15s;
@@ -215,6 +221,12 @@
     .account:hover::before { background: var(--primary); }
     .account.migrated { background: #f0fdf4; border-color: var(--green-border); }
     .account.migrated::before { background: var(--green); }
+    .account.not-picked {
+      background: #f8fafc; border-color: var(--grey-border); border-style: dashed;
+      cursor: default; opacity: .85;
+    }
+    .account.not-picked::before { background: var(--grey); }
+    .account.not-picked:hover { border-color: var(--grey); box-shadow: none; transform: none; }
     .acct-head { display: flex; align-items: flex-start; gap: .7rem; margin-bottom: .6rem; }
     .acct-avatar {
       width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
@@ -655,7 +667,7 @@ function renderOverview() {
   const donePct    = pct(done, total);
 
   $('#kpis').innerHTML = `
-    <div class="kpi total">   <div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi total">   <div class="k-label">Total Deliveries</div><div class="k-value">${total - notpicked}</div><div class="k-sub">${accounts.length} accounts</div></div>
     <div class="kpi done">    <div class="k-label">Completed</div>      <div class="k-value">${done}</div>    <div class="k-sub">${donePct}% of total</div></div>
     <div class="kpi ready">   <div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div>   <div class="k-sub">awaiting switchover</div></div>
     <div class="kpi inprog">  <div class="k-label">In Progress</div>    <div class="k-value">${inprog}</div>  <div class="k-sub">active migration</div></div>
@@ -689,66 +701,89 @@ function renderOverview() {
   renderAccountCards($('#account-search').value || '');
 }
 
+function activeCardHtml(a) {
+  const t = a.total || 1;
+  const w = n => `${pct(n || 0, t)}%`;
+  return `
+  <div class="account ${a.fully_done ? 'migrated' : ''}" data-name="${encodeURIComponent(a.account_name)}">
+    <div class="acct-head">
+      <div class="acct-avatar">${initials(a.account_name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="acct-name">${a.account_name}</div>
+        <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
+      </div>
+      ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
+    </div>
+    <div class="mini-bars">
+      <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
+      <span style="width:${w(a.ready)};background:#b45309" title="ready"></span>
+      <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
+      <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
+      <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
+      <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
+    </div>
+    <div class="pills">
+      ${a.completed ? `<span class="pill done">✓ ${a.completed} done</span>` : ''}
+      ${a.ready     ? `<span class="pill ready">→ ${a.ready} ready</span>` : ''}
+      ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
+      ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
+      ${a.blocked   ? `<span class="pill blocked">✗ ${a.blocked} blocked</span>` : ''}
+      ${a.noneed    ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
+      ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
+          ? `<span class="pill">○ ${a.total} not started</span>` : ''}
+    </div>
+    ${a.blocked > 0 ? `
+    <div class="blocked-detail">
+      <span class="blocked-icon">⚠</span>
+      <div>
+        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''}</div>
+        ${a.blockedTeams.length ? `<div class="blocked-teams">${
+          a.blockedTeams.map(t =>
+            `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${t.team} <strong>${t.count}</strong></span>`
+          ).join('')
+        }</div>` : ''}
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+function notPickedCardHtml(a) {
+  return `
+  <div class="account not-picked">
+    <div class="acct-head">
+      <div class="acct-avatar" style="background:var(--grey-bg);color:var(--grey)">${initials(a.account_name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="acct-name" style="color:var(--muted)">${a.account_name}</div>
+        <div class="acct-meta">${a.amg_id || 'No AMG ID'}</div>
+      </div>
+      <span style="font-size:.65rem;font-weight:700;background:var(--grey-bg);color:var(--grey);padding:.12rem .45rem;border-radius:999px;border:1px solid var(--grey-border);flex-shrink:0;white-space:nowrap">○ Not picked</span>
+    </div>
+    <div style="font-size:.74rem;color:var(--muted2);margin-top:.35rem">Pending migration planning</div>
+  </div>`;
+}
+
 function renderAccountCards(filter) {
   const q = filter.trim().toLowerCase();
   const list = accounts.filter(a =>
-    !q || a.account_name.toLowerCase().includes(q) || a.amg_id.toLowerCase().includes(q)
+    !q || a.account_name.toLowerCase().includes(q) || (a.amg_id || '').toLowerCase().includes(q)
   );
   const grid = $('#accounts-grid');
   if (!list.length) {
     grid.innerHTML = `<p class="muted">${accounts.length ? 'No matches.' : 'No data — click Refresh.'}</p>`;
     return;
   }
-  grid.innerHTML = list.map(a => {
-    const t  = a.total || 1;
-    const w  = n => `${pct(n || 0, t)}%`;
-    const av = initials(a.account_name);
-    return `
-    <div class="account ${a.fully_done ? 'migrated' : ''}" data-name="${encodeURIComponent(a.account_name)}">
-      <div class="acct-head">
-        <div class="acct-avatar">${av}</div>
-        <div style="flex:1;min-width:0">
-          <div class="acct-name">${a.account_name}</div>
-          <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
-        </div>
-        ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
-      </div>
-      <div class="mini-bars">
-        <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
-        <span style="width:${w(a.ready)};background:#b45309" title="ready"></span>
-        <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
-        <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
-        <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
-        <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
-        <span style="width:${w(a.notpicked)};background:#94a3b8" title="not yet picked"></span>
-      </div>
-      <div class="pills">
-        ${a.completed ? `<span class="pill done">✓ ${a.completed} done</span>` : ''}
-        ${a.ready     ? `<span class="pill ready">→ ${a.ready} ready</span>` : ''}
-        ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
-        ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
-        ${a.blocked   ? `<span class="pill blocked">✗ ${a.blocked} blocked</span>` : ''}
-        ${a.noneed     ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
-        ${a.notpicked  ? `<span class="pill notpicked">○ ${a.notpicked} not yet picked</span>` : ''}
-        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed && !a.notpicked
-            ? `<span class="pill">○ ${a.total} not started</span>` : ''}
-      </div>
-      ${a.blocked > 0 ? `
-      <div class="blocked-detail">
-        <span class="blocked-icon">⚠</span>
-        <div>
-          <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''}</div>
-          ${a.blockedTeams.length ? `<div class="blocked-teams">${
-            a.blockedTeams.map(t =>
-              `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${t.team} <strong>${t.count}</strong></span>`
-            ).join('')
-          }</div>` : ''}
-        </div>
-      </div>` : ''}
-    </div>`;
-  }).join('');
 
-  grid.querySelectorAll('.account').forEach(el => {
+  const active    = list.filter(a => !(a.total > 0 && a.notpicked === a.total));
+  const notPicked = list.filter(a =>   a.total > 0 && a.notpicked === a.total);
+
+  let html = active.map(activeCardHtml).join('');
+  if (notPicked.length) {
+    html += `<div class="section-label">${notPicked.length} accounts not yet picked for migration</div>`;
+    html += notPicked.map(notPickedCardHtml).join('');
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.account[data-name]').forEach(el => {
     el.addEventListener('click', () => openAccount(decodeURIComponent(el.dataset.name)));
   });
 }
