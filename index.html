@@ -6,226 +6,304 @@
   <title>AN3 Migration Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ── tokens ── */
     :root {
-      --bg:      #f4f6f8;
-      --card:    #ffffff;
-      --text:    #1a2332;
-      --muted:   #5b6b7c;
-      --line:    #e3e8ef;
-      --primary: #1f6feb;
-      --green:   #1a7f37;
-      --green-bg:#e8f5ec;
-      --yellow:  #9a6700;
-      --yellow-bg:#fff8c5;
-      --red:     #cf222e;
-      --red-bg:  #ffebe9;
-      --purple:  #5a32a3;
-      --purple-bg:#ede9ff;
-      --radius:  12px;
-      --font:    "IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+      --bg:         #f0f2f5;
+      --surface:    #ffffff;
+      --border:     #e2e8f0;
+      --text:       #0f172a;
+      --muted:      #64748b;
+      --muted2:     #94a3b8;
+      --primary:    #2563eb;
+      --primary-bg: #eff6ff;
+      --green:      #16a34a;
+      --green-bg:   #dcfce7;
+      --green-border:#86efac;
+      --yellow:     #b45309;
+      --yellow-bg:  #fef9c3;
+      --yellow-border:#fde047;
+      --red:        #dc2626;
+      --red-bg:     #fee2e2;
+      --red-border: #fca5a5;
+      --purple:     #7c3aed;
+      --purple-bg:  #ede9fe;
+      --purple-border:#c4b5fd;
+      --teal:       #0e7490;
+      --teal-bg:    #cffafe;
+      --teal-border:#67e8f9;
+      --blue:       #1d4ed8;
+      --blue-bg:    #dbeafe;
+      --blue-border:#93c5fd;
+      --radius:     14px;
+      --radius-sm:  8px;
+      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
+      --font:       "Inter","Segoe UI",system-ui,sans-serif;
     }
 
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; }
-    a { color:var(--primary); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    /* ── header ── */
+    /* ── HEADER ── */
     .top {
-      display:flex; justify-content:space-between; align-items:center;
-      padding:.9rem 1.5rem; background:var(--card); border-bottom:1px solid var(--line);
-      flex-wrap:wrap; gap:.75rem; position:sticky; top:0; z-index:20;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%);
+      padding: 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: .75rem;
+      position: sticky; top: 0; z-index: 20;
+      min-height: 64px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
     }
-    .brand { display:flex; gap:.85rem; align-items:center; }
+    .brand { display: flex; gap: .9rem; align-items: center; padding: .75rem 0; }
     .logo {
-      width:40px; height:40px; border-radius:10px;
-      background:var(--primary); color:#fff;
-      display:grid; place-items:center; font-weight:700; font-size:.82rem; letter-spacing:.03em;
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff; display: grid; place-items: center;
+      font-weight: 800; font-size: .78rem; letter-spacing: .06em;
+      box-shadow: 0 2px 8px rgba(29,78,216,.5);
     }
-    h1 { margin:0; font-size:1.1rem; font-weight:650; }
-    .sub { margin:.12rem 0 0; color:var(--muted); font-size:.8rem; }
-    .hdr-right { display:flex; gap:.45rem; align-items:center; flex-wrap:wrap; }
+    .brand-text h1 { font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .brand-text p  { font-size: .75rem; color: rgba(255,255,255,.55); margin-top: .1rem; }
+    .hdr-right { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .5rem 0; }
 
-    /* ── buttons ── */
+    /* ── HEADER BUTTONS ── */
     .btn {
-      display:inline-flex; align-items:center; justify-content:center;
-      border:1px solid var(--line); background:var(--card); color:var(--text);
-      border-radius:8px; padding:.45rem .8rem; font-size:.83rem; cursor:pointer;
-      font-family:inherit; text-decoration:none; white-space:nowrap;
+      display: inline-flex; align-items: center; gap: .35rem; justify-content: center;
+      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1); color: #fff;
+      border-radius: var(--radius-sm); padding: .42rem .85rem; font-size: .8rem; cursor: pointer;
+      font-family: inherit; text-decoration: none; white-space: nowrap; font-weight: 500;
+      transition: background .15s, border-color .15s;
     }
-    .btn:hover { background:#f0f3f7; }
-    .btn.primary { background:var(--primary); border-color:var(--primary); color:#fff; }
-    .btn.primary:hover { filter:brightness(1.07); }
-    .btn.success { background:var(--green); border-color:var(--green); color:#fff; }
-    .btn:disabled { opacity:.55; cursor:wait; }
+    .btn:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.35); text-decoration: none; }
+    .btn.primary { background: #2563eb; border-color: #3b82f6; }
+    .btn.primary:hover { background: #1d4ed8; }
+    .btn.light { background: var(--surface); border-color: var(--border); color: var(--text); }
+    .btn.light:hover { background: #f1f5f9; }
+    .btn:disabled { opacity: .5; cursor: wait; }
 
-    /* ── banner ── */
+    /* ── BANNER ── */
     #banner {
-      padding:.5rem 1.5rem; font-size:.8rem; color:var(--muted);
-      border-bottom:1px solid var(--line); background:#fafbfc;
+      padding: .5rem 1.5rem; font-size: .78rem; color: var(--muted);
+      border-bottom: 1px solid var(--border); background: var(--surface);
+      display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
     }
+    #banner a { color: var(--primary); font-weight: 500; }
+    .banner-dot { color: var(--muted2); }
 
-    /* ── toast ── */
+    /* ── TOAST ── */
     #toast {
-      position:fixed; right:1rem; bottom:1rem; background:#1a2332; color:#fff;
-      padding:.65rem .9rem; border-radius:8px; display:none; z-index:50;
-      max-width:400px; font-size:.82rem;
+      position: fixed; right: 1rem; bottom: 1.25rem;
+      background: #0f172a; color: #fff;
+      padding: .65rem 1rem; border-radius: 10px; display: none; z-index: 50;
+      max-width: 380px; font-size: .82rem; box-shadow: var(--shadow-md);
+      border-left: 3px solid #3b82f6;
     }
 
-    /* ── setup card ── */
+    /* ── SETUP CARD ── */
     #setup-card {
-      margin:1.5rem auto; max-width:640px;
-      background:var(--card); border:1px solid #f0b429; border-radius:var(--radius);
-      padding:1.25rem 1.5rem;
+      margin: 1.5rem auto; max-width: 640px;
+      background: var(--surface); border: 1px solid #f59e0b; border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; box-shadow: var(--shadow);
     }
-    #setup-card h3 { margin:0 0 .6rem; font-size:1rem; }
-    #setup-card p { margin:.35rem 0; color:var(--muted); font-size:.85rem; }
-    #setup-card code { background:#f4f6f8; padding:.1rem .3rem; border-radius:4px; font-size:.8rem; }
-    .setup-row { display:flex; gap:.5rem; margin-top:.85rem; flex-wrap:wrap; }
+    #setup-card h3 { font-size: 1rem; margin-bottom: .5rem; }
+    #setup-card p  { color: var(--muted); font-size: .85rem; margin: .35rem 0; }
+    #setup-card code { background: var(--bg); padding: .1rem .3rem; border-radius: 4px; font-size: .8rem; }
+    .setup-row { display: flex; gap: .5rem; margin-top: .85rem; flex-wrap: wrap; }
     #sheet-id-input {
-      flex:1; min-width:220px; padding:.45rem .65rem; border:1px solid var(--line);
-      border-radius:8px; font:inherit; color:var(--text); background:#fff;
+      flex: 1; min-width: 220px; padding: .45rem .65rem;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font: inherit; color: var(--text); background: #fff; font-size: .85rem;
     }
+    #sheet-id-input:focus { outline: none; border-color: var(--primary); }
 
-    /* ── modal overlay ── */
+    /* ── MODAL ── */
     .modal-overlay {
-      position:fixed; inset:0; background:rgba(20,30,40,.4);
-      display:grid; place-items:center; z-index:60; padding:1rem;
+      position: fixed; inset: 0; background: rgba(15,23,42,.5);
+      display: grid; place-items: center; z-index: 60; padding: 1rem; backdrop-filter: blur(3px);
     }
     .modal-box {
-      background:#fff; border-radius:12px; padding:1.25rem 1.5rem;
-      width:min(480px,100%); border:1px solid var(--line);
+      background: #fff; border-radius: var(--radius); padding: 1.5rem;
+      width: min(460px,100%); border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
     }
-    .modal-box h3 { margin:0 0 .75rem; font-size:1.05rem; }
-    .modal-field { margin-bottom:.75rem; }
-    .modal-label { display:block; font-size:.75rem; color:var(--muted); margin-bottom:.28rem; }
-    .modal-input {
-      width:100%; padding:.45rem .6rem; border:1px solid var(--line);
-      border-radius:8px; font:inherit; font-size:.85rem;
+    .modal-box h3 { font-size: 1.05rem; margin-bottom: .25rem; }
+    .modal-desc   { font-size: .82rem; color: var(--muted); margin-bottom: 1rem; }
+    .modal-field  { margin-bottom: .85rem; }
+    .modal-label  { display: block; font-size: .73rem; color: var(--muted); margin-bottom: .3rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .modal-input  {
+      width: 100%; padding: .5rem .7rem; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font: inherit; font-size: .85rem;
     }
-    .modal-input:focus { outline:none; border-color:var(--primary); }
-    .modal-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:.85rem; }
-    .modal-error { color:var(--red); font-size:.78rem; margin-top:.35rem; }
+    .modal-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal-error { color: var(--red); font-size: .78rem; margin-top: .4rem; }
+    .modal-btn { display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-sm);padding:.48rem .95rem;font-size:.83rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s; }
+    .modal-btn:hover { background:#f1f5f9; }
+    .modal-btn.primary { background:var(--primary);border-color:var(--primary);color:#fff; }
+    .modal-btn.primary:hover { background:var(--blue); }
+    .modal-btn:disabled { opacity:.5;cursor:wait; }
 
-    /* ── pages ── */
-    .page { padding:1.2rem 1.5rem 3rem; max-width:1280px; margin:0 auto; }
-    .hidden { display:none !important; }
+    /* ── PAGES ── */
+    .page { padding: 1.4rem 1.5rem 4rem; max-width: 1340px; margin: 0 auto; }
+    .hidden { display: none !important; }
 
     /* ── KPIs ── */
     .kpis {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      gap:.7rem; margin-bottom:1rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: .75rem; margin-bottom: 1.25rem;
     }
-    .kpi { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:.9rem 1rem; }
-    .kpi .label { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; }
-    .kpi .value { font-size:1.65rem; font-weight:700; margin-top:.2rem; font-variant-numeric:tabular-nums; }
-    .kpi.done .value   { color:var(--green); }
-    .kpi.ready .value  { color:var(--yellow); }
-    .kpi.blocked .value{ color:var(--red); }
-    .kpi.pending .value{ color:var(--purple); }
+    .kpi {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.15rem;
+      box-shadow: var(--shadow);
+      border-top: 3px solid var(--border);
+      display: flex; flex-direction: column; gap: .35rem;
+    }
+    .kpi .k-label { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+    .kpi .k-value { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+    .kpi .k-sub   { font-size: .72rem; color: var(--muted2); }
+    .kpi.total    { border-top-color: var(--primary); }  .kpi.total .k-value    { color: var(--primary); }
+    .kpi.kaccounts{ border-top-color: #6366f1; }          .kpi.kaccounts .k-value{ color: #6366f1; }
+    .kpi.done     { border-top-color: var(--green); }     .kpi.done .k-value     { color: var(--green); }
+    .kpi.ready    { border-top-color: var(--yellow); }    .kpi.ready .k-value    { color: var(--yellow); }
+    .kpi.blocked  { border-top-color: var(--red); }       .kpi.blocked .k-value  { color: var(--red); }
+    .kpi.pending  { border-top-color: var(--purple); }    .kpi.pending .k-value  { color: var(--purple); }
+    .kpi.noneed   { border-top-color: var(--teal); }      .kpi.noneed .k-value   { color: var(--teal); }
+    .kpi.inprog   { border-top-color: var(--blue); }      .kpi.inprog .k-value   { color: var(--blue); }
 
-    /* ── grid ── */
-    .grid-2 { display:grid; grid-template-columns:1.2fr 1fr; gap:.85rem; margin-bottom:.85rem; }
-    @media(max-width:900px){ .grid-2 { grid-template-columns:1fr; } }
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: .85rem; margin-bottom: .85rem; }
+    @media(max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
 
-    /* ── card ── */
-    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:1rem 1.1rem; }
-    .card h2 { margin:0 0 .8rem; font-size:.92rem; }
-    .card-head { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-bottom:.85rem; flex-wrap:wrap; }
-    .card-head h2 { margin:0; }
+    /* ── CARDS ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
+    .card h2 { font-size: .92rem; font-weight: 700; margin-bottom: .9rem; color: var(--text); }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .card-head h2 { margin: 0; }
 
-    /* ── bar chart ── */
-    .bar-row { display:grid; grid-template-columns:160px 1fr 42px; gap:.5rem; align-items:center; margin:.4rem 0; }
-    .bar-track { height:10px; background:#eef2f6; border-radius:999px; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:999px; transition:width .4s; }
-    .bar-label { font-size:.78rem; color:var(--muted); }
-    .bar-count { font-size:.78rem; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; }
+    /* ── BAR CHART ── */
+    .bar-row { display: grid; grid-template-columns: 170px 1fr 44px; gap: .6rem; align-items: center; margin: .5rem 0; }
+    .bar-track { height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 999px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+    .bar-label { font-size: .78rem; color: var(--muted); font-weight: 500; }
+    .bar-count { font-size: .78rem; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 
-    /* ── progress ring ── */
-    .progress-ring-wrap { display:flex; gap:1.2rem; align-items:center; flex-wrap:wrap; }
-    .progress-copy h3 { margin:0 0 .3rem; font-size:.98rem; }
-    .progress-copy p { margin:0; color:var(--muted); font-size:.82rem; }
+    /* ── PROGRESS RING ── */
+    .progress-ring-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+    .progress-copy h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .35rem; }
+    .progress-copy p  { font-size: .82rem; color: var(--muted); margin: .25rem 0; }
 
-    /* ── accounts grid ── */
-    .accounts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:.7rem; }
+    /* ── ACCOUNT CARDS ── */
+    .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
     .account {
-      border:1px solid var(--line); border-radius:10px; padding:.85rem;
-      cursor:pointer; background:#fff; transition:border-color .15s, transform .15s;
+      border: 1px solid var(--border); border-radius: 12px; padding: 1rem;
+      cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s, transform .15s;
+      position: relative; overflow: hidden;
     }
-    .account:hover { border-color:var(--primary); transform:translateY(-1px); }
-    .account.migrated { background:var(--green-bg); border-color:#a7e3b8; }
-    .account h3 { margin:0 0 .2rem; font-size:.95rem; }
-    .account .meta { color:var(--muted); font-size:.77rem; margin-bottom:.5rem; }
-    .mini-bars { display:flex; height:8px; border-radius:999px; overflow:hidden; background:#eef2f6; }
-    .mini-bars span { display:block; height:100%; }
-    .pills { display:flex; flex-wrap:wrap; gap:.28rem; margin-top:.5rem; }
-    .pill { font-size:.68rem; padding:.1rem .38rem; border-radius:999px; background:#eef2f6; color:var(--muted); }
-    .pill.done    { background:var(--green-bg);  color:var(--green);  }
-    .pill.ready   { background:var(--yellow-bg); color:var(--yellow); }
-    .pill.blocked { background:var(--red-bg);    color:var(--red);    }
-    .pill.pending { background:var(--purple-bg); color:var(--purple); }
+    .account::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--border);
+    }
+    .account:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(37,99,235,.12); transform: translateY(-2px); }
+    .account:hover::before { background: var(--primary); }
+    .account.migrated { background: #f0fdf4; border-color: var(--green-border); }
+    .account.migrated::before { background: var(--green); }
+    .acct-head { display: flex; align-items: flex-start; gap: .7rem; margin-bottom: .6rem; }
+    .acct-avatar {
+      width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: .75rem; font-weight: 700;
+      background: var(--primary-bg); color: var(--primary);
+    }
+    .account.migrated .acct-avatar { background: var(--green-bg); color: var(--green); }
+    .acct-name { font-size: .9rem; font-weight: 700; line-height: 1.25; margin-bottom: .12rem; }
+    .acct-meta { color: var(--muted); font-size: .74rem; }
     .badge-done {
-      float:right; font-size:.66rem; font-weight:650;
-      background:var(--green); color:#fff; padding:.12rem .38rem; border-radius:999px;
+      display: inline-flex; align-items: center; gap: .25rem;
+      font-size: .65rem; font-weight: 700;
+      background: var(--green); color: #fff; padding: .12rem .48rem; border-radius: 999px;
+      margin-left: auto; flex-shrink: 0;
     }
+    .mini-bars { display: flex; height: 7px; border-radius: 999px; overflow: hidden; background: #f1f5f9; margin-bottom: .6rem; gap: 1px; }
+    .mini-bars span { display: block; height: 100%; min-width: 0; }
+    .pills { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .pill { font-size: .67rem; padding: .12rem .42rem; border-radius: 999px; background: #f1f5f9; color: var(--muted); font-weight: 500; }
+    .pill.done    { background: var(--green-bg);    color: var(--green);   border: 1px solid var(--green-border); }
+    .pill.ready   { background: var(--yellow-bg);   color: var(--yellow);  border: 1px solid var(--yellow-border); }
+    .pill.blocked { background: var(--red-bg);      color: var(--red);     border: 1px solid var(--red-border); }
+    .pill.pending { background: var(--purple-bg);   color: var(--purple);  border: 1px solid var(--purple-border); }
+    .pill.noneed  { background: var(--teal-bg);     color: var(--teal);    border: 1px solid var(--teal-border); }
+    .pill.inprog  { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
 
-    /* ── detail ── */
-    .detail-head { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; margin:.75rem 0 1rem; flex-wrap:wrap; }
-    .detail-head h2 { margin:0; }
-    .muted { color:var(--muted); font-size:.82rem; margin:.2rem 0 0; }
-    .filters { display:flex; gap:.5rem; margin-bottom:.75rem; flex-wrap:wrap; }
+    /* ── DETAIL VIEW ── */
+    .detail-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin: .85rem 0 1.1rem; flex-wrap: wrap; }
+    .detail-head h2 { font-size: 1.3rem; font-weight: 800; }
+    .muted { color: var(--muted); font-size: .82rem; margin-top: .2rem; }
+    .filters { display: flex; gap: .5rem; margin-bottom: .85rem; flex-wrap: wrap; align-items: center; }
     .filters input, .filters select, #account-search {
-      border:1px solid var(--line); border-radius:8px; padding:.42rem .6rem;
-      font:inherit; background:#fff; color:var(--text); font-size:.82rem;
+      border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .44rem .65rem;
+      font: inherit; background: #fff; color: var(--text); font-size: .82rem;
     }
-    #account-search { min-width:200px; }
+    .filters input:focus, .filters select:focus, #account-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    #account-search { min-width: 200px; }
 
-    /* ── table ── */
-    .table-wrap { overflow:auto; }
-    table { width:100%; border-collapse:collapse; font-size:.8rem; }
-    th,td { text-align:left; padding:.5rem .4rem; border-bottom:1px solid var(--line); vertical-align:top; }
-    th { color:var(--muted); font-weight:600; font-size:.73rem; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
-    tr.row-done { background:var(--green-bg); }
-    tr:last-child td { border-bottom:none; }
+    /* ── TABLE ── */
+    .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    th, td { text-align: left; padding: .55rem .65rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 700; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; background: #f8fafc; }
+    th:first-child { border-radius: 8px 0 0 0; }
+    th:last-child  { border-radius: 0 8px 0 0; }
+    tr.row-done { background: #f0fdf4; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover:not(thead tr) { background: #f8fafc; }
+    tr.row-done:hover { background: #dcfce7; }
+    td strong { font-weight: 600; }
 
-    /* ── status chip ── */
+    /* ── STATUS CHIP ── */
     .chip {
-      display:inline-flex; align-items:center; gap:4px;
-      padding:.15rem .48rem; border-radius:999px; font-size:.72rem; font-weight:600; white-space:nowrap;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: .18rem .52rem; border-radius: 999px; font-size: .71rem; font-weight: 700; white-space: nowrap;
     }
-    .chip.done    { background:var(--green-bg);  color:var(--green);  }
-    .chip.ready   { background:var(--yellow-bg); color:var(--yellow); }
-    .chip.blocked { background:var(--red-bg);    color:var(--red);    }
-    .chip.pending { background:var(--purple-bg); color:var(--purple); }
-    .chip.other   { background:#eef2f6;           color:var(--muted);  }
+    .chip.done    { background: var(--green-bg);    color: var(--green);    border: 1px solid var(--green-border); }
+    .chip.ready   { background: var(--yellow-bg);   color: var(--yellow);   border: 1px solid var(--yellow-border); }
+    .chip.blocked { background: var(--red-bg);      color: var(--red);      border: 1px solid var(--red-border); }
+    .chip.pending { background: var(--purple-bg);   color: var(--purple);   border: 1px solid var(--purple-border); }
+    .chip.noneed  { background: var(--teal-bg);     color: var(--teal);     border: 1px solid var(--teal-border); }
+    .chip.inprog  { background: var(--blue-bg);     color: var(--blue);     border: 1px solid var(--blue-border); }
+    .chip.other   { background: #f1f5f9;            color: var(--muted); }
 
-    /* ── spinner ── */
-    .spinner-wrap { display:flex; align-items:center; justify-content:center; padding:4rem; gap:.75rem; color:var(--muted); }
-    .spinner { width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:spin .75s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    /* ── SPINNER ── */
+    .spinner-wrap { display: flex; align-items: center; justify-content: center; padding: 5rem; gap: .85rem; color: var(--muted); flex-direction: column; }
+    .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .75s linear infinite; }
+    .spinner-text { font-size: .85rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── error ── */
-    .error-box { background:#ffebe9; border:1px solid #ffc1c0; border-radius:8px; padding:.85rem 1rem; color:var(--red); font-size:.85rem; margin:.75rem 0; }
-    .error-box a { color:var(--red); }
+    /* ── ERROR ── */
+    .error-box { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius-sm); padding: .9rem 1.1rem; color: var(--red); font-size: .85rem; margin: .75rem 0; }
 
-    /* ── edit mode ── */
+    /* ── EDIT MODE ── */
     .status-select {
-      border:1px solid var(--line); border-radius:6px; padding:.28rem .4rem;
-      font:inherit; font-size:.78rem; background:#fff; color:var(--text);
-      cursor:pointer; max-width:170px;
+      border: 1px solid var(--border); border-radius: 6px; padding: .3rem .45rem;
+      font: inherit; font-size: .75rem; background: #fff; color: var(--text);
+      cursor: pointer; max-width: 180px;
     }
-    .status-select:focus { outline:none; border-color:var(--primary); }
-    .saving { opacity:.55; pointer-events:none; }
-    .save-ok  { color:var(--green); font-size:.72rem; margin-left:.3rem; }
-    .save-err { color:var(--red);   font-size:.72rem; margin-left:.3rem; }
+    .status-select:focus { outline: none; border-color: var(--primary); }
+    .saving { opacity: .5; pointer-events: none; }
+    .save-ok  { color: var(--green); font-size: .72rem; margin-left: .3rem; }
+    .save-err { color: var(--red);   font-size: .72rem; margin-left: .3rem; }
 
-    /* ── edit key badge ── */
+    /* ── EDIT BADGE ── */
     #edit-badge {
-      font-size:.78rem; padding:.3rem .6rem; border-radius:6px;
-      background:var(--green-bg); color:var(--green); font-weight:600;
+      font-size: .75rem; padding: .3rem .65rem; border-radius: 6px;
+      background: rgba(22,163,74,.2); color: #86efac; font-weight: 700;
+      border: 1px solid rgba(134,239,172,.3);
     }
+
+    /* ── LAST UPDATED ── */
+    #last-updated { font-size: .76rem; color: rgba(255,255,255,.5); }
   </style>
 </head>
 <body>
@@ -233,13 +311,13 @@
 <header class="top">
   <div class="brand">
     <div class="logo">AN3</div>
-    <div>
+    <div class="brand-text">
       <h1>Migration Dashboard</h1>
-      <p class="sub" id="mode-label">Read-only · Live from Google Sheet</p>
+      <p id="mode-label">Read-only · Live from Google Sheet</p>
     </div>
   </div>
   <div class="hdr-right">
-    <span id="last-updated" style="font-size:.78rem;color:var(--muted)"></span>
+    <span id="last-updated"></span>
     <span id="edit-badge" style="display:none">✎ Edit mode</span>
     <button class="btn" id="btn-edit-toggle">🔒 Edit</button>
     <button class="btn" id="btn-config">⚙ Sheet</button>
@@ -249,17 +327,16 @@
 
 <div id="banner"></div>
 
-<!-- Sheet setup card (shown when not configured or on error) -->
 <div id="setup-card" class="hidden">
   <h3>Connect your Google Sheet</h3>
-  <p>This is a <strong>read-only</strong> live view. It reads the <code>Deliveries</code> tab directly from your sheet.</p>
+  <p>This is a <strong>read-only</strong> live view. It reads the <code>data</code> tab directly from your sheet.</p>
   <p>
     <strong>Before connecting:</strong> open the sheet → <em>Share</em> → set to <strong>"Anyone with the link can view"</strong>.
-    <br/>No data is sent anywhere — the browser fetches the sheet directly.
+    No data is sent anywhere — the browser fetches the sheet directly.
   </p>
   <div class="setup-row">
     <input id="sheet-id-input" placeholder="Paste Sheet ID  (…/spreadsheets/d/SHEET_ID/…)" />
-    <button class="btn primary" id="btn-sheet-save">Connect</button>
+    <button class="btn light" id="btn-sheet-save">Connect</button>
   </div>
 </div>
 
@@ -273,21 +350,21 @@
       <div id="status-chart"></div>
     </div>
     <div class="card">
-      <h2>Progress</h2>
+      <h2>Overall progress</h2>
       <div id="progress-block"></div>
     </div>
   </div>
   <div class="card">
     <div class="card-head">
       <h2>Accounts</h2>
-      <input id="account-search" type="search" placeholder="Filter accounts…" />
+      <input id="account-search" type="search" placeholder="Filter by account or AMG ID…" />
     </div>
     <div id="accounts-grid" class="accounts-grid"></div>
   </div>
 </section>
 
 <section id="detail" class="page hidden">
-  <button id="btn-back" class="btn">← Back</button>
+  <button id="btn-back" class="btn light" style="margin-bottom:.5rem">← Back to overview</button>
   <div class="detail-head">
     <div>
       <h2 id="detail-title"></h2>
@@ -300,11 +377,13 @@
         <option value="">All statuses</option>
         <option>switchover completed</option>
         <option>ready for switchover</option>
-        <option>non-ssai pending</option>
+        <option>in-progress</option>
         <option>blocked</option>
+        <option>non-ssai pending</option>
+        <option>no need of migration</option>
       </select>
-      <input id="filter-q" type="search" placeholder="Search channel / dist / remarks…" />
-      <span id="detail-count" style="font-size:.78rem;color:var(--muted);align-self:center;margin-left:.25rem"></span>
+      <input id="filter-q" type="search" placeholder="Search channel / distribution / remarks…" />
+      <span id="detail-count" style="font-size:.78rem;color:var(--muted);align-self:center;margin-left:.1rem"></span>
     </div>
     <div id="detail-table" class="table-wrap"></div>
   </div>
@@ -313,32 +392,24 @@
 <div id="toast"></div>
 
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY  = 'an3_sheet_id';
-const SHEET_NAME   = 'data';
-const DEFAULT_ID   = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
-const STATUSES     = ['switchover completed','ready for switchover','in-progress','blocked','not-started','non-ssai pending'];
+// ── Config ──────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'an3_sheet_id';
+const SHEET_NAME  = 'data';
+const DEFAULT_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const STATUSES    = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration'];
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
 
-// Column label → canonical key aliases
 const ALIASES = {
-  amg_id:              ['amg_id','amg id','amgid'],
-  channel_id:          ['channel_id','channel id','channel'],
-  distribution_id:     ['distribution_id','distribution id','distribution','dist_id'],
-  initial_start_date:  ['initial_start_date','initial start date','start_date','start date'],
-  eta_provided_date:   ['eta_provided_date','eta provided date','eta date','eta'],
-  completed_date:      ['completed_date','completed date','date_completed','completion_date'],
-  account_name:        ['account_name','account name','account','client','network','customer','org'],
-  status:              ['status','migration_status','migration status'],
-  remarks:             ['remarks','notes','comment','comments','note'],
-  platform:            ['platform','platform_name'],
-  platform_id:         ['platform_id','platform id'],
-  channel_name:        ['channel_name','channel name'],
-  stream_type:         ['stream_type','stream type','type','stream'],
-  jira_creation_key:   ['jira_creation_key','jira creation key','jira_creation','jira nm','jira creation','nm_jira'],
-  jira_switchover_key: ['jira_switchover_key','jira switchover key','jira_switchover','jira sw','jira switchover','sw_jira'],
-  migration_resources: ['migration_resources','resources','migration resources'],
+  amg_id:            ['amg_id','amg id','amgid'],
+  channel_id:        ['channel_id','channel id','channel'],
+  distribution_id:   ['distribution_id','distribution id','distribution','dist_id'],
+  prepare_date:      ['prepare_date','prepare date','initial_start_date','initial start date','start_date','start date'],
+  eta_provided_date: ['eta_provided_date','eta provided date','eta date','eta'],
+  switchover_date:   ['switchover_date','switchover date','completed_date','completed date','date_completed','completion_date'],
+  account_name:      ['account_name','account name','account','client','network','customer','org'],
+  status:            ['status','migration_status','migration status'],
+  remarks:           ['remarks','notes','comment','comments','note'],
 };
 
 const KNOWN_HEADER_MARKERS = new Set([
@@ -347,18 +418,13 @@ const KNOWN_HEADER_MARKERS = new Set([
 ]);
 
 // ── Edit state ──────────────────────────────────────────────────────────────
-// editKey is stored in sessionStorage — must re-enter per browser tab session
 let canEdit = false;
-
-function getEditKey()  { return sessionStorage.getItem('an3_edit_key') || ''; }
-function setEditKey(k) { sessionStorage.setItem('an3_edit_key', k); }
-function clearEditKey(){ sessionStorage.removeItem('an3_edit_key'); canEdit = false; }
+function getEditKey()   { return sessionStorage.getItem('an3_edit_key') || ''; }
+function setEditKey(k)  { sessionStorage.setItem('an3_edit_key', k); }
+function clearEditKey() { sessionStorage.removeItem('an3_edit_key'); canEdit = false; }
 
 // ── State ───────────────────────────────────────────────────────────────────
-let rows = [];
-let accounts = [];
-let selected = null;
-let detailRows = [];
+let rows = [], accounts = [], selected = null, detailRows = [];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const $ = s => document.querySelector(s);
@@ -370,30 +436,36 @@ function toast(msg) {
   el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
-function f(row, key) { return (row[key] ?? '').toString().trim(); }
+function f(row, key)   { return (row[key] ?? '').toString().trim(); }
+function initials(name) {
+  return name.split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
+}
 
 function statusClass(s) {
   const v = (s || '').toLowerCase();
-  if (v === 'switchover completed') return 'done';
-  if (v === 'ready for switchover') return 'ready';
-  if (v === 'blocked') return 'blocked';
-  if (v.includes('pending')) return 'pending';
+  if (v === 'switchover completed')   return 'done';
+  if (v === 'ready for switchover')   return 'ready';
+  if (v === 'blocked')                return 'blocked';
+  if (v.includes('pending'))          return 'pending';
   if (v === 'in-progress' || v === 'in progress') return 'inprog';
+  if (v === 'no need of migration')   return 'noneed';
   return 'other';
 }
-const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'⏳', inprog:'⚡', other:'○' };
+const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'◷', inprog:'⚡', noneed:'⊘', other:'○' };
 function chipHtml(s) {
   const cls = statusClass(s);
   return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${s || '—'}</span>`;
 }
-function ringSvg(percent) {
-  const r = 42, c = 2 * Math.PI * r, offset = c - (percent / 100) * c;
-  return `<svg width="110" height="110" viewBox="0 0 110 110">
-    <circle cx="55" cy="55" r="${r}" fill="none" stroke="#eef2f6" stroke-width="10"/>
-    <circle cx="55" cy="55" r="${r}" fill="none" stroke="#1a7f37" stroke-width="10"
+function ringSvg(percent, done, total) {
+  const r = 44, c = 2 * Math.PI * r, offset = c - (percent / 100) * c;
+  const color = percent >= 80 ? '#16a34a' : percent >= 50 ? '#2563eb' : '#b45309';
+  return `<svg width="116" height="116" viewBox="0 0 116 116">
+    <circle cx="58" cy="58" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="11"/>
+    <circle cx="58" cy="58" r="${r}" fill="none" stroke="${color}" stroke-width="11"
       stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"
-      transform="rotate(-90 55 55)"/>
-    <text x="55" y="60" text-anchor="middle" font-size="18" font-weight="700" fill="#1a2332">${percent}%</text>
+      transform="rotate(-90 58 58)" style="transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)"/>
+    <text x="58" y="53" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${percent}%</text>
+    <text x="58" y="70" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Inter,sans-serif">${done}/${total}</text>
   </svg>`;
 }
 
@@ -416,14 +488,10 @@ async function fetchRows() {
   if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
 
   const gvizLabels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
-
   const labelToKey = {};
   for (const [key, aliases] of Object.entries(ALIASES)) {
     for (let i = 0; i < gvizLabels.length; i++) {
-      if (aliases.includes(gvizLabels[i])) {
-        labelToKey[i] = key;
-        break;
-      }
+      if (aliases.includes(gvizLabels[i])) { labelToKey[i] = key; break; }
     }
   }
 
@@ -436,17 +504,15 @@ async function fetchRows() {
     const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k === 'account_name')?.[0]] || '';
     if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) ||
         KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
-
     if (cells.every(v => !v)) continue;
 
     const obj = {};
     for (const [colIdx, key] of Object.entries(labelToKey)) {
       obj[key] = cells[colIdx] || '';
     }
-    obj._row_num = gvizIdx + 2; // +1 for 1-based, +1 for header row
+    obj._row_num = gvizIdx + 2;
     result.push(obj);
   }
-
   return result;
 }
 
@@ -456,21 +522,25 @@ function aggregate(data) {
   for (const row of data) {
     const name = f(row, 'account_name');
     if (!name) continue;
-    const amg  = f(row, 'amg_id');
-    const s    = f(row, 'status').toLowerCase();
-
-    if (!map[name]) map[name] = { account_name: name, amg_id: amg, total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0 };
+    const amg = f(row, 'amg_id');
+    const s   = f(row, 'status').toLowerCase();
+    if (!map[name]) map[name] = { account_name: name, amg_id: amg, total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0 };
     const a = map[name];
     if (!a.amg_id && amg) a.amg_id = amg;
     a.total++;
-    if (s === 'switchover completed')  a.completed++;
-    else if (s === 'ready for switchover') a.ready++;
-    else if (s === 'blocked')          a.blocked++;
-    else if (s.includes('pending'))    a.pending++;
+    if (s === 'switchover completed')           a.completed++;
+    else if (s === 'ready for switchover')      a.ready++;
+    else if (s === 'blocked')                   a.blocked++;
+    else if (s.includes('pending'))             a.pending++;
     else if (s.includes('in-progress') || s.includes('in progress')) a.inprog++;
+    else if (s === 'no need of migration')      a.noneed++;
   }
   return Object.values(map)
-    .map(a => ({ ...a, fully_migrated: a.completed === a.total && a.total > 0 }))
+    .map(a => ({
+      ...a,
+      actionable: a.total - a.completed - a.noneed,
+      fully_done: a.completed + a.noneed === a.total && a.total > 0,
+    }))
     .sort((a, b) => b.total - a.total);
 }
 
@@ -481,40 +551,45 @@ function renderOverview() {
   const ready      = rows.filter(r => f(r,'status') === 'ready for switchover').length;
   const blocked    = rows.filter(r => f(r,'status') === 'blocked').length;
   const pending    = rows.filter(r => f(r,'status').includes('pending')).length;
-  const inprogress = rows.filter(r => { const s = f(r,'status'); return s === 'in-progress' || s === 'in progress'; }).length;
+  const noneed     = rows.filter(r => f(r,'status') === 'no need of migration').length;
+  const inprog     = rows.filter(r => { const s = f(r,'status'); return s === 'in-progress' || s === 'in progress'; }).length;
+  const donePct    = pct(done, total);
 
   $('#kpis').innerHTML = `
-    <div class="kpi"><div class="label">Deliveries</div><div class="value">${total}</div></div>
-    <div class="kpi"><div class="label">Accounts</div><div class="value">${accounts.length}</div></div>
-    <div class="kpi done"><div class="label">Completed</div><div class="value">${done}</div></div>
-    <div class="kpi ready"><div class="label">Ready</div><div class="value">${ready}</div></div>
-    <div class="kpi blocked"><div class="label">Blocked</div><div class="value">${blocked}</div></div>
-    <div class="kpi pending"><div class="label">NM Pending</div><div class="value">${pending}</div></div>
+    <div class="kpi total">   <div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi done">    <div class="k-label">Completed</div>      <div class="k-value">${done}</div>    <div class="k-sub">${donePct}% of total</div></div>
+    <div class="kpi ready">   <div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div>   <div class="k-sub">awaiting switchover</div></div>
+    <div class="kpi inprog">  <div class="k-label">In Progress</div>    <div class="k-value">${inprog}</div>  <div class="k-sub">active migration</div></div>
+    <div class="kpi blocked"> <div class="k-label">Blocked</div>        <div class="k-value">${blocked}</div> <div class="k-sub">needs attention</div></div>
+    <div class="kpi pending"> <div class="k-label">NM Pending</div>     <div class="k-value">${pending}</div> <div class="k-sub">non-SSAI</div></div>
+    <div class="kpi noneed">  <div class="k-label">No Migration</div>   <div class="k-value">${noneed}</div>  <div class="k-sub">not applicable</div></div>
   `;
 
   const bars = [
-    ['Completed',            done,       '#1a7f37'],
-    ['Ready for switchover', ready,      '#d4a72c'],
-    ['Non-SSAI pending',     pending,    '#6e7781'],
-    ['Blocked',              blocked,    '#cf222e'],
-    ['In-progress',          inprogress, '#1f6feb'],
+    ['Switchover completed',    done,    '#16a34a'],
+    ['Ready for switchover',    ready,   '#b45309'],
+    ['In-progress',             inprog,  '#1d4ed8'],
+    ['Non-SSAI pending',        pending, '#7c3aed'],
+    ['Blocked',                 blocked, '#dc2626'],
+    ['No need of migration',    noneed,  '#0e7490'],
   ];
   $('#status-chart').innerHTML = bars.map(([label, count, color]) => `
     <div class="bar-row">
       <div class="bar-label">${label}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct(count,total)}%;background:${color}"></div></div>
-      <div class="bar-count">${count}</div>
+      <div class="bar-count" style="color:${color}">${count}</div>
     </div>`).join('');
 
   $('#progress-block').innerHTML = `
     <div class="progress-ring-wrap">
-      ${ringSvg(pct(done, total))}
+      ${ringSvg(donePct, done, total)}
       <div class="progress-copy">
-        <h3>${pct(done, total)}% switchover completed</h3>
-        <p>${done} of ${total} deliveries across ${accounts.length} accounts.</p>
-        ${ready > 0    ? `<p style="margin-top:.5rem;color:var(--yellow)">⚡ ${ready} ready to switch</p>` : ''}
-        ${blocked > 0  ? `<p style="color:var(--red)">✗ ${blocked} blocked</p>` : ''}
-        ${inprogress > 0 ? `<p style="color:var(--primary)">⚡ ${inprogress} in progress</p>` : ''}
+        <h3>${donePct}% switchover complete</h3>
+        <p style="margin-top:.1rem">${done} of ${total} deliveries completed</p>
+        <p>${accounts.length} accounts · ${accounts.filter(a=>a.fully_done).length} fully done</p>
+        ${ready   > 0 ? `<p style="margin-top:.6rem;color:var(--yellow);font-weight:600">→ ${ready} ready to switch</p>` : ''}
+        ${blocked > 0 ? `<p style="color:var(--red);font-weight:600">✗ ${blocked} blocked</p>` : ''}
+        ${inprog  > 0 ? `<p style="color:var(--blue);font-weight:600">⚡ ${inprog} in progress</p>` : ''}
       </div>
     </div>`;
 
@@ -532,28 +607,36 @@ function renderAccountCards(filter) {
     return;
   }
   grid.innerHTML = list.map(a => {
-    const t = a.total || 1;
-    const w = n => `${pct(n || 0, t)}%`;
+    const t  = a.total || 1;
+    const w  = n => `${pct(n || 0, t)}%`;
+    const av = initials(a.account_name);
     return `
-    <div class="account ${a.fully_migrated ? 'migrated' : ''}" data-name="${encodeURIComponent(a.account_name)}">
-      ${a.fully_migrated ? `<span class="badge-done">✓ Fully migrated</span>` : ''}
-      <h3>${a.account_name}</h3>
-      <div class="meta">${a.amg_id || '—'} · ${a.total} deliveries</div>
+    <div class="account ${a.fully_done ? 'migrated' : ''}" data-name="${encodeURIComponent(a.account_name)}">
+      <div class="acct-head">
+        <div class="acct-avatar">${av}</div>
+        <div style="flex:1;min-width:0">
+          <div class="acct-name">${a.account_name}</div>
+          <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries</div>
+        </div>
+        ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
+      </div>
       <div class="mini-bars">
-        <span style="width:${w(a.completed)};background:#1a7f37" title="completed"></span>
-        <span style="width:${w(a.ready)};background:#d4a72c" title="ready"></span>
-        <span style="width:${w(a.pending)};background:#6e7781" title="pending"></span>
-        <span style="width:${w(a.blocked)};background:#cf222e" title="blocked"></span>
-        <span style="width:${w(a.inprog)};background:#1f6feb" title="in-progress"></span>
+        <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
+        <span style="width:${w(a.ready)};background:#b45309" title="ready"></span>
+        <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
+        <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
+        <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
+        <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
       </div>
       <div class="pills">
-        ${a.completed ? `<span class="pill done">done ${a.completed}</span>` : ''}
-        ${a.ready     ? `<span class="pill ready">ready ${a.ready}</span>` : ''}
-        ${a.pending   ? `<span class="pill pending">pending ${a.pending}</span>` : ''}
-        ${a.blocked   ? `<span class="pill blocked">blocked ${a.blocked}</span>` : ''}
-        ${a.inprog    ? `<span class="pill">in-progress ${a.inprog}</span>` : ''}
-        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog
-            ? `<span class="pill">not started ${a.total}</span>` : ''}
+        ${a.completed ? `<span class="pill done">✓ ${a.completed} done</span>` : ''}
+        ${a.ready     ? `<span class="pill ready">→ ${a.ready} ready</span>` : ''}
+        ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
+        ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
+        ${a.blocked   ? `<span class="pill blocked">✗ ${a.blocked} blocked</span>` : ''}
+        ${a.noneed    ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
+        ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
+            ? `<span class="pill">○ ${a.total} not started</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -565,13 +648,14 @@ function renderAccountCards(filter) {
 
 // ── Detail view ─────────────────────────────────────────────────────────────
 function openAccount(name) {
-  selected = name;
+  selected   = name;
   detailRows = rows.filter(r => f(r, 'account_name') === name);
   const done = detailRows.filter(r => f(r, 'status') === 'switchover completed').length;
   const amg  = detailRows.find(r => f(r, 'amg_id'))?.amg_id || '';
+  const donePct = pct(done, detailRows.length);
 
   $('#detail-title').textContent = name;
-  $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed · ${amg}`;
+  $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed (${donePct}%) · ${amg}`;
   $('#overview').classList.add('hidden');
   $('#detail').classList.remove('hidden');
   renderDetailTable();
@@ -584,45 +668,41 @@ function renderDetailTable() {
   const filtered = detailRows.filter(r => {
     if (status && f(r,'status') !== status) return false;
     if (q) {
-      const hay = ['channel_id','distribution_id','platform','platform_id','channel_name','remarks','jira_creation_key','jira_switchover_key']
+      const hay = ['channel_id','distribution_id','remarks']
         .map(k => f(r,k)).join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
   });
 
-  $('#detail-count').textContent = `${filtered.length} / ${detailRows.length}`;
+  $('#detail-count').textContent = `${filtered.length} / ${detailRows.length} rows`;
 
   $('#detail-table').innerHTML = `
     <table>
       <thead>
         <tr>
-          <th>Channel</th><th>Distribution</th><th>Platform</th><th>Type</th>
-          <th>Status</th><th>Start</th><th>ETA</th><th>Completed</th><th>Remarks</th><th>Jira</th>
+          <th>#</th><th>Channel ID</th><th>Distribution ID</th>
+          <th>Status</th><th>Prepare Date</th><th>ETA Date</th>
+          <th>Switchover Date</th><th>Remarks</th>
         </tr>
       </thead>
       <tbody>
         ${filtered.length === 0
-          ? `<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--muted)">No rows match.</td></tr>`
-          : filtered.map(r => {
-              const jiraLinks = ['jira_creation_key','jira_switchover_key']
-                .map(k => f(r,k)).filter(Boolean)
-                .map(k => `<a href="https://amagiengg.atlassian.net/browse/${k}" target="_blank" rel="noopener">${k}</a>`)
-                .join('<br>') || '—';
-              return `<tr class="${f(r,'status') === 'switchover completed' ? 'row-done' : ''}">
-                <td><strong>${f(r,'channel_id') || '—'}</strong><div class="muted">${f(r,'channel_name')}</div></td>
-                <td>${f(r,'distribution_id') || '—'}</td>
-                <td>${f(r,'platform') || f(r,'platform_id') || '—'}</td>
-                <td>${f(r,'stream_type') || 'hls'}</td>
+          ? `<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
+          : filtered.map((r, i) => {
+              const isDone = f(r,'status') === 'switchover completed';
+              return `<tr class="${isDone ? 'row-done' : ''}">
+                <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+                <td><strong>${f(r,'channel_id') || '—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${f(r,'distribution_id') || '—'}</td>
                 <td>${canEdit
                   ? `<select class="status-select" data-dist="${f(r,'distribution_id')}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
                   : chipHtml(f(r,'status'))}</td>
-                <td style="white-space:nowrap">${f(r,'initial_start_date') || '—'}</td>
-                <td style="white-space:nowrap">${f(r,'eta_provided_date') || '—'}</td>
-                <td style="white-space:nowrap">${f(r,'completed_date') || '—'}</td>
-                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                <td style="white-space:nowrap;font-size:.77rem">${f(r,'prepare_date') || '—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${f(r,'eta_provided_date') || '—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${f(r,'switchover_date') || '—'}</td>
+                <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
                     title="${f(r,'remarks').replace(/"/g,'&quot;')}">${f(r,'remarks') || '—'}</td>
-                <td>${jiraLinks}</td>
               </tr>`;
             }).join('')
         }
@@ -642,7 +722,7 @@ async function load() {
   $('#detail').classList.add('hidden');
   $('#setup-card').classList.add('hidden');
   $('#error-container').innerHTML =
-    `<div class="page"><div class="spinner-wrap"><div class="spinner"></div> Fetching sheet…</div></div>`;
+    `<div class="page"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Fetching sheet data…</div></div></div>`;
 
   try {
     rows     = await fetchRows();
@@ -654,9 +734,13 @@ async function load() {
     const now   = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     $('#last-updated').textContent = `Updated ${now}`;
     $('#banner').innerHTML = `
-      ${total} deliveries · ${accounts.length} accounts ·
-      ${done} completed (${pct(done, total)}%) ·
-      <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open Sheet ↗</a>`;
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
 
     $('#overview').classList.remove('hidden');
     $('#detail').classList.add('hidden');
@@ -681,14 +765,13 @@ async function load() {
   }
 }
 
-// ── JSONP helper (bypasses CORS entirely — script tags load cross-origin freely) ──
+// ── JSONP (bypasses CORS) ───────────────────────────────────────────────────
 function jsonp(params) {
   return new Promise((resolve, reject) => {
     const cbName = '_as' + Math.random().toString(36).slice(2);
     const url = new URL(APPS_SCRIPT_URL);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
     url.searchParams.set('callback', cbName);
-
     const script = document.createElement('script');
     const cleanup = () => { delete window[cbName]; script.remove(); };
     window[cbName] = data => { cleanup(); resolve(data); };
@@ -698,18 +781,16 @@ function jsonp(params) {
   });
 }
 
-// ── Status update (write to sheet via Apps Script) ────────────────────────────
+// ── Status update ────────────────────────────────────────────────────────────
 async function updateStatus(distribution_id, row_num, new_status, selectEl) {
   if (!canEdit) return;
   selectEl.classList.add('saving');
   const feedback = selectEl.nextElementSibling;
   if (feedback) feedback.textContent = '';
-
   try {
     const params = { key: getEditKey(), new_status };
     if (distribution_id) params.distribution_id = distribution_id;
     else if (row_num)    params.row_num = row_num;
-
     const data = await jsonp(params);
     if (data.ok) {
       const row = distribution_id
@@ -719,10 +800,7 @@ async function updateStatus(distribution_id, row_num, new_status, selectEl) {
       if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
       renderOverview();
     } else {
-      if (data.error === 'Invalid key') {
-        clearEditKey(); setEditMode(false);
-        toast('Edit key rejected. Please re-enter.');
-      }
+      if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); toast('Edit key rejected. Please re-enter.'); }
       if (feedback) { feedback.textContent = '✗ ' + (data.error || 'failed'); feedback.className = 'save-err'; }
     }
   } catch (err) {
@@ -732,10 +810,10 @@ async function updateStatus(distribution_id, row_num, new_status, selectEl) {
   }
 }
 
-// ── Edit mode toggle ──────────────────────────────────────────────────────────
+// ── Edit mode ────────────────────────────────────────────────────────────────
 function setEditMode(on) {
   canEdit = on;
-  $('#edit-badge').style.display   = on ? 'inline' : 'none';
+  $('#edit-badge').style.display    = on ? 'inline' : 'none';
   $('#btn-edit-toggle').textContent = on ? '🔓 Lock' : '🔒 Edit';
   $('#mode-label').textContent      = on ? 'Edit mode · changes sync to sheet' : 'Read-only · Live from Google Sheet';
   if (detailRows.length) renderDetailTable();
@@ -747,31 +825,25 @@ function showEditKeyModal() {
   overlay.innerHTML = `
     <div class="modal-box">
       <h3>Enter edit key</h3>
-      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .85rem">
-        Enter the shared edit key to change statuses. Changes sync directly to the Google Sheet.
-      </p>
+      <p class="modal-desc">Enter the shared edit key to change statuses. Changes sync directly to the Google Sheet.</p>
       <div class="modal-field">
         <label class="modal-label">Edit key</label>
         <input id="cfg-edit-key" class="modal-input" type="password" placeholder="••••••••••••" autocomplete="off" />
         <div id="cfg-key-error" class="modal-error" style="display:none">Incorrect key — check with the team.</div>
       </div>
       <div class="modal-actions">
-        <button id="cfg-cancel" class="btn">Cancel</button>
-        <button id="cfg-unlock" class="btn primary">Unlock</button>
+        <button id="cfg-cancel" class="modal-btn">Cancel</button>
+        <button id="cfg-unlock" class="modal-btn primary">Unlock</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
-
   const keyInput = overlay.querySelector('#cfg-edit-key');
   const errEl    = overlay.querySelector('#cfg-key-error');
   keyInput.focus();
-
   overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
   overlay.querySelector('#cfg-unlock').onclick = async () => {
     const k = keyInput.value.trim();
     if (!k) return;
-
-    // Verify the key by calling Apps Script with a no-op probe
     const btn = overlay.querySelector('#cfg-unlock');
     btn.disabled = true; btn.textContent = 'Checking…';
     try {
@@ -791,54 +863,39 @@ function showEditKeyModal() {
       btn.disabled = false; btn.textContent = 'Unlock';
     }
   };
-
-  keyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') overlay.querySelector('#cfg-unlock').click();
-  });
+  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') overlay.querySelector('#cfg-unlock').click(); });
 }
 
-// ── Wire up ─────────────────────────────────────────────────────────────────
+// ── Wire up ──────────────────────────────────────────────────────────────────
 $('#btn-refresh').addEventListener('click', load);
-
 $('#btn-config').addEventListener('click', () => {
   $('#setup-card').classList.toggle('hidden');
   $('#sheet-id-input').value = getSheetId();
 });
-
 $('#btn-sheet-save').addEventListener('click', () => {
-  const raw = $('#sheet-id-input').value.trim();
+  const raw   = $('#sheet-id-input').value.trim();
   const match = raw.match(/\/spreadsheets\/d\/([^/]+)/) || raw.match(/^([A-Za-z0-9_-]{20,})/);
-  const id = match ? match[1] : raw;
+  const id    = match ? match[1] : raw;
   if (!id) return;
   localStorage.setItem(STORAGE_KEY, id);
   $('#setup-card').classList.add('hidden');
   load();
 });
-
 $('#btn-back').addEventListener('click', () => {
   selected = null;
   $('#detail').classList.add('hidden');
   $('#overview').classList.remove('hidden');
   renderOverview();
 });
-
 $('#account-search').addEventListener('input', e => renderAccountCards(e.target.value));
 $('#filter-status').addEventListener('change', renderDetailTable);
 $('#filter-q').addEventListener('input', renderDetailTable);
-
 $('#btn-edit-toggle').addEventListener('click', () => {
-  if (canEdit) {
-    clearEditKey();
-    setEditMode(false);
-    toast('Edit mode off');
-  } else {
-    showEditKeyModal();
-  }
+  if (canEdit) { clearEditKey(); setEditMode(false); toast('Edit mode off'); }
+  else { showEditKeyModal(); }
 });
 
-// Restore edit mode if key is already in sessionStorage from a prior action this session
 if (getEditKey()) setEditMode(true);
-
 load();
 </script>
 </body>
