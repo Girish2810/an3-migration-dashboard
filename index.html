@@ -380,15 +380,9 @@
 
 <section id="overview" class="page hidden">
   <div class="kpis" id="kpis"></div>
-  <div class="grid-2">
-    <div class="card">
-      <h2>Status breakdown</h2>
-      <div id="status-chart"></div>
-    </div>
-    <div class="card">
-      <h2>Overall progress</h2>
-      <div id="progress-block"></div>
-    </div>
+  <div class="card">
+    <h2>Overall progress</h2>
+    <div id="progress-block"></div>
   </div>
   <div class="card">
     <div class="card-head">
@@ -676,22 +670,6 @@ function renderOverview() {
     <div class="kpi noneed">    <div class="k-label">No Migration</div>    <div class="k-value">${noneed}</div>     <div class="k-sub">not applicable</div></div>
     <div class="kpi notpicked"> <div class="k-label">Not Yet Picked</div>  <div class="k-value">${notpicked}</div>  <div class="k-sub">pending selection</div></div>
   `;
-
-  const bars = [
-    ['Switchover completed',    done,    '#16a34a'],
-    ['Ready for switchover',    ready,   '#b45309'],
-    ['In-progress',             inprog,  '#1d4ed8'],
-    ['Non-SSAI pending',        pending, '#7c3aed'],
-    ['Blocked',                 blocked, '#dc2626'],
-    ['No need of migration',    noneed,     '#0e7490'],
-    ['Not yet picked',          notpicked,  '#94a3b8'],
-  ];
-  $('#status-chart').innerHTML = bars.map(([label, count, color]) => `
-    <div class="bar-row">
-      <div class="bar-label">${label}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct(count,total)}%;background:${color}"></div></div>
-      <div class="bar-count" style="color:${color}">${count}</div>
-    </div>`).join('');
 
   $('#progress-block').innerHTML = donutPieChart(
     { done, ready, inprog, pending, blocked, noneed, notpicked },
