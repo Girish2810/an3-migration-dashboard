@@ -87,6 +87,23 @@
     .btn.light:hover { background: #f1f5f9; }
     .btn:disabled { opacity: .5; cursor: wait; }
 
+    /* ── TAB NAV ── */
+    .tab-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex; gap: 0;
+    }
+    .tab-btn {
+      padding: .7rem 1.1rem; font-size: .83rem; font-weight: 600;
+      color: var(--muted); background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer; font-family: inherit; margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
     /* ── BANNER ── */
     #banner {
       padding: .5rem 1.5rem; font-size: .78rem; color: var(--muted);
@@ -188,6 +205,24 @@
     .card-head { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .card-head h2 { margin: 0; }
 
+    /* ── DASHBOARD FILTER CHIPS ── */
+    .dash-filters {
+      display: flex; flex-wrap: wrap; gap: .4rem;
+      margin-bottom: .85rem;
+    }
+    .fchip {
+      padding: .3rem .75rem; border-radius: 999px; font-size: .76rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap;
+    }
+    .fchip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+    .fchip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .fchip.active-done    { background: var(--green);  border-color: var(--green);  color: #fff; }
+    .fchip.active-ready   { background: #b45309;        border-color: #b45309;        color: #fff; }
+    .fchip.active-inprog  { background: var(--blue);   border-color: var(--blue);   color: #fff; }
+    .fchip.active-blocked { background: var(--red);    border-color: var(--red);    color: #fff; }
+    .fchip.active-pending { background: var(--purple); border-color: var(--purple); color: #fff; }
+
     /* ── BAR CHART ── */
     .bar-row { display: grid; grid-template-columns: 170px 1fr 44px; gap: .6rem; align-items: center; margin: .5rem 0; }
     .bar-track { height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
@@ -199,6 +234,16 @@
     .progress-ring-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
     .progress-copy h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .35rem; }
     .progress-copy p  { font-size: .82rem; color: var(--muted); margin: .25rem 0; }
+
+    /* ── DONUT INTERACTIVITY ── */
+    .donut-slice { cursor: pointer; transition: opacity .15s; }
+    .donut-slice:hover { opacity: 1 !important; }
+    .donut-legend-row {
+      display: flex; align-items: center; gap: .45rem; padding: .22rem 0;
+      cursor: pointer; border-radius: 6px; padding-left: .3rem; margin-left: -.3rem;
+      transition: background .1s;
+    }
+    .donut-legend-row:hover { background: var(--bg); }
 
     /* ── ACCOUNT CARDS ── */
     .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
@@ -248,7 +293,8 @@
     .pill { font-size: .67rem; padding: .12rem .42rem; border-radius: 999px; background: #f1f5f9; color: var(--muted); font-weight: 500; }
     .pill.done    { background: var(--green-bg);    color: var(--green);   border: 1px solid var(--green-border); }
     .pill.ready   { background: var(--yellow-bg);   color: var(--yellow);  border: 1px solid var(--yellow-border); }
-    .pill.blocked { background: var(--red-bg);      color: var(--red);     border: 1px solid var(--red-border); }
+    .pill.blocked { background: var(--red-bg);      color: var(--red);     border: 1px solid var(--red-border); cursor: pointer; }
+    .pill.blocked:hover { background: var(--red); color: #fff; }
     .pill.pending { background: var(--purple-bg);   color: var(--purple);  border: 1px solid var(--purple-border); }
     .pill.noneed  { background: var(--teal-bg);     color: var(--teal);    border: 1px solid var(--teal-border); }
     .pill.inprog   { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
@@ -259,7 +305,9 @@
       display: flex; align-items: flex-start; gap: .5rem;
       margin-top: .65rem; padding: .55rem .7rem; border-radius: 8px;
       background: #fff5f5; border: 1px solid #fca5a5;
+      cursor: pointer; transition: background .15s;
     }
+    .blocked-detail:hover { background: #fee2e2; }
     .blocked-icon { font-size: .88rem; line-height: 1.4; flex-shrink: 0; }
     .blocked-title { font-size: .75rem; font-weight: 700; color: var(--red); margin-bottom: .3rem; }
     .blocked-teams { display: flex; flex-wrap: wrap; gap: .3rem; }
@@ -283,6 +331,23 @@
     }
     .filters input:focus, .filters select:focus, #account-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
     #account-search { min-width: 200px; }
+
+    /* ── ACCOUNT LINKS PANEL ── */
+    .acct-links-panel {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
+      padding: .75rem 1rem; background: var(--bg); border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .acct-link-item {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .28rem .65rem; border-radius: 999px; font-size: .76rem; font-weight: 500;
+      background: var(--surface); border: 1px solid var(--border); color: var(--primary);
+      text-decoration: none; white-space: nowrap;
+      transition: background .15s, border-color .15s;
+    }
+    .acct-link-item:hover { background: var(--primary-bg); border-color: var(--primary); text-decoration: none; }
+    .acct-link-label { font-size: .7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .acct-link-sep { color: var(--muted2); }
 
     /* ── TABLE ── */
     .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid var(--border); }
@@ -310,6 +375,8 @@
     .chip.inprog   { background: var(--blue-bg);     color: var(--blue);     border: 1px solid var(--blue-border); }
     .chip.notpicked{ background: var(--grey-bg);     color: var(--grey);     border: 1px solid var(--grey-border); }
     .chip.other    { background: #f1f5f9;            color: var(--muted); }
+    .chip.del-deleted { background: #fee2e2; color: var(--red); border: 1px solid var(--red-border); }
+    .chip.del-pending { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
 
     /* ── SPINNER ── */
     .spinner-wrap { display: flex; align-items: center; justify-content: center; padding: 5rem; gap: .85rem; color: var(--muted); flex-direction: column; }
@@ -340,6 +407,11 @@
 
     /* ── LAST UPDATED ── */
     #last-updated { font-size: .76rem; color: rgba(255,255,255,.5); }
+
+    /* ── DELETIONS SECTION ── */
+    .del-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .85rem; }
+    .del-status-deleted { color: var(--red); font-weight: 700; }
+    .del-status-pending { color: var(--yellow); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -361,6 +433,11 @@
   </div>
 </header>
 
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="deletions">Deletion Tracker</button>
+</nav>
+
 <div id="banner"></div>
 
 <div id="setup-card" class="hidden">
@@ -380,7 +457,7 @@
 
 <section id="overview" class="page hidden">
   <div class="kpis" id="kpis"></div>
-  <div class="card">
+  <div class="card" style="margin-bottom:.85rem">
     <h2>Overall progress</h2>
     <div id="progress-block"></div>
   </div>
@@ -388,6 +465,14 @@
     <div class="card-head">
       <h2>Accounts</h2>
       <input id="account-search" type="search" placeholder="Filter by account or AMG ID…" />
+    </div>
+    <div class="dash-filters" id="dash-filters">
+      <button class="fchip active" data-key="">All</button>
+      <button class="fchip" data-key="done">Completed</button>
+      <button class="fchip" data-key="ready">Ready to Switch</button>
+      <button class="fchip" data-key="inprog">In Progress</button>
+      <button class="fchip" data-key="blocked">Has Blocked</button>
+      <button class="fchip" data-key="pending">NM Pending</button>
     </div>
     <div id="accounts-grid" class="accounts-grid"></div>
   </div>
@@ -401,6 +486,7 @@
       <p id="detail-meta" class="muted"></p>
     </div>
   </div>
+  <div id="acct-links-wrap"></div>
   <div class="card">
     <div class="filters">
       <select id="filter-status">
@@ -420,14 +506,41 @@
   </div>
 </section>
 
+<section id="deletions" class="page hidden">
+  <div class="card">
+    <div class="card-head">
+      <h2>Deletion Tracker</h2>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <span id="del-count" style="font-size:.78rem;color:var(--muted)"></span>
+        <button class="btn light" id="btn-del-refresh">↻ Refresh</button>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
+      Tracks channel and delivery deletions made during migration. Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">deletions</code> tab in your Google Sheet.
+    </p>
+    <div class="filters">
+      <input id="del-filter-q" type="search" placeholder="Filter by AMG ID, channel, distribution…" style="min-width:220px" />
+      <select id="del-filter-status">
+        <option value="">All statuses</option>
+        <option value="deleted">Deleted</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+    <div id="deletions-table" class="table-wrap">
+      <div class="del-empty">Select the <strong>Deletion Tracker</strong> tab to load data. Make sure your sheet has a tab named <code>deletions</code>.</div>
+    </div>
+  </div>
+</section>
+
 <div id="toast"></div>
 
 <script>
 // ── Config ──────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'an3_sheet_id';
-const SHEET_NAME  = 'data';
-const DEFAULT_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
-const STATUSES    = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
+const STORAGE_KEY        = 'an3_sheet_id';
+const SHEET_NAME         = 'data';
+const DELETIONS_TAB      = 'deletions';
+const DEFAULT_ID         = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const STATUSES           = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
 
@@ -441,6 +554,19 @@ const ALIASES = {
   account_name:      ['account_name','account name','account','client','network','customer','org'],
   status:            ['status','migration_status','migration status'],
   remarks:           ['remarks','notes','comment','comments','note'],
+  hls_sheet:         ['hls_sheet','hls sheet','hls_data_sheet','hls data sheet','hls_data_gathering_sheet','hls data gathering sheet','hls_gathering_sheet','hls gathering sheet'],
+  non_hls_sheet:     ['non_hls_sheet','non hls sheet','non_hls_data_sheet','non hls data sheet','non_hls_data_gathering_sheet','non hls data gathering sheet','non_hls_gathering_sheet','non hls gathering sheet'],
+  discrepancies:     ['discrepancies','discrepancy','discrepancies_link','discrepancy_link'],
+  jira_links:        ['jira','jira_links','jira links','jira_link','jira link','jira_url','jira url','jira_tickets','jira tickets'],
+};
+
+const DELETION_ALIASES = {
+  account_amgid:   ['account_amgid','account amgid','amg_id','amg id','amgid','account_amg_id','account amg id'],
+  channel_id:      ['channel_id','channel id','channel'],
+  channel_name:    ['channel_name','channel name','name'],
+  platform_name:   ['platform_name','platform name','platform'],
+  distribution_id: ['distribution_id','distribution id','dist_id','distribution'],
+  del_status:      ['status','del_status','deletion_status','state'],
 };
 
 const KNOWN_HEADER_MARKERS = new Set([
@@ -456,6 +582,9 @@ function clearEditKey() { sessionStorage.removeItem('an3_edit_key'); canEdit = f
 
 // ── State ───────────────────────────────────────────────────────────────────
 let rows = [], accounts = [], selected = null, detailRows = [];
+let dashboardFilter = '';
+let deletionsRows = [], deletionsLoaded = false;
+let currentTab = 'overview';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const $ = s => document.querySelector(s);
@@ -470,6 +599,30 @@ function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
 function f(row, key)   { return (row[key] ?? '').toString().trim(); }
 function initials(name) {
   return name.split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Parse gviz Date(...) strings → human-readable date
+function formatGvizDate(s) {
+  const m = String(s).match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (!m) return s;
+  const d = new Date(+m[1], +m[2], +m[3]);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// Extract best display value from a gviz cell object
+function gvizCellValue(c) {
+  if (!c) return '';
+  const v = c.v;
+  const fv = c.f;
+  if (v == null) return fv != null ? String(fv) : '';
+  // Dates come as "Date(y,m,d)" strings or numeric serials
+  if (typeof v === 'string' && v.startsWith('Date(')) {
+    return fv != null ? String(fv) : formatGvizDate(v);
+  }
+  // Numbers with a formatted value (includes date serials)
+  if (typeof v === 'number' && fv != null) return String(fv);
+  return String(v);
 }
 
 function statusClass(s) {
@@ -486,17 +639,26 @@ function statusClass(s) {
 const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'◷', inprog:'⚡', noneed:'⊘', notpicked:'○', other:'○' };
 function chipHtml(s) {
   const cls = statusClass(s);
-  return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${s || '—'}</span>`;
+  return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${esc(s) || '—'}</span>`;
 }
+
+function delStatusChip(s) {
+  const v = (s || '').toLowerCase().trim();
+  if (v === 'deleted') return `<span class="chip del-deleted">✗ Deleted</span>`;
+  if (v === 'pending') return `<span class="chip del-pending">◷ Pending</span>`;
+  return `<span class="chip other">${esc(s) || '—'}</span>`;
+}
+
+// ── Donut pie chart ──────────────────────────────────────────────────────────
 function donutPieChart(counts, total) {
   const slices = [
-    { label: 'Completed',         count: counts.done,    color: '#16a34a' },
-    { label: 'Ready to switch',   count: counts.ready,   color: '#b45309' },
-    { label: 'In-progress',       count: counts.inprog,  color: '#1d4ed8' },
-    { label: 'NM Pending',        count: counts.pending, color: '#7c3aed' },
-    { label: 'Blocked',           count: counts.blocked, color: '#dc2626' },
-    { label: 'No migration',      count: counts.noneed,    color: '#0e7490' },
-    { label: 'Not yet picked',    count: counts.notpicked, color: '#94a3b8' },
+    { key: 'done',     label: 'Completed',       count: counts.done,     color: '#16a34a' },
+    { key: 'ready',    label: 'Ready to switch',  count: counts.ready,    color: '#b45309' },
+    { key: 'inprog',   label: 'In-progress',      count: counts.inprog,   color: '#1d4ed8' },
+    { key: 'pending',  label: 'NM Pending',        count: counts.pending,  color: '#7c3aed' },
+    { key: 'blocked',  label: 'Blocked',           count: counts.blocked,  color: '#dc2626' },
+    { key: 'noneed',   label: 'No migration',      count: counts.noneed,   color: '#0e7490' },
+    { key: 'notpicked',label: 'Not yet picked',    count: counts.notpicked,color: '#94a3b8' },
   ].filter(d => d.count > 0);
 
   const cx = 80, cy = 80, R = 66, ri = 38, gap = 0.018;
@@ -512,13 +674,13 @@ function donutPieChart(counts, total) {
     const xi1 = cx + ri * Math.cos(ea - gap), yi1 = cy + ri * Math.sin(ea - gap);
     const xi2 = cx + ri * Math.cos(sa + gap), yi2 = cy + ri * Math.sin(sa + gap);
     const lg  = sw > Math.PI ? 1 : 0;
-    return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
+    return `<path class="donut-slice" data-key="${d.key}" title="${d.label}: ${d.count}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
   });
 
   const donePct = pct(counts.done, total);
 
   const legendRows = slices.map(d => `
-    <div style="display:flex;align-items:center;gap:.45rem;padding:.22rem 0">
+    <div class="donut-legend-row" data-key="${d.key}" title="Click to filter accounts by: ${d.label}">
       <span style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></span>
       <span style="font-size:.77rem;flex:1;color:var(--text);font-weight:500">${d.label}</span>
       <span style="font-size:.78rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-width:24px;text-align:right">${d.count}</span>
@@ -528,7 +690,7 @@ function donutPieChart(counts, total) {
   return `
     <div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap">
       <div style="flex-shrink:0">
-        <svg width="160" height="160" viewBox="0 0 160 160">
+        <svg id="donut-svg" width="160" height="160" viewBox="0 0 160 160" style="cursor:pointer">
           ${paths.join('')}
           <text x="80" y="73" text-anchor="middle" font-size="21" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${donePct}%</text>
           <text x="80" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,sans-serif">complete</text>
@@ -548,29 +710,38 @@ function normalizeLabel(s) {
   return (s || '').trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, '');
 }
 
-async function fetchRows() {
-  const id  = getSheetId();
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — share the sheet as "Anyone with the link can view"`);
-  const txt = await res.text();
-  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
-  if (!m) throw new Error('Unexpected response format. Is the sheet publicly viewable?');
-  const parsed = JSON.parse(m[1]);
-  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
-
+function parseSheetTab(parsed, aliasMap) {
   const gvizLabels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
   const labelToKey = {};
-  for (const [key, aliases] of Object.entries(ALIASES)) {
+  for (const [key, aliases] of Object.entries(aliasMap)) {
     for (let i = 0; i < gvizLabels.length; i++) {
       if (aliases.includes(gvizLabels[i])) { labelToKey[i] = key; break; }
     }
   }
+  return { gvizLabels, labelToKey };
+}
+
+async function fetchTab(tabName) {
+  const id  = getSheetId();
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response format');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  return parsed;
+}
+
+async function fetchRows() {
+  const parsed = await fetchTab(SHEET_NAME);
+  const { labelToKey } = parseSheetTab(parsed, ALIASES);
 
   const result = [];
   for (let gvizIdx = 0; gvizIdx < parsed.table.rows.length; gvizIdx++) {
     const gvizRow = parsed.table.rows[gvizIdx];
-    const cells = gvizRow.c.map(c => (c ? (c.v ?? c.f ?? '') : '').toString().trim());
+    const cells = gvizRow.c.map(gvizCellValue);
 
     const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k === 'status')?.[0]] || '';
     const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k === 'account_name')?.[0]] || '';
@@ -583,6 +754,25 @@ async function fetchRows() {
       obj[key] = cells[colIdx] || '';
     }
     obj._row_num = gvizIdx + 2;
+    result.push(obj);
+  }
+  return result;
+}
+
+async function fetchDeletions() {
+  const parsed = await fetchTab(DELETIONS_TAB);
+  const { labelToKey } = parseSheetTab(parsed, DELETION_ALIASES);
+
+  const result = [];
+  for (let gvizIdx = 0; gvizIdx < parsed.table.rows.length; gvizIdx++) {
+    const gvizRow = parsed.table.rows[gvizIdx];
+    const cells = gvizRow.c.map(gvizCellValue);
+    if (cells.every(v => !v)) continue;
+
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) {
+      obj[key] = cells[colIdx] || '';
+    }
     result.push(obj);
   }
   return result;
@@ -612,9 +802,18 @@ function aggregate(data) {
       account_name: name, amg_id: amg,
       total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0, notpicked: 0,
       blockedRows: [],
+      hls_sheet: '', non_hls_sheet: '', discrepancies: '',
+      jira_set: new Set(),
     };
     const a = map[name];
     if (!a.amg_id && amg) a.amg_id = amg;
+    // Collect account-level link fields (first non-empty wins, except jira which merges)
+    if (!a.hls_sheet && f(row, 'hls_sheet'))     a.hls_sheet = f(row, 'hls_sheet');
+    if (!a.non_hls_sheet && f(row,'non_hls_sheet')) a.non_hls_sheet = f(row, 'non_hls_sheet');
+    if (!a.discrepancies && f(row,'discrepancies')) a.discrepancies = f(row, 'discrepancies');
+    const jiraVal = f(row, 'jira_links');
+    if (jiraVal) jiraVal.split(/[,\n]+/).map(j => j.trim()).filter(Boolean).forEach(j => a.jira_set.add(j));
+
     a.total++;
     if (s === 'switchover completed')                                    a.completed++;
     else if (s === 'ready for switchover')                               a.ready++;
@@ -629,7 +828,6 @@ function aggregate(data) {
   }
 
   return Object.values(map).map(a => {
-    // Summarise blocked-by teams
     const teamCounts = {};
     for (const br of a.blockedRows) {
       const where = parseBlockedWhere(br.remark) || 'Unknown';
@@ -641,11 +839,41 @@ function aggregate(data) {
 
     return {
       ...a,
+      jira_links: [...a.jira_set],
       blockedTeams,
       actionable: a.total - a.completed - a.noneed,
       fully_done: a.completed + a.noneed === a.total && a.total > 0 && a.notpicked === 0,
     };
   }).sort((a, b) => b.total - a.total);
+}
+
+// ── Dashboard filter ─────────────────────────────────────────────────────────
+function matchesDashboardFilter(a) {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter === 'done')    return a.fully_done;
+  if (dashboardFilter === 'blocked') return a.blocked > 0;
+  if (dashboardFilter === 'ready')   return a.ready > 0;
+  if (dashboardFilter === 'inprog')  return a.inprog > 0;
+  if (dashboardFilter === 'pending') return a.pending > 0;
+  return true;
+}
+
+const FILTER_ACTIVE_CLASS = {
+  '':       'active',
+  done:     'active-done',
+  ready:    'active-ready',
+  inprog:   'active-inprog',
+  blocked:  'active-blocked',
+  pending:  'active-pending',
+};
+
+function setDashboardFilter(key) {
+  dashboardFilter = key;
+  document.querySelectorAll('.fchip').forEach(btn => {
+    btn.className = 'fchip';
+    if (btn.dataset.key === key) btn.classList.add(FILTER_ACTIVE_CLASS[key] || 'active');
+  });
+  renderAccountCards($('#account-search').value || '');
 }
 
 // ── Render overview ─────────────────────────────────────────────────────────
@@ -676,6 +904,24 @@ function renderOverview() {
     total
   );
 
+  // Wire donut click handlers (delegate from SVG and legend rows)
+  const svg = document.getElementById('donut-svg');
+  if (svg) {
+    svg.addEventListener('click', e => {
+      const slice = e.target.closest('.donut-slice');
+      if (slice) {
+        const key = slice.dataset.key;
+        setDashboardFilter(dashboardFilter === key ? '' : key);
+      }
+    });
+  }
+  document.querySelectorAll('.donut-legend-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const key = row.dataset.key;
+      setDashboardFilter(dashboardFilter === key ? '' : key);
+    });
+  });
+
   renderAccountCards($('#account-search').value || '');
 }
 
@@ -687,8 +933,8 @@ function activeCardHtml(a) {
     <div class="acct-head">
       <div class="acct-avatar">${initials(a.account_name)}</div>
       <div style="flex:1;min-width:0">
-        <div class="acct-name">${a.account_name}</div>
-        <div class="acct-meta">${a.amg_id || '—'} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
+        <div class="acct-name">${esc(a.account_name)}</div>
+        <div class="acct-meta">${esc(a.amg_id || '—')} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
       </div>
       ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
     </div>
@@ -705,19 +951,19 @@ function activeCardHtml(a) {
       ${a.ready     ? `<span class="pill ready">→ ${a.ready} ready</span>` : ''}
       ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
       ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
-      ${a.blocked   ? `<span class="pill blocked">✗ ${a.blocked} blocked</span>` : ''}
+      ${a.blocked   ? `<span class="pill blocked" data-blocked-for="${encodeURIComponent(a.account_name)}" title="Click to view blocked records">✗ ${a.blocked} blocked</span>` : ''}
       ${a.noneed    ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
       ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
           ? `<span class="pill">○ ${a.total} not started</span>` : ''}
     </div>
     ${a.blocked > 0 ? `
-    <div class="blocked-detail">
+    <div class="blocked-detail" data-blocked-for="${encodeURIComponent(a.account_name)}" title="Click to view blocked records">
       <span class="blocked-icon">⚠</span>
       <div>
-        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''}</div>
+        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''} · click to view</div>
         ${a.blockedTeams.length ? `<div class="blocked-teams">${
           a.blockedTeams.map(t =>
-            `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${t.team} <strong>${t.count}</strong></span>`
+            `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${esc(t.team)} <strong>${t.count}</strong></span>`
           ).join('')
         }</div>` : ''}
       </div>
@@ -731,8 +977,8 @@ function notPickedCardHtml(a) {
     <div class="acct-head">
       <div class="acct-avatar" style="background:var(--grey-bg);color:var(--grey)">${initials(a.account_name)}</div>
       <div style="flex:1;min-width:0">
-        <div class="acct-name" style="color:var(--muted)">${a.account_name}</div>
-        <div class="acct-meta">${a.amg_id || 'No AMG ID'}</div>
+        <div class="acct-name" style="color:var(--muted)">${esc(a.account_name)}</div>
+        <div class="acct-meta">${esc(a.amg_id || 'No AMG ID')}</div>
       </div>
       <span style="font-size:.65rem;font-weight:700;background:var(--grey-bg);color:var(--grey);padding:.12rem .45rem;border-radius:999px;border:1px solid var(--grey-border);flex-shrink:0;white-space:nowrap">○ Not picked</span>
     </div>
@@ -743,7 +989,8 @@ function notPickedCardHtml(a) {
 function renderAccountCards(filter) {
   const q = filter.trim().toLowerCase();
   const list = accounts.filter(a =>
-    !q || a.account_name.toLowerCase().includes(q) || (a.amg_id || '').toLowerCase().includes(q)
+    matchesDashboardFilter(a) &&
+    (!q || a.account_name.toLowerCase().includes(q) || (a.amg_id || '').toLowerCase().includes(q))
   );
   const grid = $('#accounts-grid');
   if (!list.length) {
@@ -762,12 +1009,51 @@ function renderAccountCards(filter) {
   grid.innerHTML = html;
 
   grid.querySelectorAll('.account[data-name]').forEach(el => {
-    el.addEventListener('click', () => openAccount(decodeURIComponent(el.dataset.name)));
+    el.addEventListener('click', e => {
+      // Don't open detail if the click was on the blocked pill or blocked-detail panel
+      if (e.target.closest('[data-blocked-for]')) return;
+      openAccount(decodeURIComponent(el.dataset.name));
+    });
+  });
+
+  // Blocked pill and blocked-detail panel → open account pre-filtered to blocked
+  grid.querySelectorAll('[data-blocked-for]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openAccount(decodeURIComponent(el.dataset.blockedFor), 'blocked');
+    });
   });
 }
 
+// ── Account links panel ──────────────────────────────────────────────────────
+function renderAccountLinks(a) {
+  const wrap = $('#acct-links-wrap');
+  const links = [];
+
+  if (a && a.hls_sheet)    links.push({ label: 'HLS Data Sheet',     url: a.hls_sheet });
+  if (a && a.non_hls_sheet) links.push({ label: 'Non-HLS Data Sheet', url: a.non_hls_sheet });
+  if (a && a.discrepancies) links.push({ label: 'Discrepancies',       url: a.discrepancies });
+  if (a && a.jira_links && a.jira_links.length) {
+    a.jira_links.forEach((j, i) => links.push({ label: a.jira_links.length > 1 ? `Jira #${i+1}` : 'Jira', url: j }));
+  }
+
+  if (!links.length) { wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = `
+    <div class="acct-links-panel">
+      <span class="acct-link-label">Links</span>
+      <span class="acct-link-sep">·</span>
+      ${links.map(l => {
+        const isUrl = /^https?:\/\//.test(l.url);
+        return isUrl
+          ? `<a class="acct-link-item" href="${esc(l.url)}" target="_blank" rel="noopener">↗ ${esc(l.label)}</a>`
+          : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
+      }).join('')}
+    </div>`;
+}
+
 // ── Detail view ─────────────────────────────────────────────────────────────
-function openAccount(name) {
+function openAccount(name, initialStatus = '') {
   selected   = name;
   detailRows = rows.filter(r => f(r, 'account_name') === name);
   const done = detailRows.filter(r => f(r, 'status') === 'switchover completed').length;
@@ -776,8 +1062,13 @@ function openAccount(name) {
 
   $('#detail-title').textContent = name;
   $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed (${donePct}%) · ${amg}`;
+  $('#filter-status').value = initialStatus;
+  $('#filter-q').value = '';
   $('#overview').classList.add('hidden');
   $('#detail').classList.remove('hidden');
+
+  const acctData = accounts.find(a => a.account_name === name);
+  renderAccountLinks(acctData);
   renderDetailTable();
 }
 
@@ -813,16 +1104,16 @@ function renderDetailTable() {
               const isDone = f(r,'status') === 'switchover completed';
               return `<tr class="${isDone ? 'row-done' : ''}">
                 <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
-                <td><strong>${f(r,'channel_id') || '—'}</strong></td>
-                <td style="font-size:.77rem;color:var(--muted)">${f(r,'distribution_id') || '—'}</td>
+                <td><strong>${esc(f(r,'channel_id')) || '—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id')) || '—'}</td>
                 <td>${canEdit
-                  ? `<select class="status-select" data-dist="${f(r,'distribution_id')}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
+                  ? `<select class="status-select" data-dist="${esc(f(r,'distribution_id'))}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
                   : chipHtml(f(r,'status'))}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${f(r,'prepare_date') || '—'}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${f(r,'eta_provided_date') || '—'}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${f(r,'switchover_date') || '—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date')) || '—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'eta_provided_date')) || '—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date')) || '—'}</td>
                 <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
-                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${f(r,'remarks') || '—'}</td>
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks')) || '—'}</td>
               </tr>`;
             }).join('')
         }
@@ -833,6 +1124,90 @@ function renderDetailTable() {
     document.querySelectorAll('.status-select').forEach(sel => {
       sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.dataset.row, sel.value, sel));
     });
+  }
+}
+
+// ── Deletions ────────────────────────────────────────────────────────────────
+async function loadDeletions() {
+  $('#deletions-table').innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading deletions tab…</div></div>`;
+  $('#del-count').textContent = '';
+  try {
+    deletionsRows = await fetchDeletions();
+    deletionsLoaded = true;
+    renderDeletionsTable();
+    toast(`Loaded ${deletionsRows.length} deletion records`);
+  } catch (err) {
+    $('#deletions-table').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load deletions tab: ${esc(err.message)}<br/>Make sure your sheet has a tab named <strong>deletions</strong> and is publicly viewable.</div></div>`;
+  }
+}
+
+function renderDeletionsTable() {
+  const q = ($('#del-filter-q').value || '').toLowerCase();
+  const statusFilter = ($('#del-filter-status').value || '').toLowerCase();
+
+  const filtered = deletionsRows.filter(r => {
+    if (statusFilter && (r.del_status || '').toLowerCase() !== statusFilter) return false;
+    if (q) {
+      const hay = [r.account_amgid, r.channel_id, r.channel_name, r.platform_name, r.distribution_id]
+        .map(v => (v || '').toLowerCase()).join(' ');
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  $('#del-count').textContent = `${filtered.length} of ${deletionsRows.length} records`;
+
+  if (filtered.length === 0) {
+    $('#deletions-table').innerHTML = `<div class="del-empty">${deletionsRows.length === 0 ? 'No records found in the deletions tab.' : 'No records match the filter.'}</div>`;
+    return;
+  }
+
+  $('#deletions-table').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Account AMG ID</th>
+          <th>Channel ID</th>
+          <th>Channel Name</th>
+          <th>Platform</th>
+          <th>Distribution ID</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map((r, i) => {
+          const isPending = (r.del_status || '').toLowerCase() === 'pending';
+          return `<tr class="${isPending ? '' : ''}">
+            <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+            <td style="font-size:.77rem;font-weight:600">${esc(r.account_amgid) || '—'}</td>
+            <td><strong>${esc(r.channel_id) || '—'}</strong></td>
+            <td style="font-size:.77rem">${esc(r.channel_name) || '—'}</td>
+            <td style="font-size:.77rem;color:var(--muted)">${esc(r.platform_name) || '—'}</td>
+            <td style="font-size:.77rem;color:var(--muted)">${esc(r.distribution_id) || '—'}</td>
+            <td>${delStatusChip(r.del_status)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ── Tab navigation ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  $('#overview').classList.toggle('hidden', tab !== 'overview' || selected !== null);
+  $('#detail').classList.toggle('hidden', tab !== 'overview' || selected === null);
+  $('#deletions').classList.toggle('hidden', tab !== 'deletions');
+
+  if (tab === 'overview' && selected === null) {
+    // overview is already shown
+  } else if (tab === 'overview' && selected !== null) {
+    // stay on detail view
+  } else if (tab === 'deletions' && !deletionsLoaded) {
+    loadDeletions();
   }
 }
 
@@ -847,6 +1222,7 @@ async function load() {
   try {
     rows     = await fetchRows();
     accounts = aggregate(rows);
+    deletionsLoaded = false; // reset so deletions re-load on next tab switch
     $('#error-container').innerHTML = '';
 
     const done  = rows.filter(r => f(r,'status') === 'switchover completed').length;
@@ -862,15 +1238,19 @@ async function load() {
       <span class="banner-dot">·</span>
       <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
 
+    selected = null;
+    currentTab = 'overview';
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === 'overview'));
     $('#overview').classList.remove('hidden');
     $('#detail').classList.add('hidden');
+    $('#deletions').classList.add('hidden');
     renderOverview();
     toast(`Loaded ${total} rows across ${accounts.length} accounts`);
   } catch (err) {
     $('#error-container').innerHTML = `
       <div class="page">
         <div class="error-box">
-          ⚠ Could not load sheet: ${err.message}<br/>
+          ⚠ Could not load sheet: ${esc(err.message)}<br/>
           Share the sheet as <strong>"Anyone with the link can view"</strong> then refresh.
           <a href="#" id="err-config-link" style="margin-left:.5rem">Configure Sheet ID</a>
         </div>
@@ -1014,6 +1394,21 @@ $('#btn-edit-toggle').addEventListener('click', () => {
   if (canEdit) { clearEditKey(); setEditMode(false); toast('Edit mode off'); }
   else { showEditKeyModal(); }
 });
+
+// Dashboard filter chips
+document.querySelectorAll('.fchip').forEach(btn => {
+  btn.addEventListener('click', () => setDashboardFilter(btn.dataset.key));
+});
+
+// Tab navigation
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Deletions filters
+$('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) renderDeletionsTable(); });
+$('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDeletionsTable(); });
+$('#btn-del-refresh').addEventListener('click', loadDeletions);
 
 if (getEditKey()) setEditMode(true);
 load();
