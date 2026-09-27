@@ -9,409 +9,234 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:         #f0f2f5;
-      --surface:    #ffffff;
-      --border:     #e2e8f0;
-      --text:       #0f172a;
-      --muted:      #64748b;
-      --muted2:     #94a3b8;
-      --primary:    #2563eb;
-      --primary-bg: #eff6ff;
-      --green:      #16a34a;
-      --green-bg:   #dcfce7;
-      --green-border:#86efac;
-      --yellow:     #b45309;
-      --yellow-bg:  #fef9c3;
-      --yellow-border:#fde047;
-      --red:        #dc2626;
-      --red-bg:     #fee2e2;
-      --red-border: #fca5a5;
-      --purple:     #7c3aed;
-      --purple-bg:  #ede9fe;
-      --purple-border:#c4b5fd;
-      --teal:       #0e7490;
-      --teal-bg:    #cffafe;
-      --teal-border:#67e8f9;
-      --grey:       #475569;
-      --grey-bg:    #f1f5f9;
-      --grey-border:#cbd5e1;
-      --blue:       #1d4ed8;
-      --blue-bg:    #dbeafe;
-      --blue-border:#93c5fd;
-      --radius:     14px;
-      --radius-sm:  8px;
-      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-      --shadow-md:  0 4px 12px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
-      --font:       "Inter","Segoe UI",system-ui,sans-serif;
+      --bg:#f0f2f5;--surface:#ffffff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;
+      --primary:#2563eb;--primary-bg:#eff6ff;
+      --green:#16a34a;--green-bg:#dcfce7;--green-border:#86efac;
+      --yellow:#b45309;--yellow-bg:#fef9c3;--yellow-border:#fde047;
+      --red:#dc2626;--red-bg:#fee2e2;--red-border:#fca5a5;
+      --purple:#7c3aed;--purple-bg:#ede9fe;--purple-border:#c4b5fd;
+      --teal:#0e7490;--teal-bg:#cffafe;--teal-border:#67e8f9;
+      --grey:#475569;--grey-bg:#f1f5f9;--grey-border:#cbd5e1;
+      --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-border:#93c5fd;
+      --radius:14px;--radius-sm:8px;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:0 4px 12px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+      --font:"Inter","Segoe UI",system-ui,sans-serif;
     }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    a{color:var(--primary);text-decoration:none}
+    a:hover{text-decoration:underline}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
-    a { color: var(--primary); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    /* HEADER */
+    .top{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d4ed8 100%);padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;position:sticky;top:0;z-index:20;min-height:64px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+    .brand{display:flex;gap:.9rem;align-items:center;padding:.75rem 0}
+    .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.78rem;letter-spacing:.06em;box-shadow:0 2px 8px rgba(29,78,216,.5)}
+    .brand-text h1{font-size:1.05rem;font-weight:700;color:#fff;letter-spacing:-.01em}
+    .brand-text p{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:.1rem}
+    .hdr-right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;padding:.5rem 0}
+    .btn{display:inline-flex;align-items:center;gap:.35rem;justify-content:center;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;border-radius:var(--radius-sm);padding:.42rem .85rem;font-size:.8rem;cursor:pointer;font-family:inherit;text-decoration:none;white-space:nowrap;font-weight:500;transition:background .15s,border-color .15s}
+    .btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);text-decoration:none}
+    .btn.primary{background:#2563eb;border-color:#3b82f6}
+    .btn.primary:hover{background:#1d4ed8}
+    .btn.light{background:var(--surface);border-color:var(--border);color:var(--text)}
+    .btn.light:hover{background:#f1f5f9}
+    .btn:disabled{opacity:.5;cursor:wait}
 
-    /* ── HEADER ── */
-    .top {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%);
-      padding: 0 1.5rem;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: .75rem;
-      position: sticky; top: 0; z-index: 20;
-      min-height: 64px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.25);
-    }
-    .brand { display: flex; gap: .9rem; align-items: center; padding: .75rem 0; }
-    .logo {
-      width: 42px; height: 42px; border-radius: 10px;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: #fff; display: grid; place-items: center;
-      font-weight: 800; font-size: .78rem; letter-spacing: .06em;
-      box-shadow: 0 2px 8px rgba(29,78,216,.5);
-    }
-    .brand-text h1 { font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -.01em; }
-    .brand-text p  { font-size: .75rem; color: rgba(255,255,255,.55); margin-top: .1rem; }
-    .hdr-right { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .5rem 0; }
+    /* TAB NAV */
+    .tab-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex}
+    .tab-btn{padding:.7rem 1.1rem;font-size:.83rem;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;margin-bottom:-1px;transition:color .15s,border-color .15s}
+    .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .tab-btn:hover:not(.active){color:var(--text)}
 
-    /* ── HEADER BUTTONS ── */
-    .btn {
-      display: inline-flex; align-items: center; gap: .35rem; justify-content: center;
-      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1); color: #fff;
-      border-radius: var(--radius-sm); padding: .42rem .85rem; font-size: .8rem; cursor: pointer;
-      font-family: inherit; text-decoration: none; white-space: nowrap; font-weight: 500;
-      transition: background .15s, border-color .15s;
-    }
-    .btn:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.35); text-decoration: none; }
-    .btn.primary { background: #2563eb; border-color: #3b82f6; }
-    .btn.primary:hover { background: #1d4ed8; }
-    .btn.light { background: var(--surface); border-color: var(--border); color: var(--text); }
-    .btn.light:hover { background: #f1f5f9; }
-    .btn:disabled { opacity: .5; cursor: wait; }
+    /* BANNER */
+    #banner{padding:.5rem 1.5rem;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+    #banner a{color:var(--primary);font-weight:500}
+    .banner-dot{color:var(--muted2)}
 
-    /* ── TAB NAV ── */
-    .tab-nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem;
-      display: flex; gap: 0;
-    }
-    .tab-btn {
-      padding: .7rem 1.1rem; font-size: .83rem; font-weight: 600;
-      color: var(--muted); background: none; border: none;
-      border-bottom: 2px solid transparent;
-      cursor: pointer; font-family: inherit; margin-bottom: -1px;
-      transition: color .15s, border-color .15s;
-    }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .tab-btn:hover:not(.active) { color: var(--text); }
+    /* TOAST */
+    #toast{position:fixed;right:1rem;bottom:1.25rem;background:#0f172a;color:#fff;padding:.65rem 1rem;border-radius:10px;display:none;z-index:50;max-width:380px;font-size:.82rem;box-shadow:var(--shadow-md);border-left:3px solid #3b82f6}
 
-    /* ── BANNER ── */
-    #banner {
-      padding: .5rem 1.5rem; font-size: .78rem; color: var(--muted);
-      border-bottom: 1px solid var(--border); background: var(--surface);
-      display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
-    }
-    #banner a { color: var(--primary); font-weight: 500; }
-    .banner-dot { color: var(--muted2); }
+    /* SETUP CARD */
+    #setup-card{margin:1.5rem auto;max-width:640px;background:var(--surface);border:1px solid #f59e0b;border-radius:var(--radius);padding:1.25rem 1.5rem;box-shadow:var(--shadow)}
+    #setup-card h3{font-size:1rem;margin-bottom:.5rem}
+    #setup-card p{color:var(--muted);font-size:.85rem;margin:.35rem 0}
+    #setup-card code{background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.8rem}
+    .setup-row{display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap}
+    #sheet-id-input{flex:1;min-width:220px;padding:.45rem .65rem;border:1px solid var(--border);border-radius:var(--radius-sm);font:inherit;color:var(--text);background:#fff;font-size:.85rem}
+    #sheet-id-input:focus{outline:none;border-color:var(--primary)}
 
-    /* ── TOAST ── */
-    #toast {
-      position: fixed; right: 1rem; bottom: 1.25rem;
-      background: #0f172a; color: #fff;
-      padding: .65rem 1rem; border-radius: 10px; display: none; z-index: 50;
-      max-width: 380px; font-size: .82rem; box-shadow: var(--shadow-md);
-      border-left: 3px solid #3b82f6;
-    }
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;z-index:60;padding:1rem;backdrop-filter:blur(3px)}
+    .modal-box{background:#fff;border-radius:var(--radius);padding:1.5rem;width:min(460px,100%);border:1px solid var(--border);box-shadow:var(--shadow-md)}
+    .modal-box h3{font-size:1.05rem;margin-bottom:.25rem}
+    .modal-desc{font-size:.82rem;color:var(--muted);margin-bottom:1rem}
+    .modal-field{margin-bottom:.85rem}
+    .modal-label{display:block;font-size:.73rem;color:var(--muted);margin-bottom:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .modal-input{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:var(--radius-sm);font:inherit;font-size:.85rem}
+    .modal-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem}
+    .modal-error{color:var(--red);font-size:.78rem;margin-top:.4rem}
+    .modal-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-sm);padding:.48rem .95rem;font-size:.83rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s}
+    .modal-btn:hover{background:#f1f5f9}
+    .modal-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .modal-btn.primary:hover{background:var(--blue)}
+    .modal-btn:disabled{opacity:.5;cursor:wait}
 
-    /* ── SETUP CARD ── */
-    #setup-card {
-      margin: 1.5rem auto; max-width: 640px;
-      background: var(--surface); border: 1px solid #f59e0b; border-radius: var(--radius);
-      padding: 1.25rem 1.5rem; box-shadow: var(--shadow);
-    }
-    #setup-card h3 { font-size: 1rem; margin-bottom: .5rem; }
-    #setup-card p  { color: var(--muted); font-size: .85rem; margin: .35rem 0; }
-    #setup-card code { background: var(--bg); padding: .1rem .3rem; border-radius: 4px; font-size: .8rem; }
-    .setup-row { display: flex; gap: .5rem; margin-top: .85rem; flex-wrap: wrap; }
-    #sheet-id-input {
-      flex: 1; min-width: 220px; padding: .45rem .65rem;
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      font: inherit; color: var(--text); background: #fff; font-size: .85rem;
-    }
-    #sheet-id-input:focus { outline: none; border-color: var(--primary); }
+    /* PAGES */
+    .page{padding:1.4rem 1.5rem 4rem;max-width:1340px;margin:0 auto}
+    .hidden{display:none!important}
 
-    /* ── MODAL ── */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(15,23,42,.5);
-      display: grid; place-items: center; z-index: 60; padding: 1rem; backdrop-filter: blur(3px);
-    }
-    .modal-box {
-      background: #fff; border-radius: var(--radius); padding: 1.5rem;
-      width: min(460px,100%); border: 1px solid var(--border);
-      box-shadow: var(--shadow-md);
-    }
-    .modal-box h3 { font-size: 1.05rem; margin-bottom: .25rem; }
-    .modal-desc   { font-size: .82rem; color: var(--muted); margin-bottom: 1rem; }
-    .modal-field  { margin-bottom: .85rem; }
-    .modal-label  { display: block; font-size: .73rem; color: var(--muted); margin-bottom: .3rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-    .modal-input  {
-      width: 100%; padding: .5rem .7rem; border: 1px solid var(--border);
-      border-radius: var(--radius-sm); font: inherit; font-size: .85rem;
-    }
-    .modal-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
-    .modal-error { color: var(--red); font-size: .78rem; margin-top: .4rem; }
-    .modal-btn { display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-sm);padding:.48rem .95rem;font-size:.83rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s; }
-    .modal-btn:hover { background:#f1f5f9; }
-    .modal-btn.primary { background:var(--primary);border-color:var(--primary);color:#fff; }
-    .modal-btn.primary:hover { background:var(--blue); }
-    .modal-btn:disabled { opacity:.5;cursor:wait; }
+    /* KPIs */
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.25rem}
+    .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;box-shadow:var(--shadow);border-top:3px solid var(--border);display:flex;flex-direction:column;gap:.35rem;cursor:pointer;transition:box-shadow .15s,transform .15s}
+    .kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+    .kpi .k-label{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+    .kpi .k-value{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+    .kpi .k-sub{font-size:.72rem;color:var(--muted2)}
+    .kpi.total{border-top-color:var(--primary)} .kpi.total .k-value{color:var(--primary)}
+    .kpi.done{border-top-color:var(--green)} .kpi.done .k-value{color:var(--green)}
+    .kpi.ready{border-top-color:var(--yellow)} .kpi.ready .k-value{color:var(--yellow)}
+    .kpi.blocked{border-top-color:var(--red)} .kpi.blocked .k-value{color:var(--red)}
+    .kpi.pending{border-top-color:var(--purple)} .kpi.pending .k-value{color:var(--purple)}
+    .kpi.noneed{border-top-color:var(--teal)} .kpi.noneed .k-value{color:var(--teal)}
+    .kpi.inprog{border-top-color:var(--blue)} .kpi.inprog .k-value{color:var(--blue)}
+    .kpi.notpicked{border-top-color:var(--grey)} .kpi.notpicked .k-value{color:var(--grey)}
 
-    /* ── PAGES ── */
-    .page { padding: 1.4rem 1.5rem 4rem; max-width: 1340px; margin: 0 auto; }
-    .hidden { display: none !important; }
+    /* GRID */
+    .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:.85rem;margin-bottom:.85rem}
+    @media(max-width:920px){.grid-2{grid-template-columns:1fr}}
 
-    /* ── KPIs ── */
-    .kpis {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: .75rem; margin-bottom: 1.25rem;
-    }
-    .kpi {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1rem 1.15rem;
-      box-shadow: var(--shadow);
-      border-top: 3px solid var(--border);
-      display: flex; flex-direction: column; gap: .35rem;
-    }
-    .kpi .k-label { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
-    .kpi .k-value { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
-    .kpi .k-sub   { font-size: .72rem; color: var(--muted2); }
-    .kpi.total    { border-top-color: var(--primary); }  .kpi.total .k-value    { color: var(--primary); }
-    .kpi.kaccounts{ border-top-color: #6366f1; }          .kpi.kaccounts .k-value{ color: #6366f1; }
-    .kpi.done     { border-top-color: var(--green); }     .kpi.done .k-value     { color: var(--green); }
-    .kpi.ready    { border-top-color: var(--yellow); }    .kpi.ready .k-value    { color: var(--yellow); }
-    .kpi.blocked  { border-top-color: var(--red); }       .kpi.blocked .k-value  { color: var(--red); }
-    .kpi.pending  { border-top-color: var(--purple); }    .kpi.pending .k-value  { color: var(--purple); }
-    .kpi.noneed   { border-top-color: var(--teal); }      .kpi.noneed .k-value   { color: var(--teal); }
-    .kpi.inprog   { border-top-color: var(--blue); }      .kpi.inprog .k-value   { color: var(--blue); }
-    .kpi.notpicked{ border-top-color: var(--grey); }     .kpi.notpicked .k-value{ color: var(--grey); }
+    /* CARDS */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;box-shadow:var(--shadow)}
+    .card h2{font-size:.92rem;font-weight:700;margin-bottom:.9rem;color:var(--text)}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+    .card-head h2{margin:0}
 
-    /* ── GRID ── */
-    .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: .85rem; margin-bottom: .85rem; }
-    @media(max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
+    /* DASHBOARD FILTER CHIPS */
+    .dash-filters{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+    .fchip{padding:.3rem .75rem;border-radius:999px;font-size:.76rem;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+    .fchip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
+    .fchip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .fchip.active-done{background:var(--green);border-color:var(--green);color:#fff}
+    .fchip.active-ready{background:#b45309;border-color:#b45309;color:#fff}
+    .fchip.active-inprog{background:var(--blue);border-color:var(--blue);color:#fff}
+    .fchip.active-blocked{background:var(--red);border-color:var(--red);color:#fff}
+    .fchip.active-pending{background:var(--purple);border-color:var(--purple);color:#fff}
 
-    /* ── CARDS ── */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
-    .card h2 { font-size: .92rem; font-weight: 700; margin-bottom: .9rem; color: var(--text); }
-    .card-head { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .card-head h2 { margin: 0; }
+    /* DONUT */
+    .donut-slice{cursor:pointer;transition:opacity .15s}
+    .donut-slice:hover{opacity:1!important}
+    .donut-legend-row{display:flex;align-items:center;gap:.45rem;padding:.22rem .3rem;cursor:pointer;border-radius:6px;margin-left:-.3rem;transition:background .1s}
+    .donut-legend-row:hover{background:var(--bg)}
 
-    /* ── DASHBOARD FILTER CHIPS ── */
-    .dash-filters {
-      display: flex; flex-wrap: wrap; gap: .4rem;
-      margin-bottom: .85rem;
-    }
-    .fchip {
-      padding: .3rem .75rem; border-radius: 999px; font-size: .76rem; font-weight: 600;
-      border: 1px solid var(--border); background: var(--bg); color: var(--muted);
-      cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap;
-    }
-    .fchip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
-    .fchip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-    .fchip.active-done    { background: var(--green);  border-color: var(--green);  color: #fff; }
-    .fchip.active-ready   { background: #b45309;        border-color: #b45309;        color: #fff; }
-    .fchip.active-inprog  { background: var(--blue);   border-color: var(--blue);   color: #fff; }
-    .fchip.active-blocked { background: var(--red);    border-color: var(--red);    color: #fff; }
-    .fchip.active-pending { background: var(--purple); border-color: var(--purple); color: #fff; }
+    /* ACCOUNT CARDS */
+    .accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem}
+    .section-label{grid-column:1/-1;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:.25rem 0 .1rem;display:flex;align-items:center;gap:.6rem}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .account{border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s;position:relative;overflow:hidden}
+    .account::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border)}
+    .account:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(37,99,235,.12);transform:translateY(-2px)}
+    .account:hover::before{background:var(--primary)}
+    .account.migrated{background:#f0fdf4;border-color:var(--green-border)}
+    .account.migrated::before{background:var(--green)}
+    .account.not-picked{background:#f8fafc;border-color:var(--grey-border);border-style:dashed;cursor:default;opacity:.85}
+    .account.not-picked::before{background:var(--grey)}
+    .account.not-picked:hover{border-color:var(--grey);box-shadow:none;transform:none}
+    .acct-head{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.6rem}
+    .acct-avatar{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:var(--primary-bg);color:var(--primary)}
+    .account.migrated .acct-avatar{background:var(--green-bg);color:var(--green)}
+    .acct-name{font-size:.9rem;font-weight:700;line-height:1.25;margin-bottom:.12rem}
+    .acct-meta{color:var(--muted);font-size:.74rem}
+    .badge-done{display:inline-flex;align-items:center;gap:.25rem;font-size:.65rem;font-weight:700;background:var(--green);color:#fff;padding:.12rem .48rem;border-radius:999px;margin-left:auto;flex-shrink:0}
+    .mini-bars{display:flex;height:7px;border-radius:999px;overflow:hidden;background:#f1f5f9;margin-bottom:.6rem;gap:1px}
+    .mini-bars span{display:block;height:100%;min-width:0}
+    .pills{display:flex;flex-wrap:wrap;gap:.3rem}
+    .pill{font-size:.67rem;padding:.12rem .42rem;border-radius:999px;background:#f1f5f9;color:var(--muted);font-weight:500}
+    .pill.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+    .pill.ready{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+    .pill.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .pill.pending{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+    .pill.noneed{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+    .pill.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+    .pill.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
+    .pill-nav{cursor:pointer}
+    .pill-nav:hover{filter:brightness(.9)}
 
-    /* ── BAR CHART ── */
-    .bar-row { display: grid; grid-template-columns: 170px 1fr 44px; gap: .6rem; align-items: center; margin: .5rem 0; }
-    .bar-track { height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
-    .bar-fill  { height: 100%; border-radius: 999px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-    .bar-label { font-size: .78rem; color: var(--muted); font-weight: 500; }
-    .bar-count { font-size: .78rem; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    /* BLOCKED DETAIL */
+    .blocked-detail{display:flex;align-items:flex-start;gap:.5rem;margin-top:.65rem;padding:.55rem .7rem;border-radius:8px;background:#fff5f5;border:1px solid #fca5a5;cursor:pointer;transition:background .15s}
+    .blocked-detail:hover{background:#fee2e2}
+    .blocked-icon{font-size:.88rem;line-height:1.4;flex-shrink:0}
+    .blocked-title{font-size:.75rem;font-weight:700;color:var(--red);margin-bottom:.3rem}
+    .blocked-teams{display:flex;flex-wrap:wrap;gap:.3rem}
+    .blocked-team{font-size:.68rem;padding:.12rem .42rem;border-radius:999px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5}
+    .blocked-team.cx-team{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+    .blocked-team.client{background:#ede9fe;color:var(--purple);border-color:#c4b5fd}
+    .blocked-team.dev-team{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+    .blocked-team.infra{background:#f0fdf4;color:var(--green);border-color:var(--green-border)}
 
-    /* ── PROGRESS RING ── */
-    .progress-ring-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-    .progress-copy h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .35rem; }
-    .progress-copy p  { font-size: .82rem; color: var(--muted); margin: .25rem 0; }
+    /* DETAIL VIEW */
+    .detail-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin:.85rem 0 1.1rem;flex-wrap:wrap}
+    .detail-head h2{font-size:1.3rem;font-weight:800}
+    .muted{color:var(--muted);font-size:.82rem;margin-top:.2rem}
+    .filters{display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap;align-items:center}
+    .filters input,.filters select,#account-search{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem}
+    .filters input:focus,.filters select:focus,#account-search:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    #account-search{min-width:200px}
 
-    /* ── DONUT INTERACTIVITY ── */
-    .donut-slice { cursor: pointer; transition: opacity .15s; }
-    .donut-slice:hover { opacity: 1 !important; }
-    .donut-legend-row {
-      display: flex; align-items: center; gap: .45rem; padding: .22rem 0;
-      cursor: pointer; border-radius: 6px; padding-left: .3rem; margin-left: -.3rem;
-      transition: background .1s;
-    }
-    .donut-legend-row:hover { background: var(--bg); }
+    /* ACCOUNT LINKS */
+    .acct-links-panel{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;padding:.75rem 1rem;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)}
+    .acct-link-item{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:999px;font-size:.76rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--primary);text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+    .acct-link-item:hover{background:var(--primary-bg);border-color:var(--primary);text-decoration:none}
+    .acct-link-label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .acct-link-sep{color:var(--muted2)}
 
-    /* ── ACCOUNT CARDS ── */
-    .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
-    .section-label {
-      grid-column: 1 / -1; font-size: .72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .07em; color: var(--muted); padding: .25rem 0 .1rem;
-      display: flex; align-items: center; gap: .6rem;
-    }
-    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
-    .account {
-      border: 1px solid var(--border); border-radius: 12px; padding: 1rem;
-      cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s, transform .15s;
-      position: relative; overflow: hidden;
-    }
-    .account::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--border);
-    }
-    .account:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(37,99,235,.12); transform: translateY(-2px); }
-    .account:hover::before { background: var(--primary); }
-    .account.migrated { background: #f0fdf4; border-color: var(--green-border); }
-    .account.migrated::before { background: var(--green); }
-    .account.not-picked {
-      background: #f8fafc; border-color: var(--grey-border); border-style: dashed;
-      cursor: default; opacity: .85;
-    }
-    .account.not-picked::before { background: var(--grey); }
-    .account.not-picked:hover { border-color: var(--grey); box-shadow: none; transform: none; }
-    .acct-head { display: flex; align-items: flex-start; gap: .7rem; margin-bottom: .6rem; }
-    .acct-avatar {
-      width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
-      display: grid; place-items: center; font-size: .75rem; font-weight: 700;
-      background: var(--primary-bg); color: var(--primary);
-    }
-    .account.migrated .acct-avatar { background: var(--green-bg); color: var(--green); }
-    .acct-name { font-size: .9rem; font-weight: 700; line-height: 1.25; margin-bottom: .12rem; }
-    .acct-meta { color: var(--muted); font-size: .74rem; }
-    .badge-done {
-      display: inline-flex; align-items: center; gap: .25rem;
-      font-size: .65rem; font-weight: 700;
-      background: var(--green); color: #fff; padding: .12rem .48rem; border-radius: 999px;
-      margin-left: auto; flex-shrink: 0;
-    }
-    .mini-bars { display: flex; height: 7px; border-radius: 999px; overflow: hidden; background: #f1f5f9; margin-bottom: .6rem; gap: 1px; }
-    .mini-bars span { display: block; height: 100%; min-width: 0; }
-    .pills { display: flex; flex-wrap: wrap; gap: .3rem; }
-    .pill { font-size: .67rem; padding: .12rem .42rem; border-radius: 999px; background: #f1f5f9; color: var(--muted); font-weight: 500; }
-    .pill.done    { background: var(--green-bg);    color: var(--green);   border: 1px solid var(--green-border); }
-    .pill.ready   { background: var(--yellow-bg);   color: var(--yellow);  border: 1px solid var(--yellow-border); }
-    .pill.blocked { background: var(--red-bg);      color: var(--red);     border: 1px solid var(--red-border); cursor: pointer; }
-    .pill.blocked:hover { background: var(--red); color: #fff; }
-    .pill.pending { background: var(--purple-bg);   color: var(--purple);  border: 1px solid var(--purple-border); }
-    .pill.noneed  { background: var(--teal-bg);     color: var(--teal);    border: 1px solid var(--teal-border); }
-    .pill.inprog   { background: var(--blue-bg);     color: var(--blue);    border: 1px solid var(--blue-border); }
-    .pill.notpicked{ background: var(--grey-bg);     color: var(--grey);    border: 1px solid var(--grey-border); }
+    /* TABLE */
+    .table-wrap{overflow:auto;border-radius:8px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    th,td{text-align:left;padding:.55rem .65rem;border-bottom:1px solid var(--border);vertical-align:top}
+    th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:#f8fafc}
+    th:first-child{border-radius:8px 0 0 0}
+    th:last-child{border-radius:0 8px 0 0}
+    tr.row-done{background:#f0fdf4}
+    tr:last-child td{border-bottom:none}
+    tr:hover:not(thead tr){background:#f8fafc}
+    tr.row-done:hover{background:#dcfce7}
+    tr.row-clickable{cursor:pointer}
+    tr.row-clickable:hover td{background:#eff6ff!important}
+    td strong{font-weight:600}
 
-    /* ── BLOCKED DETAIL PANEL ── */
-    .blocked-detail {
-      display: flex; align-items: flex-start; gap: .5rem;
-      margin-top: .65rem; padding: .55rem .7rem; border-radius: 8px;
-      background: #fff5f5; border: 1px solid #fca5a5;
-      cursor: pointer; transition: background .15s;
-    }
-    .blocked-detail:hover { background: #fee2e2; }
-    .blocked-icon { font-size: .88rem; line-height: 1.4; flex-shrink: 0; }
-    .blocked-title { font-size: .75rem; font-weight: 700; color: var(--red); margin-bottom: .3rem; }
-    .blocked-teams { display: flex; flex-wrap: wrap; gap: .3rem; }
-    .blocked-team {
-      font-size: .68rem; padding: .12rem .42rem; border-radius: 999px;
-      background: #fee2e2; color: var(--red); border: 1px solid #fca5a5;
-    }
-    .blocked-team.cx-team     { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
-    .blocked-team.client      { background: #ede9fe; color: var(--purple); border-color: #c4b5fd; }
-    .blocked-team.dev-team    { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
-    .blocked-team.infra       { background: #f0fdf4; color: var(--green); border-color: var(--green-border); }
+    /* STATUS CHIP */
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:.18rem .52rem;border-radius:999px;font-size:.71rem;font-weight:700;white-space:nowrap}
+    .chip.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+    .chip.ready{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+    .chip.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .chip.pending{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+    .chip.noneed{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+    .chip.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+    .chip.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
+    .chip.other{background:#f1f5f9;color:var(--muted)}
+    .chip.del-deleted{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .chip.del-pending{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
 
-    /* ── DETAIL VIEW ── */
-    .detail-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin: .85rem 0 1.1rem; flex-wrap: wrap; }
-    .detail-head h2 { font-size: 1.3rem; font-weight: 800; }
-    .muted { color: var(--muted); font-size: .82rem; margin-top: .2rem; }
-    .filters { display: flex; gap: .5rem; margin-bottom: .85rem; flex-wrap: wrap; align-items: center; }
-    .filters input, .filters select, #account-search {
-      border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .44rem .65rem;
-      font: inherit; background: #fff; color: var(--text); font-size: .82rem;
-    }
-    .filters input:focus, .filters select:focus, #account-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-    #account-search { min-width: 200px; }
+    /* SPINNER / ERROR */
+    .spinner-wrap{display:flex;align-items:center;justify-content:center;padding:5rem;gap:.85rem;color:var(--muted);flex-direction:column}
+    .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite}
+    .spinner-text{font-size:.85rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:.9rem 1.1rem;color:var(--red);font-size:.85rem;margin:.75rem 0}
 
-    /* ── ACCOUNT LINKS PANEL ── */
-    .acct-links-panel {
-      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
-      padding: .75rem 1rem; background: var(--bg); border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-    }
-    .acct-link-item {
-      display: inline-flex; align-items: center; gap: .3rem;
-      padding: .28rem .65rem; border-radius: 999px; font-size: .76rem; font-weight: 500;
-      background: var(--surface); border: 1px solid var(--border); color: var(--primary);
-      text-decoration: none; white-space: nowrap;
-      transition: background .15s, border-color .15s;
-    }
-    .acct-link-item:hover { background: var(--primary-bg); border-color: var(--primary); text-decoration: none; }
-    .acct-link-label { font-size: .7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-    .acct-link-sep { color: var(--muted2); }
+    /* EDIT MODE */
+    .status-select{border:1px solid var(--border);border-radius:6px;padding:.3rem .45rem;font:inherit;font-size:.75rem;background:#fff;color:var(--text);cursor:pointer;max-width:180px}
+    .status-select:focus{outline:none;border-color:var(--primary)}
+    .saving{opacity:.5;pointer-events:none}
+    .save-ok{color:var(--green);font-size:.72rem;margin-left:.3rem}
+    .save-err{color:var(--red);font-size:.72rem;margin-left:.3rem}
+    #edit-badge{font-size:.75rem;padding:.3rem .65rem;border-radius:6px;background:rgba(22,163,74,.2);color:#86efac;font-weight:700;border:1px solid rgba(134,239,172,.3)}
+    #last-updated{font-size:.76rem;color:rgba(255,255,255,.5)}
 
-    /* ── TABLE ── */
-    .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-    th, td { text-align: left; padding: .55rem .65rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { color: var(--muted); font-weight: 700; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; background: #f8fafc; }
-    th:first-child { border-radius: 8px 0 0 0; }
-    th:last-child  { border-radius: 0 8px 0 0; }
-    tr.row-done { background: #f0fdf4; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover:not(thead tr) { background: #f8fafc; }
-    tr.row-done:hover { background: #dcfce7; }
-    td strong { font-weight: 600; }
-
-    /* ── STATUS CHIP ── */
-    .chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: .18rem .52rem; border-radius: 999px; font-size: .71rem; font-weight: 700; white-space: nowrap;
-    }
-    .chip.done    { background: var(--green-bg);    color: var(--green);    border: 1px solid var(--green-border); }
-    .chip.ready   { background: var(--yellow-bg);   color: var(--yellow);   border: 1px solid var(--yellow-border); }
-    .chip.blocked { background: var(--red-bg);      color: var(--red);      border: 1px solid var(--red-border); }
-    .chip.pending { background: var(--purple-bg);   color: var(--purple);   border: 1px solid var(--purple-border); }
-    .chip.noneed  { background: var(--teal-bg);     color: var(--teal);     border: 1px solid var(--teal-border); }
-    .chip.inprog   { background: var(--blue-bg);     color: var(--blue);     border: 1px solid var(--blue-border); }
-    .chip.notpicked{ background: var(--grey-bg);     color: var(--grey);     border: 1px solid var(--grey-border); }
-    .chip.other    { background: #f1f5f9;            color: var(--muted); }
-    .chip.del-deleted { background: #fee2e2; color: var(--red); border: 1px solid var(--red-border); }
-    .chip.del-pending { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
-
-    /* ── SPINNER ── */
-    .spinner-wrap { display: flex; align-items: center; justify-content: center; padding: 5rem; gap: .85rem; color: var(--muted); flex-direction: column; }
-    .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .75s linear infinite; }
-    .spinner-text { font-size: .85rem; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── ERROR ── */
-    .error-box { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius-sm); padding: .9rem 1.1rem; color: var(--red); font-size: .85rem; margin: .75rem 0; }
-
-    /* ── EDIT MODE ── */
-    .status-select {
-      border: 1px solid var(--border); border-radius: 6px; padding: .3rem .45rem;
-      font: inherit; font-size: .75rem; background: #fff; color: var(--text);
-      cursor: pointer; max-width: 180px;
-    }
-    .status-select:focus { outline: none; border-color: var(--primary); }
-    .saving { opacity: .5; pointer-events: none; }
-    .save-ok  { color: var(--green); font-size: .72rem; margin-left: .3rem; }
-    .save-err { color: var(--red);   font-size: .72rem; margin-left: .3rem; }
-
-    /* ── EDIT BADGE ── */
-    #edit-badge {
-      font-size: .75rem; padding: .3rem .65rem; border-radius: 6px;
-      background: rgba(22,163,74,.2); color: #86efac; font-weight: 700;
-      border: 1px solid rgba(134,239,172,.3);
-    }
-
-    /* ── LAST UPDATED ── */
-    #last-updated { font-size: .76rem; color: rgba(255,255,255,.5); }
-
-    /* ── DELETIONS SECTION ── */
-    .del-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .85rem; }
-    .del-status-deleted { color: var(--red); font-weight: 700; }
-    .del-status-pending { color: var(--yellow); font-weight: 700; }
+    /* DELETIONS */
+    .del-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
   </style>
 </head>
 <body>
@@ -443,10 +268,7 @@
 <div id="setup-card" class="hidden">
   <h3>Connect your Google Sheet</h3>
   <p>This is a <strong>read-only</strong> live view. It reads the <code>data</code> tab directly from your sheet.</p>
-  <p>
-    <strong>Before connecting:</strong> open the sheet → <em>Share</em> → set to <strong>"Anyone with the link can view"</strong>.
-    No data is sent anywhere — the browser fetches the sheet directly.
-  </p>
+  <p><strong>Before connecting:</strong> open the sheet → <em>Share</em> → set to <strong>"Anyone with the link can view"</strong>.</p>
   <div class="setup-row">
     <input id="sheet-id-input" placeholder="Paste Sheet ID  (…/spreadsheets/d/SHEET_ID/…)" />
     <button class="btn light" id="btn-sheet-save">Connect</button>
@@ -455,10 +277,11 @@
 
 <div id="error-container"></div>
 
+<!-- OVERVIEW -->
 <section id="overview" class="page hidden">
   <div class="kpis" id="kpis"></div>
   <div class="card" style="margin-bottom:.85rem">
-    <h2>Overall progress</h2>
+    <h2>Overall progress <span style="font-size:.73rem;color:var(--muted);font-weight:400">· click a segment to view those deliveries</span></h2>
     <div id="progress-block"></div>
   </div>
   <div class="card">
@@ -478,6 +301,25 @@
   </div>
 </section>
 
+<!-- GLOBAL STATUS VIEW -->
+<section id="status-view" class="page hidden">
+  <button id="btn-status-back" class="btn light" style="margin-bottom:.5rem">← Back to overview</button>
+  <div class="detail-head">
+    <div>
+      <h2 id="sv-title"></h2>
+      <p id="sv-meta" class="muted"></p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters">
+      <input id="sv-search" type="search" placeholder="Search account, channel, distribution, remarks…" style="min-width:240px" />
+      <span id="sv-count" style="font-size:.78rem;color:var(--muted);align-self:center"></span>
+    </div>
+    <div id="sv-table" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ACCOUNT DETAIL -->
 <section id="detail" class="page hidden">
   <button id="btn-back" class="btn light" style="margin-bottom:.5rem">← Back to overview</button>
   <div class="detail-head">
@@ -506,6 +348,7 @@
   </div>
 </section>
 
+<!-- DELETIONS -->
 <section id="deletions" class="page hidden">
   <div class="card">
     <div class="card-head">
@@ -516,7 +359,7 @@
       </div>
     </div>
     <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
-      Tracks channel and delivery deletions made during migration. Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">deletions</code> tab in your Google Sheet.
+      Tracks channel and delivery deletions. Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">deletions</code> tab in your Google Sheet.
     </p>
     <div class="filters">
       <input id="del-filter-q" type="search" placeholder="Filter by AMG ID, channel, distribution…" style="min-width:220px" />
@@ -527,7 +370,7 @@
       </select>
     </div>
     <div id="deletions-table" class="table-wrap">
-      <div class="del-empty">Select the <strong>Deletion Tracker</strong> tab to load data. Make sure your sheet has a tab named <code>deletions</code>.</div>
+      <div class="del-empty">Make sure your sheet has a tab named <code>deletions</code>.</div>
     </div>
   </div>
 </section>
@@ -535,13 +378,12 @@
 <div id="toast"></div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────────────
-const STORAGE_KEY        = 'an3_sheet_id';
-const SHEET_NAME         = 'data';
-const DELETIONS_TAB      = 'deletions';
-const DEFAULT_ID         = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
-const STATUSES           = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
-
+// ── Config ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY   = 'an3_sheet_id';
+const SHEET_NAME    = 'data';
+const DELETIONS_TAB = 'deletions';
+const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
 
 const ALIASES = {
@@ -555,8 +397,8 @@ const ALIASES = {
   status:            ['status','migration_status','migration status'],
   remarks:           ['remarks','notes','comment','comments','note'],
   hls_sheet:         ['hls_sheet','hls sheet','hls_data_sheet','hls data sheet','hls_data_gathering_sheet','hls data gathering sheet','hls_gathering_sheet','hls gathering sheet'],
-  non_hls_sheet:     ['non_hls_sheet','non hls sheet','non_hls_data_sheet','non hls data sheet','non_hls_data_gathering_sheet','non hls data gathering sheet','non_hls_gathering_sheet','non hls gathering sheet'],
-  discrepancies:     ['discrepancies','discrepancy','discrepancies_link','discrepancy_link'],
+  non_hls_sheet:     ['non_hls_sheet','non hls sheet','non_hls_data_sheet','non hls data sheet','non_hls_data_gathering_sheet','non hls data gathering sheet'],
+  discrepancies:     ['discrepancies','discrepancy','discrepancies_link'],
   jira_links:        ['jira','jira_links','jira links','jira_link','jira link','jira_url','jira url','jira_tickets','jira tickets'],
 };
 
@@ -574,117 +416,297 @@ const KNOWN_HEADER_MARKERS = new Set([
   'channel_id','channel id','distribution_id','eta_provided_date',
 ]);
 
-// ── Edit state ──────────────────────────────────────────────────────────────
+const KEY_TO_STATUS = {
+  done:'switchover completed', ready:'ready for switchover', inprog:'in-progress',
+  blocked:'blocked', pending:'non-ssai pending', noneed:'no need of migration',
+  notpicked:'not yet picked for migration',
+};
+const STATUS_TITLES = {
+  all:'All Deliveries', done:'Completed Deliveries', ready:'Ready to Switch',
+  inprog:'In Progress', blocked:'Blocked Deliveries', pending:'NM Pending',
+  noneed:'No Migration Needed', notpicked:'Not Yet Picked',
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
 let canEdit = false;
+let rows = [], accounts = [], selected = null, detailRows = [];
+let dashboardFilter = '';
+let deletionsRows = [], deletionsLoaded = false;
+let svRows = [];
+
+// ── Edit key ─────────────────────────────────────────────────────────────────
 function getEditKey()   { return sessionStorage.getItem('an3_edit_key') || ''; }
 function setEditKey(k)  { sessionStorage.setItem('an3_edit_key', k); }
 function clearEditKey() { sessionStorage.removeItem('an3_edit_key'); canEdit = false; }
 
-// ── State ───────────────────────────────────────────────────────────────────
-let rows = [], accounts = [], selected = null, detailRows = [];
-let dashboardFilter = '';
-let deletionsRows = [], deletionsLoaded = false;
-let currentTab = 'overview';
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 const $ = s => document.querySelector(s);
 function toast(msg) {
   const el = $('#toast');
-  el.textContent = msg;
-  el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
 function f(row, key)   { return (row[key] ?? '').toString().trim(); }
-function initials(name) {
-  return name.split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
-}
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s)        { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n)   { return n.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
 
-// Parse gviz Date(...) strings → human-readable date
 function formatGvizDate(s) {
   const m = String(s).match(/Date\((\d+),(\d+),(\d+)\)/);
   if (!m) return s;
-  const d = new Date(+m[1], +m[2], +m[3]);
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(+m[1],+m[2],+m[3]).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 }
-
-// Extract best display value from a gviz cell object
 function gvizCellValue(c) {
   if (!c) return '';
-  const v = c.v;
-  const fv = c.f;
+  const v = c.v, fv = c.f;
   if (v == null) return fv != null ? String(fv) : '';
-  // Dates come as "Date(y,m,d)" strings or numeric serials
-  if (typeof v === 'string' && v.startsWith('Date(')) {
-    return fv != null ? String(fv) : formatGvizDate(v);
-  }
-  // Numbers with a formatted value (includes date serials)
+  if (typeof v === 'string' && v.startsWith('Date(')) return fv != null ? String(fv) : formatGvizDate(v);
   if (typeof v === 'number' && fv != null) return String(fv);
   return String(v);
 }
 
 function statusClass(s) {
-  const v = (s || '').toLowerCase();
-  if (v === 'switchover completed')   return 'done';
-  if (v === 'ready for switchover')   return 'ready';
-  if (v === 'blocked')                return 'blocked';
-  if (v.includes('pending'))          return 'pending';
+  const v = (s||'').toLowerCase();
+  if (v === 'switchover completed')             return 'done';
+  if (v === 'ready for switchover')             return 'ready';
+  if (v === 'blocked')                          return 'blocked';
+  if (v.includes('pending'))                    return 'pending';
   if (v === 'in-progress' || v === 'in progress') return 'inprog';
-  if (v === 'no need of migration')           return 'noneed';
-  if (v === 'not yet picked for migration')   return 'notpicked';
+  if (v === 'no need of migration')             return 'noneed';
+  if (v === 'not yet picked for migration')     return 'notpicked';
   return 'other';
 }
-const STATUS_ICON = { done:'✓', ready:'→', blocked:'✗', pending:'◷', inprog:'⚡', noneed:'⊘', notpicked:'○', other:'○' };
+const STATUS_ICON = {done:'✓',ready:'→',blocked:'✗',pending:'◷',inprog:'⚡',noneed:'⊘',notpicked:'○',other:'○'};
 function chipHtml(s) {
   const cls = statusClass(s);
-  return `<span class="chip ${cls}">${STATUS_ICON[cls] || '○'} ${esc(s) || '—'}</span>`;
+  return `<span class="chip ${cls}">${STATUS_ICON[cls]||'○'} ${esc(s)||'—'}</span>`;
 }
-
 function delStatusChip(s) {
-  const v = (s || '').toLowerCase().trim();
+  const v = (s||'').toLowerCase().trim();
   if (v === 'deleted') return `<span class="chip del-deleted">✗ Deleted</span>`;
   if (v === 'pending') return `<span class="chip del-pending">◷ Pending</span>`;
-  return `<span class="chip other">${esc(s) || '—'}</span>`;
+  return `<span class="chip other">${esc(s)||'—'}</span>`;
 }
 
-// ── Donut pie chart ──────────────────────────────────────────────────────────
+function rowMatchesKey(row, key) {
+  const s = f(row,'status').toLowerCase();
+  if (!key || key === 'all') return true;
+  if (key === 'done')       return s === 'switchover completed';
+  if (key === 'ready')      return s === 'ready for switchover';
+  if (key === 'blocked')    return s === 'blocked';
+  if (key === 'pending')    return s.includes('pending');
+  if (key === 'inprog')     return s === 'in-progress' || s === 'in progress';
+  if (key === 'noneed')     return s === 'no need of migration';
+  if (key === 'notpicked')  return s === 'not yet picked for migration';
+  return true;
+}
+
+// ── Hash routing ─────────────────────────────────────────────────────────────
+function hideAll() {
+  ['#overview','#status-view','#detail','#deletions'].forEach(s => {
+    const el = $(s); if (el) el.classList.add('hidden');
+  });
+}
+
+function renderFromHash() {
+  if (!rows.length) return;
+  const hash = location.hash || '';
+  hideAll();
+  if (!hash || hash === '#' || hash === '#overview') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#overview').classList.remove('hidden');
+    renderOverview();
+  } else if (hash.startsWith('#status/')) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#status-view').classList.remove('hidden');
+    _showStatusView(decodeURIComponent(hash.slice(8)));
+  } else if (hash.startsWith('#account/')) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#detail').classList.remove('hidden');
+    const parts = hash.slice(9).split('/');
+    _showAccountDetail(decodeURIComponent(parts[0]), parts[1] ? decodeURIComponent(parts[1]) : '');
+  } else if (hash === '#deletions') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'deletions'));
+    $('#deletions').classList.remove('hidden');
+    if (!deletionsLoaded) loadDeletions();
+  } else {
+    $('#overview').classList.remove('hidden');
+    renderOverview();
+  }
+}
+window.addEventListener('hashchange', renderFromHash);
+
+// ── Sheet fetch ──────────────────────────────────────────────────────────────
+function getSheetId() { return localStorage.getItem(STORAGE_KEY) || DEFAULT_ID; }
+function normalizeLabel(s) { return (s||'').trim().toLowerCase().replace(/[\s\-]+/g,'_').replace(/[^a-z0-9_]/g,''); }
+
+async function fetchTab(tabName) {
+  const id  = getSheetId();
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response format. Is the sheet publicly viewable?');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  return parsed;
+}
+
+function buildLabelToKey(parsed, aliasMap) {
+  const labels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
+  const map = {};
+  for (const [key, aliases] of Object.entries(aliasMap)) {
+    for (let i = 0; i < labels.length; i++) {
+      if (aliases.includes(labels[i])) { map[i] = key; break; }
+    }
+  }
+  return map;
+}
+
+async function fetchRows() {
+  const parsed = await fetchTab(SHEET_NAME);
+  const labelToKey = buildLabelToKey(parsed, ALIASES);
+  const result = [];
+  let lastChannelId = '';
+
+  for (let idx = 0; idx < parsed.table.rows.length; idx++) {
+    const cells = parsed.table.rows[idx].c.map(gvizCellValue);
+    const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k==='status')?.[0]] || '';
+    const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k==='account_name')?.[0]] || '';
+    if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) || KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
+    if (cells.every(v => !v)) continue;
+
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    obj._row_num = idx + 2;
+
+    // Inherit channel_id from previous row if empty
+    if (!obj.channel_id && lastChannelId) obj.channel_id = lastChannelId;
+    if (obj.channel_id) lastChannelId = obj.channel_id;
+
+    result.push(obj);
+  }
+  return result;
+}
+
+async function fetchDeletions() {
+  const parsed = await fetchTab(DELETIONS_TAB);
+  const labelToKey = buildLabelToKey(parsed, DELETION_ALIASES);
+  const result = [];
+  for (const gvizRow of parsed.table.rows) {
+    const cells = gvizRow.c.map(gvizCellValue);
+    if (cells.every(v => !v)) continue;
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    result.push(obj);
+  }
+  return result;
+}
+
+// ── Aggregate ────────────────────────────────────────────────────────────────
+function parseBlockedWhere(remarks) {
+  const r = remarks.toLowerCase();
+  if (r.includes('cx team')||r.includes('cx-team')) return 'CX team';
+  if (/\bcx\b/.test(r)) return 'CX team';
+  if (r.includes('client')) return 'Client';
+  if (r.includes('dev team')||r.includes('engineering')) return 'Dev team';
+  if (r.includes('infra')) return 'Infra';
+  if (r.includes('legal')||r.includes('compliance')) return 'Legal';
+  if (r.includes('ops')) return 'Ops';
+  return null;
+}
+
+function aggregate(data) {
+  const map = {};
+  for (const row of data) {
+    const name = f(row,'account_name'); if (!name) continue;
+    const amg = f(row,'amg_id');
+    const s = f(row,'status').toLowerCase();
+    if (!map[name]) map[name] = {
+      account_name:name, amg_id:amg,
+      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notpicked:0,
+      blockedRows:[], hls_sheet:'', non_hls_sheet:'', discrepancies:'', jira_set: new Set(),
+    };
+    const a = map[name];
+    if (!a.amg_id && amg) a.amg_id = amg;
+    if (!a.hls_sheet && f(row,'hls_sheet'))       a.hls_sheet = f(row,'hls_sheet');
+    if (!a.non_hls_sheet && f(row,'non_hls_sheet')) a.non_hls_sheet = f(row,'non_hls_sheet');
+    if (!a.discrepancies && f(row,'discrepancies')) a.discrepancies = f(row,'discrepancies');
+    const jv = f(row,'jira_links');
+    if (jv) jv.split(/[,\n]+/).map(j=>j.trim()).filter(Boolean).forEach(j=>a.jira_set.add(j));
+    a.total++;
+    if (s==='switchover completed')                                    a.completed++;
+    else if (s==='ready for switchover')                               a.ready++;
+    else if (s==='blocked') { a.blocked++; a.blockedRows.push({channel:f(row,'channel_id'),remark:f(row,'remarks')}); }
+    else if (s.includes('pending'))                                    a.pending++;
+    else if (s.includes('in-progress')||s.includes('in progress'))    a.inprog++;
+    else if (s==='no need of migration')                               a.noneed++;
+    else if (s==='not yet picked for migration')                       a.notpicked++;
+  }
+  return Object.values(map).map(a => {
+    const tc = {};
+    for (const br of a.blockedRows) { const w = parseBlockedWhere(br.remark)||'Unknown'; tc[w]=(tc[w]||0)+1; }
+    return { ...a, jira_links:[...a.jira_set],
+      blockedTeams: Object.entries(tc).sort((x,y)=>y[1]-x[1]).map(([t,n])=>({team:t,count:n})),
+      actionable: a.total - a.completed - a.noneed,
+      fully_done: a.completed + a.noneed === a.total && a.total > 0 && a.notpicked === 0,
+    };
+  }).sort((a,b) => b.total - a.total);
+}
+
+// ── Dashboard filter ─────────────────────────────────────────────────────────
+const FCHIP_CLASS = {'':'active',done:'active-done',ready:'active-ready',inprog:'active-inprog',blocked:'active-blocked',pending:'active-pending'};
+function matchesDashboardFilter(a) {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter==='done')    return a.fully_done;
+  if (dashboardFilter==='blocked') return a.blocked > 0;
+  if (dashboardFilter==='ready')   return a.ready > 0;
+  if (dashboardFilter==='inprog')  return a.inprog > 0;
+  if (dashboardFilter==='pending') return a.pending > 0;
+  return true;
+}
+function setDashboardFilter(key) {
+  dashboardFilter = key;
+  document.querySelectorAll('.fchip').forEach(btn => {
+    btn.className = 'fchip';
+    if (btn.dataset.key === key) btn.classList.add(FCHIP_CLASS[key]||'active');
+  });
+  renderAccountCards($('#account-search').value||'');
+}
+
+// ── Donut chart ───────────────────────────────────────────────────────────────
 function donutPieChart(counts, total) {
   const slices = [
-    { key: 'done',     label: 'Completed',       count: counts.done,     color: '#16a34a' },
-    { key: 'ready',    label: 'Ready to switch',  count: counts.ready,    color: '#b45309' },
-    { key: 'inprog',   label: 'In-progress',      count: counts.inprog,   color: '#1d4ed8' },
-    { key: 'pending',  label: 'NM Pending',        count: counts.pending,  color: '#7c3aed' },
-    { key: 'blocked',  label: 'Blocked',           count: counts.blocked,  color: '#dc2626' },
-    { key: 'noneed',   label: 'No migration',      count: counts.noneed,   color: '#0e7490' },
-    { key: 'notpicked',label: 'Not yet picked',    count: counts.notpicked,color: '#94a3b8' },
-  ].filter(d => d.count > 0);
+    {key:'done',    label:'Completed',       count:counts.done,     color:'#16a34a'},
+    {key:'ready',   label:'Ready to switch', count:counts.ready,    color:'#b45309'},
+    {key:'inprog',  label:'In-progress',     count:counts.inprog,   color:'#1d4ed8'},
+    {key:'pending', label:'NM Pending',      count:counts.pending,  color:'#7c3aed'},
+    {key:'blocked', label:'Blocked',         count:counts.blocked,  color:'#dc2626'},
+    {key:'noneed',  label:'No migration',    count:counts.noneed,   color:'#0e7490'},
+    {key:'notpicked',label:'Not yet picked', count:counts.notpicked,color:'#94a3b8'},
+  ].filter(d=>d.count>0);
 
-  const cx = 80, cy = 80, R = 66, ri = 38, gap = 0.018;
-  let angle = -Math.PI / 2;
+  const cx=80,cy=80,R=66,ri=38,gap=0.018;
+  let angle = -Math.PI/2;
 
   const paths = slices.map(d => {
-    const sa = angle;
-    const sw = (d.count / total) * 2 * Math.PI;
-    angle += sw;
-    const ea = angle;
-    const x1  = cx + R  * Math.cos(sa + gap), y1  = cy + R  * Math.sin(sa + gap);
-    const x2  = cx + R  * Math.cos(ea - gap), y2  = cy + R  * Math.sin(ea - gap);
-    const xi1 = cx + ri * Math.cos(ea - gap), yi1 = cy + ri * Math.sin(ea - gap);
-    const xi2 = cx + ri * Math.cos(sa + gap), yi2 = cy + ri * Math.sin(sa + gap);
-    const lg  = sw > Math.PI ? 1 : 0;
-    return `<path class="donut-slice" data-key="${d.key}" title="${d.label}: ${d.count}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
+    const sa=angle, sw=(d.count/total)*2*Math.PI;
+    angle += sw; const ea=angle;
+    const x1=cx+R*Math.cos(sa+gap),y1=cy+R*Math.sin(sa+gap);
+    const x2=cx+R*Math.cos(ea-gap),y2=cy+R*Math.sin(ea-gap);
+    const xi1=cx+ri*Math.cos(ea-gap),yi1=cy+ri*Math.sin(ea-gap);
+    const xi2=cx+ri*Math.cos(sa+gap),yi2=cy+ri*Math.sin(sa+gap);
+    const lg=sw>Math.PI?1:0;
+    return `<path class="donut-slice" data-key="${d.key}" title="View ${d.label} deliveries" d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
   });
 
-  const donePct = pct(counts.done, total);
-
   const legendRows = slices.map(d => `
-    <div class="donut-legend-row" data-key="${d.key}" title="Click to filter accounts by: ${d.label}">
+    <div class="donut-legend-row" data-key="${d.key}" title="View ${d.label} deliveries">
       <span style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></span>
       <span style="font-size:.77rem;flex:1;color:var(--text);font-weight:500">${d.label}</span>
       <span style="font-size:.78rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-width:24px;text-align:right">${d.count}</span>
-      <span style="font-size:.7rem;color:var(--muted2);min-width:34px;text-align:right">${pct(d.count, total)}%</span>
+      <span style="font-size:.7rem;color:var(--muted2);min-width:34px;text-align:right">${pct(d.count,total)}%</span>
     </div>`).join('');
 
   return `
@@ -692,7 +714,7 @@ function donutPieChart(counts, total) {
       <div style="flex-shrink:0">
         <svg id="donut-svg" width="160" height="160" viewBox="0 0 160 160" style="cursor:pointer">
           ${paths.join('')}
-          <text x="80" y="73" text-anchor="middle" font-size="21" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${donePct}%</text>
+          <text x="80" y="73" text-anchor="middle" font-size="21" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${pct(counts.done,total)}%</text>
           <text x="80" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,sans-serif">complete</text>
           <text x="80" y="101" text-anchor="middle" font-size="8.5" fill="#94a3b8" font-family="Inter,sans-serif">${counts.done} of ${total}</text>
         </svg>
@@ -703,240 +725,60 @@ function donutPieChart(counts, total) {
     </div>`;
 }
 
-// ── Sheet fetch ─────────────────────────────────────────────────────────────
-function getSheetId() { return localStorage.getItem(STORAGE_KEY) || DEFAULT_ID; }
-
-function normalizeLabel(s) {
-  return (s || '').trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, '');
-}
-
-function parseSheetTab(parsed, aliasMap) {
-  const gvizLabels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
-  const labelToKey = {};
-  for (const [key, aliases] of Object.entries(aliasMap)) {
-    for (let i = 0; i < gvizLabels.length; i++) {
-      if (aliases.includes(gvizLabels[i])) { labelToKey[i] = key; break; }
-    }
-  }
-  return { gvizLabels, labelToKey };
-}
-
-async function fetchTab(tabName) {
-  const id  = getSheetId();
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(tabName)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const txt = await res.text();
-  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
-  if (!m) throw new Error('Unexpected response format');
-  const parsed = JSON.parse(m[1]);
-  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
-  return parsed;
-}
-
-async function fetchRows() {
-  const parsed = await fetchTab(SHEET_NAME);
-  const { labelToKey } = parseSheetTab(parsed, ALIASES);
-
-  const result = [];
-  for (let gvizIdx = 0; gvizIdx < parsed.table.rows.length; gvizIdx++) {
-    const gvizRow = parsed.table.rows[gvizIdx];
-    const cells = gvizRow.c.map(gvizCellValue);
-
-    const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k === 'status')?.[0]] || '';
-    const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k === 'account_name')?.[0]] || '';
-    if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) ||
-        KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
-    if (cells.every(v => !v)) continue;
-
-    const obj = {};
-    for (const [colIdx, key] of Object.entries(labelToKey)) {
-      obj[key] = cells[colIdx] || '';
-    }
-    obj._row_num = gvizIdx + 2;
-    result.push(obj);
-  }
-  return result;
-}
-
-async function fetchDeletions() {
-  const parsed = await fetchTab(DELETIONS_TAB);
-  const { labelToKey } = parseSheetTab(parsed, DELETION_ALIASES);
-
-  const result = [];
-  for (let gvizIdx = 0; gvizIdx < parsed.table.rows.length; gvizIdx++) {
-    const gvizRow = parsed.table.rows[gvizIdx];
-    const cells = gvizRow.c.map(gvizCellValue);
-    if (cells.every(v => !v)) continue;
-
-    const obj = {};
-    for (const [colIdx, key] of Object.entries(labelToKey)) {
-      obj[key] = cells[colIdx] || '';
-    }
-    result.push(obj);
-  }
-  return result;
-}
-
-// ── Aggregate per account ───────────────────────────────────────────────────
-function parseBlockedWhere(remarks) {
-  const r = remarks.toLowerCase();
-  if (r.includes('cx team') || r.includes('cx-team')) return 'CX team';
-  if (/\bcx\b/.test(r)) return 'CX team';
-  if (r.includes('client')) return 'Client';
-  if (r.includes('dev team') || r.includes('engineering')) return 'Dev team';
-  if (r.includes('infra')) return 'Infra';
-  if (r.includes('legal') || r.includes('compliance')) return 'Legal';
-  if (r.includes('ops')) return 'Ops';
-  return null;
-}
-
-function aggregate(data) {
-  const map = {};
-  for (const row of data) {
-    const name = f(row, 'account_name');
-    if (!name) continue;
-    const amg = f(row, 'amg_id');
-    const s   = f(row, 'status').toLowerCase();
-    if (!map[name]) map[name] = {
-      account_name: name, amg_id: amg,
-      total: 0, completed: 0, ready: 0, blocked: 0, pending: 0, inprog: 0, noneed: 0, notpicked: 0,
-      blockedRows: [],
-      hls_sheet: '', non_hls_sheet: '', discrepancies: '',
-      jira_set: new Set(),
-    };
-    const a = map[name];
-    if (!a.amg_id && amg) a.amg_id = amg;
-    // Collect account-level link fields (first non-empty wins, except jira which merges)
-    if (!a.hls_sheet && f(row, 'hls_sheet'))     a.hls_sheet = f(row, 'hls_sheet');
-    if (!a.non_hls_sheet && f(row,'non_hls_sheet')) a.non_hls_sheet = f(row, 'non_hls_sheet');
-    if (!a.discrepancies && f(row,'discrepancies')) a.discrepancies = f(row, 'discrepancies');
-    const jiraVal = f(row, 'jira_links');
-    if (jiraVal) jiraVal.split(/[,\n]+/).map(j => j.trim()).filter(Boolean).forEach(j => a.jira_set.add(j));
-
-    a.total++;
-    if (s === 'switchover completed')                                    a.completed++;
-    else if (s === 'ready for switchover')                               a.ready++;
-    else if (s === 'blocked') {
-      a.blocked++;
-      a.blockedRows.push({ channel: f(row,'channel_id'), remark: f(row,'remarks') });
-    }
-    else if (s.includes('pending'))                                      a.pending++;
-    else if (s.includes('in-progress') || s.includes('in progress'))    a.inprog++;
-    else if (s === 'no need of migration')                               a.noneed++;
-    else if (s === 'not yet picked for migration')                       a.notpicked++;
-  }
-
-  return Object.values(map).map(a => {
-    const teamCounts = {};
-    for (const br of a.blockedRows) {
-      const where = parseBlockedWhere(br.remark) || 'Unknown';
-      teamCounts[where] = (teamCounts[where] || 0) + 1;
-    }
-    const blockedTeams = Object.entries(teamCounts)
-      .sort((x,y) => y[1] - x[1])
-      .map(([t, n]) => ({ team: t, count: n }));
-
-    return {
-      ...a,
-      jira_links: [...a.jira_set],
-      blockedTeams,
-      actionable: a.total - a.completed - a.noneed,
-      fully_done: a.completed + a.noneed === a.total && a.total > 0 && a.notpicked === 0,
-    };
-  }).sort((a, b) => b.total - a.total);
-}
-
-// ── Dashboard filter ─────────────────────────────────────────────────────────
-function matchesDashboardFilter(a) {
-  if (!dashboardFilter) return true;
-  if (dashboardFilter === 'done')    return a.fully_done;
-  if (dashboardFilter === 'blocked') return a.blocked > 0;
-  if (dashboardFilter === 'ready')   return a.ready > 0;
-  if (dashboardFilter === 'inprog')  return a.inprog > 0;
-  if (dashboardFilter === 'pending') return a.pending > 0;
-  return true;
-}
-
-const FILTER_ACTIVE_CLASS = {
-  '':       'active',
-  done:     'active-done',
-  ready:    'active-ready',
-  inprog:   'active-inprog',
-  blocked:  'active-blocked',
-  pending:  'active-pending',
-};
-
-function setDashboardFilter(key) {
-  dashboardFilter = key;
-  document.querySelectorAll('.fchip').forEach(btn => {
-    btn.className = 'fchip';
-    if (btn.dataset.key === key) btn.classList.add(FILTER_ACTIVE_CLASS[key] || 'active');
-  });
-  renderAccountCards($('#account-search').value || '');
-}
-
-// ── Render overview ─────────────────────────────────────────────────────────
+// ── Render overview ───────────────────────────────────────────────────────────
 function renderOverview() {
-  const total      = rows.length;
-  const done       = rows.filter(r => f(r,'status') === 'switchover completed').length;
-  const ready      = rows.filter(r => f(r,'status') === 'ready for switchover').length;
-  const blocked    = rows.filter(r => f(r,'status') === 'blocked').length;
-  const pending    = rows.filter(r => f(r,'status').includes('pending')).length;
-  const noneed     = rows.filter(r => f(r,'status') === 'no need of migration').length;
-  const notpicked  = rows.filter(r => f(r,'status') === 'not yet picked for migration').length;
-  const inprog     = rows.filter(r => { const s = f(r,'status'); return s === 'in-progress' || s === 'in progress'; }).length;
-  const donePct    = pct(done, total);
+  const total     = rows.length;
+  const done      = rows.filter(r=>f(r,'status')==='switchover completed').length;
+  const ready     = rows.filter(r=>f(r,'status')==='ready for switchover').length;
+  const blocked   = rows.filter(r=>f(r,'status')==='blocked').length;
+  const pending   = rows.filter(r=>f(r,'status').includes('pending')).length;
+  const noneed    = rows.filter(r=>f(r,'status')==='no need of migration').length;
+  const notpicked = rows.filter(r=>f(r,'status')==='not yet picked for migration').length;
+  const inprog    = rows.filter(r=>{ const s=f(r,'status'); return s==='in-progress'||s==='in progress'; }).length;
 
   $('#kpis').innerHTML = `
-    <div class="kpi total">   <div class="k-label">Total Deliveries</div><div class="k-value">${total - notpicked}</div><div class="k-sub">${accounts.length} accounts</div></div>
-    <div class="kpi done">    <div class="k-label">Completed</div>      <div class="k-value">${done}</div>    <div class="k-sub">${donePct}% of total</div></div>
-    <div class="kpi ready">   <div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div>   <div class="k-sub">awaiting switchover</div></div>
-    <div class="kpi inprog">  <div class="k-label">In Progress</div>    <div class="k-value">${inprog}</div>  <div class="k-sub">active migration</div></div>
-    <div class="kpi blocked"> <div class="k-label">Blocked</div>        <div class="k-value">${blocked}</div> <div class="k-sub">needs attention</div></div>
-    <div class="kpi pending"> <div class="k-label">NM Pending</div>     <div class="k-value">${pending}</div> <div class="k-sub">non-SSAI</div></div>
-    <div class="kpi noneed">    <div class="k-label">No Migration</div>    <div class="k-value">${noneed}</div>     <div class="k-sub">not applicable</div></div>
-    <div class="kpi notpicked"> <div class="k-label">Not Yet Picked</div>  <div class="k-value">${notpicked}</div>  <div class="k-sub">pending selection</div></div>
+    <div class="kpi total"    data-key="all"      title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total-notpicked}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi done"     data-key="done"     title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
+    <div class="kpi ready"    data-key="ready"    title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
+    <div class="kpi inprog"   data-key="inprog"   title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
+    <div class="kpi blocked"  data-key="blocked"  title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
+    <div class="kpi pending"  data-key="pending"  title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
+    <div class="kpi noneed"   data-key="noneed"   title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
+    <div class="kpi notpicked"data-key="notpicked"title="View not yet picked"><div class="k-label">Not Yet Picked</div><div class="k-value">${notpicked}</div><div class="k-sub">pending selection</div></div>
   `;
-
-  $('#progress-block').innerHTML = donutPieChart(
-    { done, ready, inprog, pending, blocked, noneed, notpicked },
-    total
-  );
-
-  // Wire donut click handlers (delegate from SVG and legend rows)
-  const svg = document.getElementById('donut-svg');
-  if (svg) {
-    svg.addEventListener('click', e => {
-      const slice = e.target.closest('.donut-slice');
-      if (slice) {
-        const key = slice.dataset.key;
-        setDashboardFilter(dashboardFilter === key ? '' : key);
-      }
-    });
-  }
-  document.querySelectorAll('.donut-legend-row').forEach(row => {
-    row.addEventListener('click', () => {
-      const key = row.dataset.key;
-      setDashboardFilter(dashboardFilter === key ? '' : key);
-    });
+  document.querySelectorAll('.kpi[data-key]').forEach(kpi => {
+    kpi.addEventListener('click', () => { location.hash = '#status/' + kpi.dataset.key; });
   });
 
-  renderAccountCards($('#account-search').value || '');
+  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notpicked}, total);
+
+  const svg = $('#donut-svg');
+  if (svg) {
+    svg.addEventListener('click', e => {
+      const s = e.target.closest('.donut-slice');
+      if (s) location.hash = '#status/' + s.dataset.key;
+    });
+  }
+  document.querySelectorAll('.donut-legend-row').forEach(r => {
+    r.addEventListener('click', () => { location.hash = '#status/' + r.dataset.key; });
+  });
+
+  renderAccountCards($('#account-search').value||'');
 }
 
+// ── Account cards ─────────────────────────────────────────────────────────────
 function activeCardHtml(a) {
-  const t = a.total || 1;
-  const w = n => `${pct(n || 0, t)}%`;
+  const t = a.total||1, w = n => `${pct(n||0,t)}%`;
+  const n = encodeURIComponent(a.account_name);
   return `
-  <div class="account ${a.fully_done ? 'migrated' : ''}" data-name="${encodeURIComponent(a.account_name)}">
+  <div class="account ${a.fully_done?'migrated':''}" data-name="${n}">
     <div class="acct-head">
       <div class="acct-avatar">${initials(a.account_name)}</div>
       <div style="flex:1;min-width:0">
         <div class="acct-name">${esc(a.account_name)}</div>
-        <div class="acct-meta">${esc(a.amg_id || '—')} · ${a.total} deliveries · ${pct(a.completed, a.total)}% done</div>
+        <div class="acct-meta">${esc(a.amg_id||'—')} · ${a.total} deliveries · ${pct(a.completed,a.total)}% done</div>
       </div>
-      ${a.fully_done ? `<span class="badge-done">✓ Done</span>` : ''}
+      ${a.fully_done?`<span class="badge-done">✓ Done</span>`:''}
     </div>
     <div class="mini-bars">
       <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
@@ -947,27 +789,24 @@ function activeCardHtml(a) {
       <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
     </div>
     <div class="pills">
-      ${a.completed ? `<span class="pill done">✓ ${a.completed} done</span>` : ''}
-      ${a.ready     ? `<span class="pill ready">→ ${a.ready} ready</span>` : ''}
-      ${a.inprog    ? `<span class="pill inprog">⚡ ${a.inprog} in progress</span>` : ''}
-      ${a.pending   ? `<span class="pill pending">◷ ${a.pending} pending</span>` : ''}
-      ${a.blocked   ? `<span class="pill blocked" data-blocked-for="${encodeURIComponent(a.account_name)}" title="Click to view blocked records">✗ ${a.blocked} blocked</span>` : ''}
-      ${a.noneed    ? `<span class="pill noneed">⊘ ${a.noneed} no migration</span>` : ''}
-      ${!a.completed && !a.ready && !a.pending && !a.blocked && !a.inprog && !a.noneed
-          ? `<span class="pill">○ ${a.total} not started</span>` : ''}
+      ${a.completed?`<span class="pill done pill-nav" data-name="${n}" data-fk="done"     title="View completed">✓ ${a.completed} done</span>`:''}
+      ${a.ready    ?`<span class="pill ready pill-nav" data-name="${n}" data-fk="ready"    title="View ready">→ ${a.ready} ready</span>`:''}
+      ${a.inprog   ?`<span class="pill inprog pill-nav" data-name="${n}" data-fk="inprog"  title="View in progress">⚡ ${a.inprog} in progress</span>`:''}
+      ${a.pending  ?`<span class="pill pending pill-nav" data-name="${n}" data-fk="pending" title="View pending">◷ ${a.pending} pending</span>`:''}
+      ${a.blocked  ?`<span class="pill blocked pill-nav" data-name="${n}" data-fk="blocked" title="View blocked">✗ ${a.blocked} blocked</span>`:''}
+      ${a.noneed   ?`<span class="pill noneed pill-nav" data-name="${n}" data-fk="noneed"  title="View no-migration">⊘ ${a.noneed} no migration</span>`:''}
+      ${!a.completed&&!a.ready&&!a.pending&&!a.blocked&&!a.inprog&&!a.noneed?`<span class="pill">○ ${a.total} not started</span>`:''}
     </div>
-    ${a.blocked > 0 ? `
-    <div class="blocked-detail" data-blocked-for="${encodeURIComponent(a.account_name)}" title="Click to view blocked records">
+    ${a.blocked>0?`
+    <div class="blocked-detail pill-nav" data-name="${n}" data-fk="blocked">
       <span class="blocked-icon">⚠</span>
       <div>
-        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length ? ' — by team' : ''} · click to view</div>
-        ${a.blockedTeams.length ? `<div class="blocked-teams">${
-          a.blockedTeams.map(t =>
-            `<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${esc(t.team)} <strong>${t.count}</strong></span>`
-          ).join('')
-        }</div>` : ''}
+        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length?' — by team':''} · click to view</div>
+        ${a.blockedTeams.length?`<div class="blocked-teams">${
+          a.blockedTeams.map(t=>`<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${esc(t.team)} <strong>${t.count}</strong></span>`).join('')
+        }</div>`:''}
       </div>
-    </div>` : ''}
+    </div>`:''}
   </div>`;
 }
 
@@ -978,9 +817,9 @@ function notPickedCardHtml(a) {
       <div class="acct-avatar" style="background:var(--grey-bg);color:var(--grey)">${initials(a.account_name)}</div>
       <div style="flex:1;min-width:0">
         <div class="acct-name" style="color:var(--muted)">${esc(a.account_name)}</div>
-        <div class="acct-meta">${esc(a.amg_id || 'No AMG ID')}</div>
+        <div class="acct-meta">${esc(a.amg_id||'No AMG ID')}</div>
       </div>
-      <span style="font-size:.65rem;font-weight:700;background:var(--grey-bg);color:var(--grey);padding:.12rem .45rem;border-radius:999px;border:1px solid var(--grey-border);flex-shrink:0;white-space:nowrap">○ Not picked</span>
+      <span style="font-size:.65rem;font-weight:700;background:var(--grey-bg);color:var(--grey);padding:.12rem .45rem;border-radius:999px;border:1px solid var(--grey-border);flex-shrink:0">○ Not picked</span>
     </div>
     <div style="font-size:.74rem;color:var(--muted2);margin-top:.35rem">Pending migration planning</div>
   </div>`;
@@ -990,16 +829,14 @@ function renderAccountCards(filter) {
   const q = filter.trim().toLowerCase();
   const list = accounts.filter(a =>
     matchesDashboardFilter(a) &&
-    (!q || a.account_name.toLowerCase().includes(q) || (a.amg_id || '').toLowerCase().includes(q))
+    (!q || a.account_name.toLowerCase().includes(q) || (a.amg_id||'').toLowerCase().includes(q))
   );
   const grid = $('#accounts-grid');
   if (!list.length) {
-    grid.innerHTML = `<p class="muted">${accounts.length ? 'No matches.' : 'No data — click Refresh.'}</p>`;
-    return;
+    grid.innerHTML = `<p class="muted">${accounts.length?'No matches.':'No data — click Refresh.'}</p>`; return;
   }
-
-  const active    = list.filter(a => !(a.total > 0 && a.notpicked === a.total));
-  const notPicked = list.filter(a =>   a.total > 0 && a.notpicked === a.total);
+  const active    = list.filter(a => !(a.total>0 && a.notpicked===a.total));
+  const notPicked = list.filter(a =>   a.total>0 && a.notpicked===a.total);
 
   let html = active.map(activeCardHtml).join('');
   if (notPicked.length) {
@@ -1010,116 +847,141 @@ function renderAccountCards(filter) {
 
   grid.querySelectorAll('.account[data-name]').forEach(el => {
     el.addEventListener('click', e => {
-      // Don't open detail if the click was on the blocked pill or blocked-detail panel
-      if (e.target.closest('[data-blocked-for]')) return;
-      openAccount(decodeURIComponent(el.dataset.name));
+      if (e.target.closest('.pill-nav,.blocked-detail')) return;
+      location.hash = '#account/' + el.dataset.name;
     });
   });
-
-  // Blocked pill and blocked-detail panel → open account pre-filtered to blocked
-  grid.querySelectorAll('[data-blocked-for]').forEach(el => {
+  grid.querySelectorAll('.pill-nav').forEach(el => {
     el.addEventListener('click', e => {
       e.stopPropagation();
-      openAccount(decodeURIComponent(el.dataset.blockedFor), 'blocked');
+      location.hash = `#account/${el.dataset.name}/${encodeURIComponent(el.dataset.fk)}`;
     });
   });
 }
 
-// ── Account links panel ──────────────────────────────────────────────────────
-function renderAccountLinks(a) {
-  const wrap = $('#acct-links-wrap');
-  const links = [];
-
-  if (a && a.hls_sheet)    links.push({ label: 'HLS Data Sheet',     url: a.hls_sheet });
-  if (a && a.non_hls_sheet) links.push({ label: 'Non-HLS Data Sheet', url: a.non_hls_sheet });
-  if (a && a.discrepancies) links.push({ label: 'Discrepancies',       url: a.discrepancies });
-  if (a && a.jira_links && a.jira_links.length) {
-    a.jira_links.forEach((j, i) => links.push({ label: a.jira_links.length > 1 ? `Jira #${i+1}` : 'Jira', url: j }));
-  }
-
-  if (!links.length) { wrap.innerHTML = ''; return; }
-
-  wrap.innerHTML = `
-    <div class="acct-links-panel">
-      <span class="acct-link-label">Links</span>
-      <span class="acct-link-sep">·</span>
-      ${links.map(l => {
-        const isUrl = /^https?:\/\//.test(l.url);
-        return isUrl
-          ? `<a class="acct-link-item" href="${esc(l.url)}" target="_blank" rel="noopener">↗ ${esc(l.label)}</a>`
-          : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
-      }).join('')}
-    </div>`;
+// ── Global status view ────────────────────────────────────────────────────────
+function _showStatusView(key) {
+  svRows = rows.filter(r => rowMatchesKey(r, key));
+  $('#sv-title').textContent = STATUS_TITLES[key] || 'Deliveries';
+  $('#sv-meta').textContent  = `${svRows.length} deliveries across all accounts · click a row to open account`;
+  $('#sv-search').value = '';
+  renderSvTable('');
 }
 
-// ── Detail view ─────────────────────────────────────────────────────────────
-function openAccount(name, initialStatus = '') {
-  selected   = name;
-  detailRows = rows.filter(r => f(r, 'account_name') === name);
-  const done = detailRows.filter(r => f(r, 'status') === 'switchover completed').length;
-  const amg  = detailRows.find(r => f(r, 'amg_id'))?.amg_id || '';
-  const donePct = pct(done, detailRows.length);
-
-  $('#detail-title').textContent = name;
-  $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed (${donePct}%) · ${amg}`;
-  $('#filter-status').value = initialStatus;
-  $('#filter-q').value = '';
-  $('#overview').classList.add('hidden');
-  $('#detail').classList.remove('hidden');
-
-  const acctData = accounts.find(a => a.account_name === name);
-  renderAccountLinks(acctData);
-  renderDetailTable();
-}
-
-function renderDetailTable() {
-  const status = $('#filter-status').value;
-  const q = ($('#filter-q').value || '').toLowerCase();
-
-  const filtered = detailRows.filter(r => {
-    if (status && f(r,'status') !== status) return false;
-    if (q) {
-      const hay = ['channel_id','distribution_id','remarks']
-        .map(k => f(r,k)).join(' ').toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
+function renderSvTable(q) {
+  const lq = q.toLowerCase();
+  const filtered = svRows.filter(r => {
+    if (!lq) return true;
+    return [f(r,'account_name'),f(r,'amg_id'),f(r,'channel_id'),f(r,'distribution_id'),f(r,'remarks')]
+      .join(' ').toLowerCase().includes(lq);
   });
-
-  $('#detail-count').textContent = `${filtered.length} / ${detailRows.length} rows`;
-
-  $('#detail-table').innerHTML = `
+  $('#sv-count').textContent = `${filtered.length} / ${svRows.length} rows`;
+  $('#sv-table').innerHTML = `
     <table>
-      <thead>
-        <tr>
-          <th>#</th><th>Channel ID</th><th>Distribution ID</th>
-          <th>Status</th><th>Prepare Date</th><th>ETA Date</th>
-          <th>Switchover Date</th><th>Remarks</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>#</th><th>Account</th><th>AMG ID</th><th>Channel ID</th><th>Distribution ID</th>
+        <th>Status</th><th>Prepare Date</th><th>Switchover Date</th><th>Remarks</th>
+      </tr></thead>
       <tbody>
-        ${filtered.length === 0
-          ? `<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
-          : filtered.map((r, i) => {
-              const isDone = f(r,'status') === 'switchover completed';
-              return `<tr class="${isDone ? 'row-done' : ''}">
+        ${filtered.length===0
+          ? `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--muted)">No deliveries found.</td></tr>`
+          : filtered.map((r,i) => {
+              const isDone = f(r,'status')==='switchover completed';
+              return `<tr class="row-clickable ${isDone?'row-done':''}" data-acct="${encodeURIComponent(f(r,'account_name'))}">
                 <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
-                <td><strong>${esc(f(r,'channel_id')) || '—'}</strong></td>
-                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id')) || '—'}</td>
-                <td>${canEdit
-                  ? `<select class="status-select" data-dist="${esc(f(r,'distribution_id'))}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
-                  : chipHtml(f(r,'status'))}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date')) || '—'}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'eta_provided_date')) || '—'}</td>
-                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date')) || '—'}</td>
-                <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
-                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks')) || '—'}</td>
+                <td style="font-weight:600;font-size:.8rem">${esc(f(r,'account_name'))}</td>
+                <td style="font-size:.74rem;color:var(--muted)">${esc(f(r,'amg_id'))||'—'}</td>
+                <td><strong>${esc(f(r,'channel_id'))||'—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id'))||'—'}</td>
+                <td>${chipHtml(f(r,'status'))}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date'))||'—'}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks'))||'—'}</td>
               </tr>`;
             }).join('')
         }
       </tbody>
     </table>`;
+  $('#sv-table').querySelectorAll('tr[data-acct]').forEach(tr => {
+    tr.addEventListener('click', () => { location.hash = '#account/' + tr.dataset.acct; });
+  });
+}
 
+// ── Account detail ────────────────────────────────────────────────────────────
+function _showAccountDetail(name, filterKey = '') {
+  selected   = name;
+  detailRows = rows.filter(r => f(r,'account_name') === name);
+  const done = detailRows.filter(r => f(r,'status')==='switchover completed').length;
+  const amg  = detailRows.find(r => f(r,'amg_id'))?.amg_id || '';
+  $('#detail-title').textContent = name;
+  $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed (${pct(done,detailRows.length)}%) · ${amg}`;
+  $('#filter-status').value = KEY_TO_STATUS[filterKey] || '';
+  $('#filter-q').value = '';
+  renderAccountLinks(accounts.find(a => a.account_name === name));
+  renderDetailTable();
+}
+
+function renderAccountLinks(a) {
+  const wrap = $('#acct-links-wrap');
+  const links = [];
+  if (a?.hls_sheet)     links.push({label:'HLS Data Sheet',     url:a.hls_sheet});
+  if (a?.non_hls_sheet) links.push({label:'Non-HLS Data Sheet', url:a.non_hls_sheet});
+  if (a?.discrepancies) links.push({label:'Discrepancies',       url:a.discrepancies});
+  if (a?.jira_links?.length) a.jira_links.forEach((j,i) => links.push({label:a.jira_links.length>1?`Jira #${i+1}`:'Jira',url:j}));
+  if (!links.length) { wrap.innerHTML=''; return; }
+  wrap.innerHTML = `<div class="acct-links-panel">
+    <span class="acct-link-label">Links</span><span class="acct-link-sep">·</span>
+    ${links.map(l => {
+      const isUrl = /^https?:\/\//.test(l.url);
+      return isUrl
+        ? `<a class="acct-link-item" href="${esc(l.url)}" target="_blank" rel="noopener">↗ ${esc(l.label)}</a>`
+        : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderDetailTable() {
+  const status = $('#filter-status').value;
+  const q = ($('#filter-q').value||'').toLowerCase();
+  const filtered = detailRows.filter(r => {
+    if (status && f(r,'status') !== status) return false;
+    if (q) {
+      const hay = ['channel_id','distribution_id','remarks'].map(k=>f(r,k)).join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  $('#detail-count').textContent = `${filtered.length} / ${detailRows.length} rows`;
+  $('#detail-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>Channel ID</th><th>Distribution ID</th>
+        <th>Status</th><th>Prepare Date</th><th>ETA Date</th>
+        <th>Switchover Date</th><th>Remarks</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length===0
+          ? `<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
+          : filtered.map((r,i) => {
+              const isDone = f(r,'status')==='switchover completed';
+              return `<tr class="${isDone?'row-done':''}">
+                <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+                <td><strong>${esc(f(r,'channel_id'))||'—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id'))||'—'}</td>
+                <td>${canEdit
+                  ? `<select class="status-select" data-dist="${esc(f(r,'distribution_id'))}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
+                  : chipHtml(f(r,'status'))}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'eta_provided_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date'))||'—'}</td>
+                <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks'))||'—'}</td>
+              </tr>`;
+            }).join('')
+        }
+      </tbody>
+    </table>`;
   if (canEdit) {
     document.querySelectorAll('.status-select').forEach(sel => {
       sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.dataset.row, sel.value, sel));
@@ -1127,7 +989,7 @@ function renderDetailTable() {
   }
 }
 
-// ── Deletions ────────────────────────────────────────────────────────────────
+// ── Deletions ─────────────────────────────────────────────────────────────────
 async function loadDeletions() {
   $('#deletions-table').innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading deletions tab…</div></div>`;
   $('#del-count').textContent = '';
@@ -1136,98 +998,61 @@ async function loadDeletions() {
     deletionsLoaded = true;
     renderDeletionsTable();
     toast(`Loaded ${deletionsRows.length} deletion records`);
-  } catch (err) {
-    $('#deletions-table').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load deletions tab: ${esc(err.message)}<br/>Make sure your sheet has a tab named <strong>deletions</strong> and is publicly viewable.</div></div>`;
+  } catch(err) {
+    $('#deletions-table').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load deletions tab: ${esc(err.message)}<br/>Make sure your sheet has a tab named <strong>deletions</strong>.</div></div>`;
   }
 }
 
 function renderDeletionsTable() {
-  const q = ($('#del-filter-q').value || '').toLowerCase();
-  const statusFilter = ($('#del-filter-status').value || '').toLowerCase();
-
+  const q = ($('#del-filter-q').value||'').toLowerCase();
+  const sf = ($('#del-filter-status').value||'').toLowerCase();
   const filtered = deletionsRows.filter(r => {
-    if (statusFilter && (r.del_status || '').toLowerCase() !== statusFilter) return false;
+    if (sf && (r.del_status||'').toLowerCase() !== sf) return false;
     if (q) {
-      const hay = [r.account_amgid, r.channel_id, r.channel_name, r.platform_name, r.distribution_id]
-        .map(v => (v || '').toLowerCase()).join(' ');
+      const hay = [r.account_amgid,r.channel_id,r.channel_name,r.platform_name,r.distribution_id]
+        .map(v=>(v||'').toLowerCase()).join(' ');
       if (!hay.includes(q)) return false;
     }
     return true;
   });
-
   $('#del-count').textContent = `${filtered.length} of ${deletionsRows.length} records`;
-
-  if (filtered.length === 0) {
-    $('#deletions-table').innerHTML = `<div class="del-empty">${deletionsRows.length === 0 ? 'No records found in the deletions tab.' : 'No records match the filter.'}</div>`;
-    return;
+  if (!filtered.length) {
+    $('#deletions-table').innerHTML = `<div class="del-empty">${deletionsRows.length===0?'No records in the deletions tab.':'No records match the filter.'}</div>`; return;
   }
-
   $('#deletions-table').innerHTML = `
     <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Account AMG ID</th>
-          <th>Channel ID</th>
-          <th>Channel Name</th>
-          <th>Platform</th>
-          <th>Distribution ID</th>
-          <th>Status</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>#</th><th>Account AMG ID</th><th>Channel ID</th><th>Channel Name</th>
+        <th>Platform</th><th>Distribution ID</th><th>Status</th>
+      </tr></thead>
       <tbody>
-        ${filtered.map((r, i) => {
-          const isPending = (r.del_status || '').toLowerCase() === 'pending';
-          return `<tr class="${isPending ? '' : ''}">
-            <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
-            <td style="font-size:.77rem;font-weight:600">${esc(r.account_amgid) || '—'}</td>
-            <td><strong>${esc(r.channel_id) || '—'}</strong></td>
-            <td style="font-size:.77rem">${esc(r.channel_name) || '—'}</td>
-            <td style="font-size:.77rem;color:var(--muted)">${esc(r.platform_name) || '—'}</td>
-            <td style="font-size:.77rem;color:var(--muted)">${esc(r.distribution_id) || '—'}</td>
-            <td>${delStatusChip(r.del_status)}</td>
-          </tr>`;
-        }).join('')}
+        ${filtered.map((r,i)=>`<tr>
+          <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+          <td style="font-size:.77rem;font-weight:600">${esc(r.account_amgid)||'—'}</td>
+          <td><strong>${esc(r.channel_id)||'—'}</strong></td>
+          <td style="font-size:.77rem">${esc(r.channel_name)||'—'}</td>
+          <td style="font-size:.77rem;color:var(--muted)">${esc(r.platform_name)||'—'}</td>
+          <td style="font-size:.77rem;color:var(--muted)">${esc(r.distribution_id)||'—'}</td>
+          <td>${delStatusChip(r.del_status)}</td>
+        </tr>`).join('')}
       </tbody>
     </table>`;
 }
 
-// ── Tab navigation ────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tab);
-  });
-  $('#overview').classList.toggle('hidden', tab !== 'overview' || selected !== null);
-  $('#detail').classList.toggle('hidden', tab !== 'overview' || selected === null);
-  $('#deletions').classList.toggle('hidden', tab !== 'deletions');
-
-  if (tab === 'overview' && selected === null) {
-    // overview is already shown
-  } else if (tab === 'overview' && selected !== null) {
-    // stay on detail view
-  } else if (tab === 'deletions' && !deletionsLoaded) {
-    loadDeletions();
-  }
-}
-
-// ── Load ────────────────────────────────────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────────────────────────
 async function load() {
-  $('#overview').classList.add('hidden');
-  $('#detail').classList.add('hidden');
-  $('#setup-card').classList.add('hidden');
+  hideAll();
   $('#error-container').innerHTML =
     `<div class="page"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Fetching sheet data…</div></div></div>`;
-
   try {
     rows     = await fetchRows();
     accounts = aggregate(rows);
-    deletionsLoaded = false; // reset so deletions re-load on next tab switch
+    deletionsLoaded = false;
     $('#error-container').innerHTML = '';
 
-    const done  = rows.filter(r => f(r,'status') === 'switchover completed').length;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
     const total = rows.length;
-    const now   = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    const now   = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     $('#last-updated').textContent = `Updated ${now}`;
     $('#banner').innerHTML = `
       <strong>${total}</strong> deliveries
@@ -1238,24 +1063,15 @@ async function load() {
       <span class="banner-dot">·</span>
       <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
 
-    selected = null;
-    currentTab = 'overview';
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === 'overview'));
-    $('#overview').classList.remove('hidden');
-    $('#detail').classList.add('hidden');
-    $('#deletions').classList.add('hidden');
-    renderOverview();
+    renderFromHash();
     toast(`Loaded ${total} rows across ${accounts.length} accounts`);
-  } catch (err) {
+  } catch(err) {
     $('#error-container').innerHTML = `
-      <div class="page">
-        <div class="error-box">
-          ⚠ Could not load sheet: ${esc(err.message)}<br/>
-          Share the sheet as <strong>"Anyone with the link can view"</strong> then refresh.
-          <a href="#" id="err-config-link" style="margin-left:.5rem">Configure Sheet ID</a>
-        </div>
-      </div>`;
-    $('#overview').classList.add('hidden');
+      <div class="page"><div class="error-box">
+        ⚠ Could not load sheet: ${esc(err.message)}<br/>
+        Share the sheet as <strong>"Anyone with the link can view"</strong> then refresh.
+        <a href="#" id="err-config-link" style="margin-left:.5rem">Configure Sheet ID</a>
+      </div></div>`;
     document.getElementById('err-config-link')?.addEventListener('click', e => {
       e.preventDefault();
       $('#setup-card').classList.remove('hidden');
@@ -1265,52 +1081,50 @@ async function load() {
   }
 }
 
-// ── JSONP (bypasses CORS) ───────────────────────────────────────────────────
+// ── JSONP ─────────────────────────────────────────────────────────────────────
 function jsonp(params) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve,reject) => {
     const cbName = '_as' + Math.random().toString(36).slice(2);
     const url = new URL(APPS_SCRIPT_URL);
-    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-    url.searchParams.set('callback', cbName);
+    for (const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
+    url.searchParams.set('callback',cbName);
     const script = document.createElement('script');
     const cleanup = () => { delete window[cbName]; script.remove(); };
     window[cbName] = data => { cleanup(); resolve(data); };
-    script.onerror  = () => { cleanup(); reject(new Error('Script load failed')); };
+    script.onerror = () => { cleanup(); reject(new Error('Script load failed')); };
     script.src = url.toString();
     document.head.appendChild(script);
   });
 }
 
-// ── Status update ────────────────────────────────────────────────────────────
+// ── Status update ─────────────────────────────────────────────────────────────
 async function updateStatus(distribution_id, row_num, new_status, selectEl) {
   if (!canEdit) return;
   selectEl.classList.add('saving');
   const feedback = selectEl.nextElementSibling;
   if (feedback) feedback.textContent = '';
   try {
-    const params = { key: getEditKey(), new_status };
+    const params = {key:getEditKey(), new_status};
     if (distribution_id) params.distribution_id = distribution_id;
     else if (row_num)    params.row_num = row_num;
     const data = await jsonp(params);
     if (data.ok) {
       const row = distribution_id
-        ? rows.find(r => f(r,'distribution_id') === distribution_id)
-        : rows.find(r => String(r._row_num) === String(row_num));
+        ? rows.find(r => f(r,'distribution_id')===distribution_id)
+        : rows.find(r => String(r._row_num)===String(row_num));
       if (row) row.status = new_status;
-      if (feedback) { feedback.textContent = '✓ saved'; feedback.className = 'save-ok'; }
+      if (feedback) { feedback.textContent='✓ saved'; feedback.className='save-ok'; }
       renderOverview();
     } else {
-      if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); toast('Edit key rejected. Please re-enter.'); }
-      if (feedback) { feedback.textContent = '✗ ' + (data.error || 'failed'); feedback.className = 'save-err'; }
+      if (data.error==='Invalid key') { clearEditKey(); setEditMode(false); toast('Edit key rejected.'); }
+      if (feedback) { feedback.textContent='✗ '+(data.error||'failed'); feedback.className='save-err'; }
     }
-  } catch (err) {
-    if (feedback) { feedback.textContent = '✗ ' + err.message; feedback.className = 'save-err'; }
-  } finally {
-    selectEl.classList.remove('saving');
-  }
+  } catch(err) {
+    if (feedback) { feedback.textContent='✗ '+err.message; feedback.className='save-err'; }
+  } finally { selectEl.classList.remove('saving'); }
 }
 
-// ── Edit mode ────────────────────────────────────────────────────────────────
+// ── Edit mode ─────────────────────────────────────────────────────────────────
 function setEditMode(on) {
   canEdit = on;
   $('#edit-badge').style.display    = on ? 'inline' : 'none';
@@ -1342,70 +1156,56 @@ function showEditKeyModal() {
   keyInput.focus();
   overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
   overlay.querySelector('#cfg-unlock').onclick = async () => {
-    const k = keyInput.value.trim();
-    if (!k) return;
+    const k = keyInput.value.trim(); if (!k) return;
     const btn = overlay.querySelector('#cfg-unlock');
-    btn.disabled = true; btn.textContent = 'Checking…';
+    btn.disabled=true; btn.textContent='Checking…';
     try {
-      const data = await jsonp({ key: k, distribution_id: '__probe__' });
-      if (data.error === 'Invalid key') {
-        errEl.style.display = '';
-        btn.disabled = false; btn.textContent = 'Unlock';
-        return;
+      const data = await jsonp({key:k, distribution_id:'__probe__'});
+      if (data.error==='Invalid key') {
+        errEl.style.display=''; btn.disabled=false; btn.textContent='Unlock'; return;
       }
-      setEditKey(k);
-      overlay.remove();
-      setEditMode(true);
+      setEditKey(k); overlay.remove(); setEditMode(true);
       toast('Edit mode on — status changes will sync to the sheet');
-    } catch (err) {
-      errEl.textContent = 'Network error: ' + err.message;
-      errEl.style.display = '';
-      btn.disabled = false; btn.textContent = 'Unlock';
+    } catch(err) {
+      errEl.textContent='Network error: '+err.message; errEl.style.display='';
+      btn.disabled=false; btn.textContent='Unlock';
     }
   };
-  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') overlay.querySelector('#cfg-unlock').click(); });
+  keyInput.addEventListener('keydown', e => { if (e.key==='Enter') overlay.querySelector('#cfg-unlock').click(); });
 }
 
-// ── Wire up ──────────────────────────────────────────────────────────────────
+// ── Wire up ───────────────────────────────────────────────────────────────────
 $('#btn-refresh').addEventListener('click', load);
 $('#btn-config').addEventListener('click', () => {
   $('#setup-card').classList.toggle('hidden');
   $('#sheet-id-input').value = getSheetId();
 });
 $('#btn-sheet-save').addEventListener('click', () => {
-  const raw   = $('#sheet-id-input').value.trim();
+  const raw = $('#sheet-id-input').value.trim();
   const match = raw.match(/\/spreadsheets\/d\/([^/]+)/) || raw.match(/^([A-Za-z0-9_-]{20,})/);
-  const id    = match ? match[1] : raw;
-  if (!id) return;
+  const id = match ? match[1] : raw; if (!id) return;
   localStorage.setItem(STORAGE_KEY, id);
   $('#setup-card').classList.add('hidden');
   load();
 });
-$('#btn-back').addEventListener('click', () => {
-  selected = null;
-  $('#detail').classList.add('hidden');
-  $('#overview').classList.remove('hidden');
-  renderOverview();
-});
+$('#btn-back').addEventListener('click', () => { location.hash = '#overview'; });
+$('#btn-status-back').addEventListener('click', () => { location.hash = '#overview'; });
 $('#account-search').addEventListener('input', e => renderAccountCards(e.target.value));
 $('#filter-status').addEventListener('change', renderDetailTable);
 $('#filter-q').addEventListener('input', renderDetailTable);
+$('#sv-search').addEventListener('input', e => { if (svRows.length) renderSvTable(e.target.value); });
 $('#btn-edit-toggle').addEventListener('click', () => {
   if (canEdit) { clearEditKey(); setEditMode(false); toast('Edit mode off'); }
-  else { showEditKeyModal(); }
+  else showEditKeyModal();
 });
-
-// Dashboard filter chips
 document.querySelectorAll('.fchip').forEach(btn => {
   btn.addEventListener('click', () => setDashboardFilter(btn.dataset.key));
 });
-
-// Tab navigation
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  btn.addEventListener('click', () => {
+    location.hash = btn.dataset.tab === 'deletions' ? '#deletions' : '#overview';
+  });
 });
-
-// Deletions filters
 $('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) renderDeletionsTable(); });
 $('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDeletionsTable(); });
 $('#btn-del-refresh').addEventListener('click', loadDeletions);
