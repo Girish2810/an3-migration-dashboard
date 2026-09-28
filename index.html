@@ -185,11 +185,19 @@
     #account-search{min-width:200px}
 
     /* ACCOUNT LINKS */
-    .acct-links-panel{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;padding:.75rem 1rem;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)}
+    .acct-links-panel{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;padding:.75rem 1rem;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);align-items:center}
     .acct-link-item{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:999px;font-size:.76rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--primary);text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
     .acct-link-item:hover{background:var(--primary-bg);border-color:var(--primary);text-decoration:none}
     .acct-link-label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
     .acct-link-sep{color:var(--muted2)}
+    .jira-wrap{position:relative;display:inline-block}
+    .jira-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:999px;font-size:.76rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--primary);cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s,border-color .15s}
+    .jira-btn:hover{background:var(--primary-bg);border-color:var(--primary)}
+    .jira-drop{position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);min-width:180px;z-index:30;padding:.4rem;display:flex;flex-direction:column;gap:.2rem}
+    .jira-drop a{display:flex;align-items:center;gap:.5rem;padding:.45rem .65rem;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--primary);text-decoration:none;transition:background .1s}
+    .jira-drop a:hover{background:var(--primary-bg);text-decoration:none}
+    .jira-drop .jira-ticket-id{font-family:monospace;font-size:.8rem;background:var(--primary-bg);color:var(--primary);padding:.1rem .35rem;border-radius:4px}
+    .jira-drop .jira-ticket-url{font-size:.7rem;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
 
     /* TABLE */
     .table-wrap{overflow:auto;border-radius:8px;border:1px solid var(--border)}
@@ -928,14 +936,43 @@ function renderAccountLinks(a) {
   if (a?.hls_sheet)     links.push({label:'HLS Data Sheet',     url:a.hls_sheet});
   if (a?.non_hls_sheet) links.push({label:'Non-HLS Data Sheet', url:a.non_hls_sheet});
   if (a?.discrepancies) links.push({label:'Discrepancies',       url:a.discrepancies});
-  if (a?.jira_links?.length) {
-    const ticketRe = /([A-Z][A-Z0-9]+-\d+)/;
-    a.jira_links.forEach(j => {
-      const m = j.match(ticketRe);
-      links.push({label: m ? m[1] : 'Jira', url: j});
-    });
+
+  const jiraList = a?.jira_links || [];
+  const hasJira = jiraList.length > 0;
+  const hasLinks = links.length > 0;
+
+  if (!hasLinks && !hasJira) { wrap.innerHTML=''; return; }
+
+  const ticketRe = /([A-Z][A-Z0-9]+-\d+)/;
+
+  function jiraLabel(url) {
+    const m = url.match(ticketRe);
+    return m ? m[1] : 'Jira';
   }
-  if (!links.length) { wrap.innerHTML=''; return; }
+
+  // Build Jira HTML: single link if 1 ticket, dropdown button if multiple
+  let jiraHtml = '';
+  if (jiraList.length === 1) {
+    jiraHtml = `<a class="acct-link-item" href="${esc(jiraList[0])}" target="_blank" rel="noopener">
+      ↗ Jira · <span style="font-family:monospace;font-size:.78rem">${esc(jiraLabel(jiraList[0]))}</span>
+    </a>`;
+  } else if (jiraList.length > 1) {
+    const ticketRows = jiraList.map(j => {
+      const id = jiraLabel(j);
+      return `<a href="${esc(j)}" target="_blank" rel="noopener">
+        <span class="jira-ticket-id">${esc(id)}</span>
+        <span class="jira-ticket-url">${esc(j.replace(/^https?:\/\//,''))}</span>
+        <span style="margin-left:auto;font-size:.72rem;color:var(--primary)">↗</span>
+      </a>`;
+    }).join('');
+    jiraHtml = `<div class="jira-wrap">
+      <button class="jira-btn" id="jira-toggle-btn">
+        🔗 Jira Tickets (${jiraList.length}) <span id="jira-arrow">▾</span>
+      </button>
+      <div class="jira-drop hidden" id="jira-drop">${ticketRows}</div>
+    </div>`;
+  }
+
   wrap.innerHTML = `<div class="acct-links-panel">
     <span class="acct-link-label">Links</span><span class="acct-link-sep">·</span>
     ${links.map(l => {
@@ -944,7 +981,29 @@ function renderAccountLinks(a) {
         ? `<a class="acct-link-item" href="${esc(l.url)}" target="_blank" rel="noopener">↗ ${esc(l.label)}</a>`
         : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
     }).join('')}
+    ${jiraHtml}
   </div>`;
+
+  // Wire up Jira dropdown toggle
+  if (jiraList.length > 1) {
+    const btn  = document.getElementById('jira-toggle-btn');
+    const drop = document.getElementById('jira-drop');
+    const arrow = document.getElementById('jira-arrow');
+    btn?.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !drop.classList.contains('hidden');
+      drop.classList.toggle('hidden', open);
+      if (arrow) arrow.textContent = open ? '▾' : '▴';
+    });
+    // Close on outside click
+    document.addEventListener('click', function close(e) {
+      if (!btn?.contains(e.target)) {
+        drop?.classList.add('hidden');
+        if (arrow) arrow.textContent = '▾';
+        document.removeEventListener('click', close);
+      }
+    });
+  }
 }
 
 function renderDetailTable() {
