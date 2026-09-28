@@ -928,7 +928,13 @@ function renderAccountLinks(a) {
   if (a?.hls_sheet)     links.push({label:'HLS Data Sheet',     url:a.hls_sheet});
   if (a?.non_hls_sheet) links.push({label:'Non-HLS Data Sheet', url:a.non_hls_sheet});
   if (a?.discrepancies) links.push({label:'Discrepancies',       url:a.discrepancies});
-  if (a?.jira_links?.length) a.jira_links.forEach((j,i) => links.push({label:a.jira_links.length>1?`Jira #${i+1}`:'Jira',url:j}));
+  if (a?.jira_links?.length) {
+    const ticketRe = /([A-Z][A-Z0-9]+-\d+)/;
+    a.jira_links.forEach(j => {
+      const m = j.match(ticketRe);
+      links.push({label: m ? m[1] : 'Jira', url: j});
+    });
+  }
   if (!links.length) { wrap.innerHTML=''; return; }
   wrap.innerHTML = `<div class="acct-links-panel">
     <span class="acct-link-label">Links</span><span class="acct-link-sep">·</span>
