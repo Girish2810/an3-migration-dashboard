@@ -412,6 +412,7 @@
       <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
         <span id="daily-count" style="font-size:.78rem;color:var(--muted)"></span>
         <input id="daily-q" type="search" placeholder="Search task, account, outcome…" style="min-width:180px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+        <input id="daily-date-filter" type="date" title="Filter by date" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem;cursor:pointer" />
         <select id="daily-cat-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
           <option value="">All categories</option>
         </select>
@@ -1426,13 +1427,19 @@ function dailyEntryHtml(r) {
 }
 
 function renderDailyLog() {
-  const q   = ($('#daily-q')?.value   || '').toLowerCase();
-  const cat = ($('#daily-cat-filter')?.value  || '').toLowerCase();
-  const act = ($('#daily-actor-filter')?.value || '').toLowerCase();
+  const q    = ($('#daily-q')?.value           || '').toLowerCase();
+  const cat  = ($('#daily-cat-filter')?.value  || '').toLowerCase();
+  const act  = ($('#daily-actor-filter')?.value || '').toLowerCase();
+  const dateVal = ($('#daily-date-filter')?.value || ''); // YYYY-MM-DD from input
+  const dateFilterTs = dateVal ? (() => { const d = new Date(dateVal); d.setHours(0,0,0,0); return d.getTime(); })() : 0;
 
   const filtered = dailyRows.filter(r => {
     if (cat && (r.category||'').toLowerCase().trim() !== cat) return false;
     if (act && (r.actor||'').toLowerCase().trim() !== act) return false;
+    if (dateFilterTs) {
+      const d = parseDDMMYYYY(r.date); d.setHours(0,0,0,0);
+      if (d.getTime() !== dateFilterTs) return false;
+    }
     if (q) {
       const hay = [r.task,r.account_name,r.amg_id,r.outcome,r.actor,r.category].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
@@ -1746,6 +1753,7 @@ $('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) render
 $('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDelOverview(); });
 $('#btn-del-refresh').addEventListener('click', loadDeletions);
 $('#daily-q').addEventListener('input', () => { if (dailyLoaded) renderDailyLog(); });
+$('#daily-date-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
 $('#daily-cat-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
 $('#daily-actor-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
 $('#btn-daily-refresh').addEventListener('click', loadDailyLog);
