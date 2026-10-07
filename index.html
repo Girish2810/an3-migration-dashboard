@@ -94,14 +94,14 @@
     .kpi .k-label{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
     .kpi .k-value{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
     .kpi .k-sub{font-size:.72rem;color:var(--muted2)}
-    .kpi.total{border-top-color:var(--primary)} .kpi.total .k-value{color:var(--primary)}
-    .kpi.done{border-top-color:var(--green)} .kpi.done .k-value{color:var(--green)}
-    .kpi.ready{border-top-color:var(--yellow)} .kpi.ready .k-value{color:var(--yellow)}
-    .kpi.blocked{border-top-color:var(--red)} .kpi.blocked .k-value{color:var(--red)}
-    .kpi.pending{border-top-color:var(--purple)} .kpi.pending .k-value{color:var(--purple)}
-    .kpi.noneed{border-top-color:var(--teal)} .kpi.noneed .k-value{color:var(--teal)}
-    .kpi.inprog{border-top-color:var(--blue)} .kpi.inprog .k-value{color:var(--blue)}
-    .kpi.notpicked{border-top-color:var(--grey)} .kpi.notpicked .k-value{color:var(--grey)}
+    .kpi.total{border-top-color:#2563eb} .kpi.total .k-value{color:#2563eb}
+    .kpi.done{border-top-color:#16a34a} .kpi.done .k-value{color:#16a34a}
+    .kpi.ready{border-top-color:#ea580c} .kpi.ready .k-value{color:#ea580c}
+    .kpi.blocked{border-top-color:#dc2626} .kpi.blocked .k-value{color:#dc2626}
+    .kpi.pending{border-top-color:#9333ea} .kpi.pending .k-value{color:#9333ea}
+    .kpi.noneed{border-top-color:#0891b2} .kpi.noneed .k-value{color:#0891b2}
+    .kpi.inprog{border-top-color:#3b82f6} .kpi.inprog .k-value{color:#3b82f6}
+    .kpi.notstarted{border-top-color:#94a3b8} .kpi.notstarted .k-value{color:#64748b}
 
     /* GRID */
     .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:.85rem;margin-bottom:.85rem}
@@ -154,10 +154,10 @@
     .pills{display:flex;flex-wrap:wrap;gap:.3rem}
     .pill{font-size:.67rem;padding:.12rem .42rem;border-radius:999px;background:#f1f5f9;color:var(--muted);font-weight:500}
     .pill.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-    .pill.ready{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+    .pill.ready{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
     .pill.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-    .pill.pending{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
-    .pill.noneed{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+    .pill.pending{background:#faf5ff;color:#9333ea;border:1px solid #d8b4fe}
+    .pill.noneed{background:#ecfeff;color:#0891b2;border:1px solid #a5f3fc}
     .pill.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
     .pill.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
     .pill-nav{cursor:pointer}
@@ -217,10 +217,10 @@
     /* STATUS CHIP */
     .chip{display:inline-flex;align-items:center;gap:4px;padding:.18rem .52rem;border-radius:999px;font-size:.71rem;font-weight:700;white-space:nowrap}
     .chip.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-    .chip.ready{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+    .chip.ready{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
     .chip.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-    .chip.pending{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
-    .chip.noneed{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+    .chip.pending{background:#faf5ff;color:#9333ea;border:1px solid #d8b4fe}
+    .chip.noneed{background:#ecfeff;color:#0891b2;border:1px solid #a5f3fc}
     .chip.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
     .chip.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
     .chip.other{background:#f1f5f9;color:var(--muted)}
@@ -427,12 +427,12 @@ const KNOWN_HEADER_MARKERS = new Set([
 const KEY_TO_STATUS = {
   done:'switchover completed', ready:'ready for switchover', inprog:'in-progress',
   blocked:'blocked', pending:'non-ssai pending', noneed:'no need of migration',
-  notpicked:'not yet picked for migration', notstarted:'not-started',
+  notstarted:'not-started',
 };
 const STATUS_TITLES = {
   all:'All Deliveries', done:'Completed Deliveries', ready:'Ready to Switch',
   inprog:'In Progress', blocked:'Blocked Deliveries', pending:'NM Pending',
-  noneed:'No Migration Needed', notpicked:'Not Yet Picked', notstarted:'Not Started',
+  noneed:'No Migration Needed', notstarted:'Not Started',
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -658,7 +658,7 @@ function aggregate(data) {
     const s = f(row,'status').toLowerCase();
     if (!map[name]) map[name] = {
       account_name:name, amg_id:amg,
-      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notpicked:0,
+      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notstarted:0,
       blockedRows:[], hls_sheet:'', non_hls_sheet:'', discrepancies:'', jira_set: new Set(),
     };
     const a = map[name];
@@ -675,7 +675,7 @@ function aggregate(data) {
     else if (s.includes('pending'))                                    a.pending++;
     else if (s.includes('in-progress')||s.includes('in progress'))    a.inprog++;
     else if (s==='no need of migration')                               a.noneed++;
-    else if (s==='not yet picked for migration')                       a.notpicked++;
+    else                                                               a.notstarted++;
   }
   return Object.values(map).map(a => {
     const tc = {};
@@ -683,7 +683,7 @@ function aggregate(data) {
     return { ...a, jira_links:[...a.jira_set],
       blockedTeams: Object.entries(tc).sort((x,y)=>y[1]-x[1]).map(([t,n])=>({team:t,count:n})),
       actionable: a.total - a.completed - a.noneed,
-      fully_done: a.completed + a.noneed === a.total && a.total > 0 && a.notpicked === 0,
+      fully_done: a.completed + a.noneed === a.total && a.total > 0,
     };
   }).sort((a,b) => b.total - a.total);
 }
@@ -711,14 +711,13 @@ function setDashboardFilter(key) {
 // ── Donut chart ───────────────────────────────────────────────────────────────
 function donutPieChart(counts, total) {
   const slices = [
-    {key:'done',    label:'Completed',       count:counts.done,     color:'#16a34a'},
-    {key:'ready',   label:'Ready to switch', count:counts.ready,    color:'#b45309'},
-    {key:'inprog',  label:'In-progress',     count:counts.inprog,   color:'#1d4ed8'},
-    {key:'pending', label:'NM Pending',      count:counts.pending,  color:'#7c3aed'},
-    {key:'blocked', label:'Blocked',         count:counts.blocked,  color:'#dc2626'},
-    {key:'noneed',  label:'No migration',    count:counts.noneed,   color:'#0e7490'},
-    {key:'notpicked',  label:'Not yet picked', count:counts.notpicked,  color:'#94a3b8'},
-    {key:'notstarted', label:'Not started',    count:counts.notstarted, color:'#cbd5e1'},
+    {key:'done',       label:'Completed',       count:counts.done,       color:'#16a34a'},
+    {key:'ready',      label:'Ready to switch', count:counts.ready,      color:'#ea580c'},
+    {key:'inprog',     label:'In-progress',     count:counts.inprog,     color:'#3b82f6'},
+    {key:'pending',    label:'NM Pending',      count:counts.pending,    color:'#9333ea'},
+    {key:'blocked',    label:'Blocked',         count:counts.blocked,    color:'#dc2626'},
+    {key:'noneed',     label:'No migration',    count:counts.noneed,     color:'#0891b2'},
+    {key:'notstarted', label:'Not started',     count:counts.notstarted, color:'#94a3b8'},
   ].filter(d=>d.count>0);
 
   const cx=80,cy=80,R=66,ri=38,gap=0.018;
@@ -767,26 +766,24 @@ function renderOverview() {
   const blocked    = rows.filter(r=>f(r,'status')==='blocked').length;
   const pending    = rows.filter(r=>f(r,'status').includes('pending')).length;
   const noneed     = rows.filter(r=>f(r,'status')==='no need of migration').length;
-  const notpicked  = rows.filter(r=>f(r,'status')==='not yet picked for migration').length;
   const inprog     = rows.filter(r=>{ const s=f(r,'status'); return s==='in-progress'||s==='in progress'; }).length;
-  const notstarted = total - done - ready - inprog - blocked - pending - noneed - notpicked;
+  const notstarted = total - done - ready - inprog - blocked - pending - noneed;
 
   $('#kpis').innerHTML = `
-    <div class="kpi total"     data-key="all"        title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
-    <div class="kpi done"      data-key="done"        title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
-    <div class="kpi ready"     data-key="ready"       title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
-    <div class="kpi inprog"    data-key="inprog"      title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
-    <div class="kpi blocked"   data-key="blocked"     title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
-    <div class="kpi pending"   data-key="pending"     title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
-    <div class="kpi noneed"    data-key="noneed"      title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
-    <div class="kpi notpicked" data-key="notpicked"   title="View not yet picked"><div class="k-label">Not Yet Picked</div><div class="k-value">${notpicked}</div><div class="k-sub">pending selection</div></div>
-    <div class="kpi notpicked" data-key="notstarted"  title="View not started"><div class="k-label">Not Started</div><div class="k-value">${notstarted}</div><div class="k-sub">no status assigned</div></div>
+    <div class="kpi total"      data-key="all"       title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi done"       data-key="done"      title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
+    <div class="kpi ready"      data-key="ready"     title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
+    <div class="kpi inprog"     data-key="inprog"    title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
+    <div class="kpi blocked"    data-key="blocked"   title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
+    <div class="kpi pending"    data-key="pending"   title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
+    <div class="kpi noneed"     data-key="noneed"    title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
+    <div class="kpi notstarted" data-key="notstarted"title="View not started"><div class="k-label">Not Started</div><div class="k-value">${notstarted}</div><div class="k-sub">no status assigned</div></div>
   `;
   document.querySelectorAll('.kpi[data-key]').forEach(kpi => {
     kpi.addEventListener('click', () => { location.hash = '#status/' + kpi.dataset.key; });
   });
 
-  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notpicked,notstarted}, total);
+  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notstarted}, total);
 
   const svg = $('#donut-svg');
   if (svg) {
@@ -822,16 +819,17 @@ function activeCardHtml(a) {
       <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
       <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
       <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
-      <span style="width:${w(a.noneed)};background:#0e7490" title="no need"></span>
+      <span style="width:${w(a.noneed)};background:#0891b2" title="no need"></span>
+      <span style="width:${w(a.notstarted)};background:#cbd5e1" title="not started"></span>
     </div>
     <div class="pills">
-      ${a.completed?`<span class="pill done pill-nav" data-name="${n}" data-fk="done"     title="View completed">✓ ${a.completed} done</span>`:''}
-      ${a.ready    ?`<span class="pill ready pill-nav" data-name="${n}" data-fk="ready"    title="View ready">→ ${a.ready} ready</span>`:''}
-      ${a.inprog   ?`<span class="pill inprog pill-nav" data-name="${n}" data-fk="inprog"  title="View in progress">⚡ ${a.inprog} in progress</span>`:''}
-      ${a.pending  ?`<span class="pill pending pill-nav" data-name="${n}" data-fk="pending" title="View pending">◷ ${a.pending} pending</span>`:''}
-      ${a.blocked  ?`<span class="pill blocked pill-nav" data-name="${n}" data-fk="blocked" title="View blocked">✗ ${a.blocked} blocked</span>`:''}
-      ${a.noneed   ?`<span class="pill noneed pill-nav" data-name="${n}" data-fk="noneed"  title="View no-migration">⊘ ${a.noneed} no migration</span>`:''}
-      ${!a.completed&&!a.ready&&!a.pending&&!a.blocked&&!a.inprog&&!a.noneed?`<span class="pill">○ ${a.total} not started</span>`:''}
+      ${a.completed ?`<span class="pill done    pill-nav" data-name="${n}" data-fk="done"       title="View completed">✓ ${a.completed} done</span>`:''}
+      ${a.ready     ?`<span class="pill ready   pill-nav" data-name="${n}" data-fk="ready"      title="View ready">→ ${a.ready} ready</span>`:''}
+      ${a.inprog    ?`<span class="pill inprog  pill-nav" data-name="${n}" data-fk="inprog"     title="View in progress">⚡ ${a.inprog} in progress</span>`:''}
+      ${a.pending   ?`<span class="pill pending pill-nav" data-name="${n}" data-fk="pending"    title="View pending">◷ ${a.pending} pending</span>`:''}
+      ${a.blocked   ?`<span class="pill blocked pill-nav" data-name="${n}" data-fk="blocked"    title="View blocked">✗ ${a.blocked} blocked</span>`:''}
+      ${a.noneed    ?`<span class="pill noneed  pill-nav" data-name="${n}" data-fk="noneed"     title="View no-migration">⊘ ${a.noneed} no migration</span>`:''}
+      ${a.notstarted?`<span class="pill         pill-nav" data-name="${n}" data-fk="notstarted" title="View not started">○ ${a.notstarted} not started</span>`:''}
     </div>
     ${a.blocked>0?`
     <div class="blocked-detail pill-nav" data-name="${n}" data-fk="blocked">
@@ -871,15 +869,7 @@ function renderAccountCards(filter) {
   if (!list.length) {
     grid.innerHTML = `<p class="muted">${accounts.length?'No matches.':'No data — click Refresh.'}</p>`; return;
   }
-  const active    = list.filter(a => !(a.total>0 && a.notpicked===a.total));
-  const notPicked = list.filter(a =>   a.total>0 && a.notpicked===a.total);
-
-  let html = active.map(activeCardHtml).join('');
-  if (notPicked.length) {
-    html += `<div class="section-label">${notPicked.length} accounts not yet picked for migration</div>`;
-    html += notPicked.map(notPickedCardHtml).join('');
-  }
-  grid.innerHTML = html;
+  grid.innerHTML = list.map(activeCardHtml).join('');
 
   grid.querySelectorAll('.account[data-name]').forEach(el => {
     el.addEventListener('click', e => {
