@@ -658,7 +658,7 @@ function aggregate(data) {
     const s = f(row,'status').toLowerCase();
     if (!map[name]) map[name] = {
       account_name:name, amg_id:amg,
-      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notstarted:0,
+      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notpicked:0, notstarted:0,
       blockedRows:[], hls_sheet:'', non_hls_sheet:'', discrepancies:'', jira_set: new Set(),
     };
     const a = map[name];
@@ -675,6 +675,7 @@ function aggregate(data) {
     else if (s.includes('pending'))                                    a.pending++;
     else if (s.includes('in-progress')||s.includes('in progress'))    a.inprog++;
     else if (s==='no need of migration')                               a.noneed++;
+    else if (s==='not yet picked for migration')                       a.notpicked++;
     else                                                               a.notstarted++;
   }
   return Object.values(map).map(a => {
@@ -869,7 +870,15 @@ function renderAccountCards(filter) {
   if (!list.length) {
     grid.innerHTML = `<p class="muted">${accounts.length?'No matches.':'No data — click Refresh.'}</p>`; return;
   }
-  grid.innerHTML = list.map(activeCardHtml).join('');
+  const active    = list.filter(a => !(a.total > 0 && a.notpicked === a.total));
+  const notPicked = list.filter(a =>   a.total > 0 && a.notpicked === a.total);
+
+  let html = active.map(activeCardHtml).join('');
+  if (notPicked.length) {
+    html += `<div class="section-label">${notPicked.length} account${notPicked.length>1?'s':''} not yet picked for migration</div>`;
+    html += notPicked.map(notPickedCardHtml).join('');
+  }
+  grid.innerHTML = html;
 
   grid.querySelectorAll('.account[data-name]').forEach(el => {
     el.addEventListener('click', e => {
