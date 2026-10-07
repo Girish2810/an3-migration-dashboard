@@ -427,12 +427,12 @@ const KNOWN_HEADER_MARKERS = new Set([
 const KEY_TO_STATUS = {
   done:'switchover completed', ready:'ready for switchover', inprog:'in-progress',
   blocked:'blocked', pending:'non-ssai pending', noneed:'no need of migration',
-  notpicked:'not yet picked for migration',
+  notpicked:'not yet picked for migration', notstarted:'not-started',
 };
 const STATUS_TITLES = {
   all:'All Deliveries', done:'Completed Deliveries', ready:'Ready to Switch',
   inprog:'In Progress', blocked:'Blocked Deliveries', pending:'NM Pending',
-  noneed:'No Migration Needed', notpicked:'Not Yet Picked',
+  noneed:'No Migration Needed', notpicked:'Not Yet Picked', notstarted:'Not Started',
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -507,6 +507,12 @@ function rowMatchesKey(row, key) {
   if (key === 'inprog')     return s === 'in-progress' || s === 'in progress';
   if (key === 'noneed')     return s === 'no need of migration';
   if (key === 'notpicked')  return s === 'not yet picked for migration';
+  if (key === 'notstarted') {
+    return s !== 'switchover completed' && s !== 'ready for switchover' &&
+           s !== 'blocked' && !s.includes('pending') &&
+           s !== 'in-progress' && s !== 'in progress' &&
+           s !== 'no need of migration' && s !== 'not yet picked for migration';
+  }
   return true;
 }
 
@@ -711,7 +717,8 @@ function donutPieChart(counts, total) {
     {key:'pending', label:'NM Pending',      count:counts.pending,  color:'#7c3aed'},
     {key:'blocked', label:'Blocked',         count:counts.blocked,  color:'#dc2626'},
     {key:'noneed',  label:'No migration',    count:counts.noneed,   color:'#0e7490'},
-    {key:'notpicked',label:'Not yet picked', count:counts.notpicked,color:'#94a3b8'},
+    {key:'notpicked',  label:'Not yet picked', count:counts.notpicked,  color:'#94a3b8'},
+    {key:'notstarted', label:'Not started',    count:counts.notstarted, color:'#cbd5e1'},
   ].filter(d=>d.count>0);
 
   const cx=80,cy=80,R=66,ri=38,gap=0.018;
@@ -754,30 +761,32 @@ function donutPieChart(counts, total) {
 
 // ── Render overview ───────────────────────────────────────────────────────────
 function renderOverview() {
-  const total     = rows.length;
-  const done      = rows.filter(r=>f(r,'status')==='switchover completed').length;
-  const ready     = rows.filter(r=>f(r,'status')==='ready for switchover').length;
-  const blocked   = rows.filter(r=>f(r,'status')==='blocked').length;
-  const pending   = rows.filter(r=>f(r,'status').includes('pending')).length;
-  const noneed    = rows.filter(r=>f(r,'status')==='no need of migration').length;
-  const notpicked = rows.filter(r=>f(r,'status')==='not yet picked for migration').length;
-  const inprog    = rows.filter(r=>{ const s=f(r,'status'); return s==='in-progress'||s==='in progress'; }).length;
+  const total      = rows.length;
+  const done       = rows.filter(r=>f(r,'status')==='switchover completed').length;
+  const ready      = rows.filter(r=>f(r,'status')==='ready for switchover').length;
+  const blocked    = rows.filter(r=>f(r,'status')==='blocked').length;
+  const pending    = rows.filter(r=>f(r,'status').includes('pending')).length;
+  const noneed     = rows.filter(r=>f(r,'status')==='no need of migration').length;
+  const notpicked  = rows.filter(r=>f(r,'status')==='not yet picked for migration').length;
+  const inprog     = rows.filter(r=>{ const s=f(r,'status'); return s==='in-progress'||s==='in progress'; }).length;
+  const notstarted = total - done - ready - inprog - blocked - pending - noneed - notpicked;
 
   $('#kpis').innerHTML = `
-    <div class="kpi total"    data-key="all"      title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total-notpicked}</div><div class="k-sub">${accounts.length} accounts</div></div>
-    <div class="kpi done"     data-key="done"     title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
-    <div class="kpi ready"    data-key="ready"    title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
-    <div class="kpi inprog"   data-key="inprog"   title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
-    <div class="kpi blocked"  data-key="blocked"  title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
-    <div class="kpi pending"  data-key="pending"  title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
-    <div class="kpi noneed"   data-key="noneed"   title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
-    <div class="kpi notpicked"data-key="notpicked"title="View not yet picked"><div class="k-label">Not Yet Picked</div><div class="k-value">${notpicked}</div><div class="k-sub">pending selection</div></div>
+    <div class="kpi total"     data-key="all"        title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi done"      data-key="done"        title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
+    <div class="kpi ready"     data-key="ready"       title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
+    <div class="kpi inprog"    data-key="inprog"      title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
+    <div class="kpi blocked"   data-key="blocked"     title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
+    <div class="kpi pending"   data-key="pending"     title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
+    <div class="kpi noneed"    data-key="noneed"      title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
+    <div class="kpi notpicked" data-key="notpicked"   title="View not yet picked"><div class="k-label">Not Yet Picked</div><div class="k-value">${notpicked}</div><div class="k-sub">pending selection</div></div>
+    <div class="kpi notpicked" data-key="notstarted"  title="View not started"><div class="k-label">Not Started</div><div class="k-value">${notstarted}</div><div class="k-sub">no status assigned</div></div>
   `;
   document.querySelectorAll('.kpi[data-key]').forEach(kpi => {
     kpi.addEventListener('click', () => { location.hash = '#status/' + kpi.dataset.key; });
   });
 
-  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notpicked}, total);
+  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notpicked,notstarted}, total);
 
   const svg = $('#donut-svg');
   if (svg) {
