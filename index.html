@@ -544,6 +544,16 @@ function renderFromHash() {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'deletions'));
     $('#deletions').classList.remove('hidden');
     if (!deletionsLoaded) loadDeletions();
+  } else if (hash.startsWith('#deletions/account/')) {
+    const amg = decodeURIComponent(hash.slice(19));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'deletions'));
+    $('#deletions').classList.remove('hidden');
+    const doOpen = () => {
+      const acct = delAccounts.find(a => a.amg_id === amg);
+      if (acct) openDelAccount(acct.account_name, amg);
+    };
+    if (!deletionsLoaded) loadDeletions().then(doOpen);
+    else doOpen();
   } else {
     $('#overview').classList.remove('hidden');
     renderOverview();
@@ -959,6 +969,7 @@ function _showAccountDetail(name, filterKey = '') {
 
 function renderAccountLinks(a) {
   const wrap = $('#acct-links-wrap');
+  const amg  = (a?.amg_id || '').trim();
   const links = [];
   if (a?.hls_sheet)     links.push({label:'HLS Data Sheet',     url:a.hls_sheet});
   if (a?.non_hls_sheet) links.push({label:'Non-HLS Data Sheet', url:a.non_hls_sheet});
@@ -968,7 +979,7 @@ function renderAccountLinks(a) {
   const hasJira = jiraList.length > 0;
   const hasLinks = links.length > 0;
 
-  if (!hasLinks && !hasJira) { wrap.innerHTML=''; return; }
+  if (!hasLinks && !hasJira && !amg) { wrap.innerHTML=''; return; }
 
   const ticketRe = /([A-Z][A-Z0-9]+-\d+)/;
 
@@ -1000,6 +1011,10 @@ function renderAccountLinks(a) {
     </div>`;
   }
 
+  const delBtnHtml = amg
+    ? `<button class="acct-link-item" style="background:none;border:none;cursor:pointer;padding:0;color:var(--primary);font:inherit;font-size:.82rem" onclick="location.hash='#deletions/account/${encodeURIComponent(amg)}'">⬡ Channel Deletions →</button>`
+    : '';
+
   wrap.innerHTML = `<div class="acct-links-panel">
     <span class="acct-link-label">Links</span><span class="acct-link-sep">·</span>
     ${links.map(l => {
@@ -1009,6 +1024,7 @@ function renderAccountLinks(a) {
         : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
     }).join('')}
     ${jiraHtml}
+    ${delBtnHtml}
   </div>`;
 
   // Wire up Jira dropdown toggle
