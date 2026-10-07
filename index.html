@@ -245,6 +245,28 @@
 
     /* DELETIONS */
     .del-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
+
+    /* DAILY LOG */
+    .daily-entry{padding:.7rem 1rem;border-radius:0 8px 8px 0;background:#fff;margin-bottom:.45rem;border:1px solid var(--border);border-left-width:3px;transition:box-shadow .15s}
+    .daily-entry:hover{box-shadow:var(--shadow)}
+    .daily-entry-head{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.3rem}
+    .daily-cat-badge{font-size:.68rem;font-weight:700;padding:.12rem .5rem;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+    .daily-amg{font-size:.72rem;color:var(--muted2);font-family:monospace;padding:.08rem .28rem;background:var(--bg);border-radius:4px}
+    .daily-task{font-size:.84rem;color:var(--text);line-height:1.48}
+    .daily-outcome{margin-top:.4rem;font-size:.78rem;color:var(--muted);padding:.3rem .55rem;background:var(--bg);border-radius:6px;border-left:2px solid var(--border);line-height:1.4}
+    .daily-jira-link{font-size:.72rem;font-family:monospace;color:var(--primary);text-decoration:none;font-weight:600;padding:.15rem .4rem;background:var(--primary-bg);border-radius:4px;white-space:nowrap}
+    .daily-jira-link:hover{text-decoration:underline}
+    .daily-actor{font-size:.72rem;color:var(--muted);padding:.12rem .4rem;background:var(--bg);border-radius:999px;border:1px solid var(--border)}
+    .daily-date-header{font-size:.78rem;font-weight:700;color:var(--text);padding:.55rem 0 .35rem;margin-bottom:.45rem;margin-top:1.1rem;display:flex;align-items:center;gap:.5rem;border-bottom:2px solid var(--primary)}
+    .daily-date-header:first-child{margin-top:0}
+    .daily-date-day{font-size:.92rem;font-weight:800;color:var(--primary)}
+    .daily-date-label{color:var(--muted);font-weight:500}
+    .daily-date-count{margin-left:auto;font-size:.7rem;color:var(--muted2);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:.1rem .45rem;font-weight:400}
+    .daily-kpi-strip{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
+    .daily-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;min-width:110px}
+    .daily-kpi .dk-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+    .daily-kpi .dk-value{font-size:1.45rem;font-weight:800;margin-top:.1rem}
+    .daily-empty{text-align:center;padding:3.5rem 1rem;color:var(--muted);font-size:.85rem}
   </style>
 </head>
 <body>
@@ -269,6 +291,7 @@
 <nav class="tab-nav" id="tab-nav">
   <button class="tab-btn active" data-tab="overview">Overview</button>
   <button class="tab-btn" data-tab="deletions">Deletion Tracker</button>
+  <button class="tab-btn" data-tab="daily">Daily Log</button>
 </nav>
 
 <div id="banner"></div>
@@ -381,6 +404,33 @@
   </div>
 </section>
 
+<!-- DAILY LOG -->
+<section id="daily-log" class="page hidden">
+  <div class="card">
+    <div class="card-head">
+      <h2>📋 Daily Work Log</h2>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span id="daily-count" style="font-size:.78rem;color:var(--muted)"></span>
+        <input id="daily-q" type="search" placeholder="Search task, account, outcome…" style="min-width:180px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+        <select id="daily-cat-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
+          <option value="">All categories</option>
+        </select>
+        <select id="daily-actor-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
+          <option value="">All actors</option>
+        </select>
+        <button class="btn light" id="btn-daily-refresh">↻ Refresh</button>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
+      Timeline of daily work — grouped by date, newest first. Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">Daily updates tracker</code> sheet.
+    </p>
+    <div id="daily-kpi-strip" class="daily-kpi-strip"></div>
+    <div id="daily-timeline">
+      <div class="daily-empty">Click <strong>↻ Refresh</strong> to load the daily work log.</div>
+    </div>
+  </div>
+</section>
+
 <div id="toast"></div>
 
 <script>
@@ -390,6 +440,31 @@ const SHEET_NAME    = 'data';
 const DELETIONS_TAB = 'Channel deletion sheet';
 const DEL_SHEET_ID  = '1oKd7Dx02mIA8b_k9d4VRbXlHZIMv956B6CuJ4kzmTdA';
 const DEL_SHEET_GID = '1182719966';
+const DAILY_SHEET_ID  = '1uM1F9S9B072XyvjZICNJ-_qzBlIOI-P_5lGTIEep0ps';
+const DAILY_SHEET_GID = '0';
+const DAILY_ALIASES = {
+  date:         ['date'],
+  category:     ['category'],
+  account_name: ['accountname','account_name','account name','account'],
+  amg_id:       ['amg_id','amg id','amgid'],
+  task:         ['task_description','task description','task'],
+  jira:         ['jira'],
+  actor:        ['actor'],
+  outcome:      ['outcome'],
+};
+const DAILY_CAT_COLORS = {
+  'migration':                     {color:'#2563eb',bg:'#eff6ff'},
+  'deletion':                      {color:'#dc2626',bg:'#fef2f2'},
+  'channel deletion':              {color:'#dc2626',bg:'#fef2f2'},
+  'channel merging':               {color:'#ea580c',bg:'#fff7ed'},
+  'channel merging and migration': {color:'#7c3aed',bg:'#f5f3ff'},
+  'meeting':                       {color:'#9333ea',bg:'#faf5ff'},
+  'discussion':                    {color:'#9333ea',bg:'#faf5ff'},
+  'bug fix':                       {color:'#d97706',bg:'#fffbeb'},
+  'review':                        {color:'#0891b2',bg:'#ecfeff'},
+  'planning':                      {color:'#64748b',bg:'#f8fafc'},
+  'customer call':                 {color:'#16a34a',bg:'#f0fdf4'},
+};
 const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
@@ -442,6 +517,7 @@ let dashboardFilter = '';
 let deletionsRows = [], deletionsLoaded = false;
 let delAccounts = [], delSelected = null, delDetailRows = [];
 let svRows = [];
+let dailyRows = [], dailyLoaded = false;
 
 // ── Edit key ─────────────────────────────────────────────────────────────────
 function getEditKey()   { return sessionStorage.getItem('an3_edit_key') || ''; }
@@ -518,7 +594,7 @@ function rowMatchesKey(row, key) {
 
 // ── Hash routing ─────────────────────────────────────────────────────────────
 function hideAll() {
-  ['#overview','#status-view','#detail','#deletions'].forEach(s => {
+  ['#overview','#status-view','#detail','#deletions','#daily-log'].forEach(s => {
     const el = $(s); if (el) el.classList.add('hidden');
   });
 }
@@ -555,6 +631,10 @@ function renderFromHash() {
     };
     if (!deletionsLoaded) loadDeletions().then(doOpen);
     else doOpen();
+  } else if (hash === '#daily') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'daily'));
+    $('#daily-log').classList.remove('hidden');
+    if (!dailyLoaded) loadDailyLog();
   } else {
     $('#overview').classList.remove('hidden');
     renderOverview();
@@ -1268,12 +1348,192 @@ function renderDelDetailTableHtml(rows, q, sf) {
   </table>`;
 }
 
+// ── Daily Log ────────────────────────────────────────────────────────────────
+function parseDDMMYYYY(s) {
+  s = String(s||'').trim();
+  const gviz = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (gviz) return new Date(+gviz[1], +gviz[2], +gviz[3]);
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) return new Date(+dmy[3], +dmy[2]-1, +dmy[1]);
+  return new Date(s);
+}
+
+function formatDailyDateHeader(s) {
+  const d = parseDDMMYYYY(s);
+  if (isNaN(d.getTime())) return { day: s, label: '' };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+  d.setHours(0,0,0,0);
+  const prefix = d.getTime() === today.getTime() ? 'Today'
+               : d.getTime() === yesterday.getTime() ? 'Yesterday'
+               : d.toLocaleDateString([],{weekday:'short'});
+  return { day: prefix, label: d.toLocaleDateString([],{day:'numeric',month:'long',year:'numeric'}) };
+}
+
+function sortKeyDDMMYYYY(s) {
+  const d = parseDDMMYYYY(s);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+async function fetchDailyTab() {
+  const url = `https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${DAILY_SHEET_GID}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response from daily log sheet.');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  const labelToKey = buildLabelToKey(parsed, DAILY_ALIASES);
+  const result = [];
+  for (const gvizRow of parsed.table.rows) {
+    if (!gvizRow.c) continue;
+    const cells = gvizRow.c.map(gvizCellValue);
+    if (cells.every(v => !v)) continue;
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    if (!(obj.task || obj.account_name)) continue;
+    result.push(obj);
+  }
+  return result;
+}
+
+function dailyCatStyle(category) {
+  return DAILY_CAT_COLORS[(category||'').toLowerCase().trim()] || {color:'#64748b',bg:'#f8fafc'};
+}
+
+function dailyEntryHtml(r) {
+  const cat     = dailyCatStyle(r.category);
+  const jiraRaw = (r.jira||'').trim();
+  const isUrl   = /^https?:\/\//.test(jiraRaw);
+  const jiraUrl = jiraRaw ? (isUrl ? jiraRaw : `https://amagiengg.atlassian.net/browse/${jiraRaw}`) : '';
+  const jiraKey = jiraRaw.match(/([A-Z][A-Z0-9]+-\d+)/)?.[1] || (isUrl ? jiraRaw.split('/').pop() : jiraRaw);
+  const jiraHtml    = jiraUrl ? `<a class="daily-jira-link" href="${esc(jiraUrl)}" target="_blank" rel="noopener">${esc(jiraKey)} ↗</a>` : '';
+  const actorHtml   = r.actor  ? `<span class="daily-actor">👤 ${esc(r.actor)}</span>` : '';
+  const outcomeHtml = r.outcome ? `<div class="daily-outcome">→ ${esc(r.outcome)}</div>` : '';
+  const acctHtml    = r.account_name ? `<span style="font-size:.82rem;font-weight:600">${esc(r.account_name)}</span>` : '';
+  const amgHtml     = r.amg_id ? `<span class="daily-amg">${esc(r.amg_id)}</span>` : '';
+  return `<div class="daily-entry" style="border-left-color:${cat.color}">
+    <div class="daily-entry-head">
+      <span class="daily-cat-badge" style="background:${cat.bg};color:${cat.color}">${esc(r.category||'General')}</span>
+      ${acctHtml}${amgHtml}
+      <div style="flex:1"></div>
+      ${actorHtml}${jiraHtml}
+    </div>
+    <div class="daily-task">${esc(r.task)}</div>
+    ${outcomeHtml}
+  </div>`;
+}
+
+function renderDailyLog() {
+  const q   = ($('#daily-q')?.value   || '').toLowerCase();
+  const cat = ($('#daily-cat-filter')?.value  || '').toLowerCase();
+  const act = ($('#daily-actor-filter')?.value || '').toLowerCase();
+
+  const filtered = dailyRows.filter(r => {
+    if (cat && (r.category||'').toLowerCase().trim() !== cat) return false;
+    if (act && (r.actor||'').toLowerCase().trim() !== act) return false;
+    if (q) {
+      const hay = [r.task,r.account_name,r.amg_id,r.outcome,r.actor,r.category].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  $('#daily-count').textContent = `${filtered.length} of ${dailyRows.length} entries`;
+
+  // KPIs
+  const uniqueAccts  = new Set(filtered.map(r => r.amg_id||r.account_name).filter(Boolean)).size;
+  const uniqueActors = new Set(filtered.filter(r=>r.actor).map(r=>r.actor)).size;
+  const today    = new Date();
+  const todayStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
+  const weekAgo  = new Date(); weekAgo.setDate(today.getDate()-6);
+  const todayCount = filtered.filter(r => r.date === todayStr).length;
+  const weekCount  = filtered.filter(r => sortKeyDDMMYYYY(r.date) >= weekAgo.getTime()).length;
+  $('#daily-kpi-strip').innerHTML = `
+    <div class="daily-kpi"><div class="dk-label">Total Entries</div><div class="dk-value" style="color:var(--primary)">${filtered.length}</div></div>
+    <div class="daily-kpi"><div class="dk-label">Accounts</div><div class="dk-value" style="color:#7c3aed">${uniqueAccts}</div></div>
+    <div class="daily-kpi"><div class="dk-label">This Week</div><div class="dk-value" style="color:#0891b2">${weekCount}</div></div>
+    <div class="daily-kpi"><div class="dk-label">Today</div><div class="dk-value" style="color:var(--green)">${todayCount}</div></div>
+    ${uniqueActors ? `<div class="daily-kpi"><div class="dk-label">Team Members</div><div class="dk-value" style="color:#ea580c">${uniqueActors}</div></div>` : ''}`;
+
+  // Populate dropdowns on first render
+  const catSel = $('#daily-cat-filter');
+  const actSel = $('#daily-actor-filter');
+  if (catSel && catSel.options.length <= 1) {
+    [...new Set(dailyRows.map(r=>(r.category||'').trim()).filter(Boolean))].sort().forEach(c => {
+      const o = document.createElement('option'); o.value = c.toLowerCase(); o.textContent = c; catSel.appendChild(o);
+    });
+  }
+  if (actSel && actSel.options.length <= 1) {
+    [...new Set(dailyRows.filter(r=>r.actor).map(r=>r.actor.trim()))].sort().forEach(a => {
+      const o = document.createElement('option'); o.value = a.toLowerCase(); o.textContent = a; actSel.appendChild(o);
+    });
+  }
+
+  if (!filtered.length) {
+    $('#daily-timeline').innerHTML = `<div class="daily-empty">${dailyRows.length===0 ? 'No entries found.' : 'No entries match the filter.'}</div>`;
+    return;
+  }
+
+  // Group by date, newest first
+  const byDate = {};
+  for (const r of filtered) {
+    const d = r.date || 'Unknown';
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  }
+  const sortedDates = Object.keys(byDate).sort((a,b) => sortKeyDDMMYYYY(b) - sortKeyDDMMYYYY(a));
+
+  let html = '';
+  for (const d of sortedDates) {
+    const entries = byDate[d];
+    const { day, label } = formatDailyDateHeader(d);
+    html += `<div class="daily-date-header">
+      <span class="daily-date-day">${esc(day)}</span>
+      <span class="daily-date-label">${esc(label)}</span>
+      <span class="daily-date-count">${entries.length} entr${entries.length===1?'y':'ies'}</span>
+    </div>`;
+    html += entries.map(dailyEntryHtml).join('');
+  }
+  $('#daily-timeline').innerHTML = html;
+}
+
+async function loadDailyLog() {
+  $('#daily-timeline').innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading daily work log…</div></div>`;
+  $('#daily-count').textContent = '';
+  try {
+    dailyRows   = await fetchDailyTab();
+    dailyLoaded = true;
+    renderBanner();
+    renderDailyLog();
+    toast(`Loaded ${dailyRows.length} work log entries`);
+  } catch(err) {
+    $('#daily-timeline').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load Daily Work Log: ${esc(err.message)}</div></div>`;
+  }
+}
+
 // ── Banner ────────────────────────────────────────────────────────────────────
 function renderBanner() {
-  const onDel = location.hash.startsWith('#deletions');
-  const now   = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const hash    = location.hash || '';
+  const onDel   = hash.startsWith('#deletions');
+  const onDaily = hash.startsWith('#daily');
+  const now     = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   $('#last-updated').textContent = `Updated ${now}`;
-  if (onDel && deletionsLoaded) {
+  if (onDaily && dailyLoaded) {
+    const today    = new Date();
+    const todayStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
+    const todayCount  = dailyRows.filter(r => r.date === todayStr).length;
+    const uniqueAccts = new Set(dailyRows.map(r=>r.amg_id||r.account_name).filter(Boolean)).size;
+    $('#banner').innerHTML = `
+      <strong>${dailyRows.length}</strong> entries
+      <span class="banner-dot">·</span>
+      <strong>${uniqueAccts}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${todayCount} today</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDel && deletionsLoaded) {
     const totalCh  = deletionsRows.length;
     const deleted  = deletionsRows.filter(r => (r.del_status||'').toLowerCase().trim() === 'deleted').length;
     const pending  = totalCh - deleted;
@@ -1288,6 +1548,7 @@ function renderBanner() {
       <span class="banner-dot">·</span>
       <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
   } else if (onDel) {
+    if (!rows.length) return;
     const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
     const total = rows.length;
     $('#banner').innerHTML = `
@@ -1298,6 +1559,18 @@ function renderBanner() {
       <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
       <span class="banner-dot">·</span>
       <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDaily) {
+    if (!rows.length) return;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
   } else {
     if (!rows.length) return;
     const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
@@ -1464,12 +1737,18 @@ document.querySelectorAll('.fchip').forEach(btn => {
 });
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    location.hash = btn.dataset.tab === 'deletions' ? '#deletions' : '#overview';
+    if (btn.dataset.tab === 'deletions') location.hash = '#deletions';
+    else if (btn.dataset.tab === 'daily') location.hash = '#daily';
+    else location.hash = '#overview';
   });
 });
 $('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) renderDelOverview(); });
 $('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDelOverview(); });
 $('#btn-del-refresh').addEventListener('click', loadDeletions);
+$('#daily-q').addEventListener('input', () => { if (dailyLoaded) renderDailyLog(); });
+$('#daily-cat-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
+$('#daily-actor-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
+$('#btn-daily-refresh').addEventListener('click', loadDailyLog);
 
 if (getEditKey()) setEditMode(true);
 load();
