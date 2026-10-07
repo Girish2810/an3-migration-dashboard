@@ -388,6 +388,8 @@
 const STORAGE_KEY   = 'an3_sheet_id';
 const SHEET_NAME    = 'data';
 const DELETIONS_TAB = 'Channel deletion sheet';
+const DEL_SHEET_ID  = '1oKd7Dx02mIA8b_k9d4VRbXlHZIMv956B6CuJ4kzmTdA';
+const DEL_SHEET_GID = '1182719966';
 const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpDViGQxvImK0vKdp-eTW6LDOxF9rQALS_tjmPni7lo8j-agkSRVh1Fil8n-VWc2XHEQ/exec';
@@ -560,6 +562,18 @@ async function fetchTab(tabName) {
   return parsed;
 }
 
+async function fetchDelTab() {
+  const url = `https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${DEL_SHEET_GID}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response format from deletion sheet.');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  return parsed;
+}
+
 function buildLabelToKey(parsed, aliasMap) {
   const labels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
   const map = {};
@@ -598,7 +612,7 @@ async function fetchRows() {
 }
 
 async function fetchDeletions() {
-  const parsed = await fetchTab(DELETIONS_TAB);
+  const parsed = await fetchDelTab();
   const labelToKey = buildLabelToKey(parsed, DELETION_ALIASES);
   const result = [];
   let lastAmgId = '';
@@ -1205,10 +1219,15 @@ function renderDelDetailTableHtml(rows, q, sf) {
   if (!filtered.length) return `<div class="del-empty">No channels match.</div>`;
   const rows_html = filtered.map((r, i) => {
     const isDel = (r.del_status||'').toLowerCase().trim() === 'deleted';
-    const jira = (r.jira||'').trim();
-    const jiraHtml = jira
-      ? `<a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="font-family:monospace;font-size:.78rem">${esc(jira)}</a>`
-      : '—';
+    const jiraRaw = (r.jira||'').trim();
+    let jiraHtml = '—';
+    if (jiraRaw) {
+      const isUrl = /^https?:\/\//.test(jiraRaw);
+      const jiraUrl = isUrl ? jiraRaw : `https://amagiengg.atlassian.net/browse/${jiraRaw}`;
+      const ticketMatch = jiraRaw.match(/([A-Z][A-Z0-9]+-\d+)/);
+      const jiraLabel = ticketMatch ? ticketMatch[1] : (isUrl ? jiraRaw.split('/').pop() : jiraRaw);
+      jiraHtml = `<a href="${esc(jiraUrl)}" target="_blank" rel="noopener" style="font-family:monospace;font-size:.78rem">${esc(jiraLabel)}</a>`;
+    }
     return `<tr class="${isDel ? 'row-done' : ''}">
       <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
       <td><strong>${esc(r.channel_id)||'—'}</strong></td>
