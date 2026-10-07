@@ -527,6 +527,7 @@ function renderFromHash() {
   if (!rows.length) return;
   const hash = location.hash || '';
   hideAll();
+  renderBanner();
   if (!hash || hash === '#' || hash === '#overview') {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
     $('#overview').classList.remove('hidden');
@@ -1105,6 +1106,7 @@ async function loadDeletions() {
     deletionsRows = await fetchDeletions();
     delAccounts = aggregateDeletions(deletionsRows);
     deletionsLoaded = true;
+    renderBanner();
     renderDelOverview();
     toast(`Loaded ${deletionsRows.length} channel deletion records`);
   } catch(err) {
@@ -1266,6 +1268,51 @@ function renderDelDetailTableHtml(rows, q, sf) {
   </table>`;
 }
 
+// ── Banner ────────────────────────────────────────────────────────────────────
+function renderBanner() {
+  const onDel = location.hash.startsWith('#deletions');
+  const now   = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  $('#last-updated').textContent = `Updated ${now}`;
+  if (onDel && deletionsLoaded) {
+    const totalCh  = deletionsRows.length;
+    const deleted  = deletionsRows.filter(r => (r.del_status||'').toLowerCase().trim() === 'deleted').length;
+    const pending  = totalCh - deleted;
+    $('#banner').innerHTML = `
+      <strong>${delAccounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <strong>${totalCh}</strong> channels
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${deleted} deleted</span>
+      <span class="banner-dot">·</span>
+      <span style="color:#dc2626;font-weight:600">${pending} pending</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDel) {
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else {
+    if (!rows.length) return;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  }
+}
+
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function load() {
   hideAll();
@@ -1276,22 +1323,9 @@ async function load() {
     accounts = aggregate(rows);
     deletionsLoaded = false;
     $('#error-container').innerHTML = '';
-
-    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
-    const total = rows.length;
-    const now   = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    $('#last-updated').textContent = `Updated ${now}`;
-    $('#banner').innerHTML = `
-      <strong>${total}</strong> deliveries
-      <span class="banner-dot">·</span>
-      <strong>${accounts.length}</strong> accounts
-      <span class="banner-dot">·</span>
-      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
-      <span class="banner-dot">·</span>
-      <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
-
+    renderBanner();
     renderFromHash();
-    toast(`Loaded ${total} rows across ${accounts.length} accounts`);
+    toast(`Loaded ${rows.length} rows across ${accounts.length} accounts`);
   } catch(err) {
     $('#error-container').innerHTML = `
       <div class="page"><div class="error-box">
