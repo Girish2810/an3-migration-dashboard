@@ -540,7 +540,8 @@ const DAILY_CAT_COLORS = {
 };
 const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNqlM9pBTYkMySUDJuY80fy1Tn6C_DpHxILUfcEV1qX3LIe38bl5d8JmYgAvgFpiwTAg/exec';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxNqlM9pBTYkMySUDJuY80fy1Tn6C_DpHxILUfcEV1qX3LIe38bl5d8JmYgAvgFpiwTAg/exec';
+const PIPELINE_SYNC_URL = 'https://delivery-migration.now3.amagi.tv/api/pipeline/sync';
 
 const ALIASES = {
   amg_id:            ['amg_id','amg id','amgid'],
@@ -1780,6 +1781,19 @@ function plOpenHistory(amg, name) {
 }
 
 async function loadPipeline() {
+  $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem;text-align:center"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Syncing from Jira…</div></div></td></tr>`;
+  // Trigger live Jira sync via backend; fall through on failure (static deploy / server down)
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 90000);
+    const sr = await fetch(PIPELINE_SYNC_URL, {method:'POST', signal: ctrl.signal}).catch(() => null);
+    clearTimeout(tid);
+    if (sr && sr.ok) {
+      const sd = await sr.json().catch(() => ({}));
+      if (sd.ok) toast(`Jira sync: +${sd.added||0} added, ${sd.updated||0} updated`);
+    }
+  } catch(_) { /* server not reachable — continue with cached sheet data */ }
+
   $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem;text-align:center"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading pipeline…</div></div></td></tr>`;
   try {
     const [wfParsed, histParsed] = await Promise.all([
