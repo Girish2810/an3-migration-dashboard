@@ -510,10 +510,16 @@ const PIPELINE_STEPS = [
   {key:'ready',           label:'Ready for Switchover',desc:'All checks passed'},
   {key:'done',            label:'Switched Over',       desc:'Migration complete'},
 ];
-// stage → step index completed (stages BEYOND this step are "done" for it)
+// stage → which step (0-4) is currently IN PROGRESS (-1 = not started, 5 = all done)
 const PL_STAGE_IDX = {
-  identified:0, data_gathering:1, em_verification:2,
-  hls_check:3, discrepancy:3, ready:4, approved:4, done:5,
+  identified:    -1,  // no work started yet → all NO
+  data_gathering: 0,  // step 0 in progress
+  em_verification:1,
+  hls_check:      2,
+  discrepancy:    2,  // blocked at hls_check
+  ready:          3,
+  approved:       3,
+  done:           5,  // > 4, so all steps show DONE
 };
 const DAILY_ALIASES = {
   date:         ['date'],
@@ -1686,8 +1692,8 @@ function renderPipeline() {
 
   // Step funnel — count how many accounts have reached/passed each step
   funnelEl.innerHTML = PIPELINE_STEPS.map((step, si) => {
-    const reached  = rows.filter(r => (PL_STAGE_IDX[r.stage||''] || 0) >= si + 1).length;
-    const blk      = rows.filter(r => (r.stage||'') === 'discrepancy' && (PL_STAGE_IDX[r.stage||''] || 0) === si).length;
+    const reached  = rows.filter(r => (PL_STAGE_IDX[r.stage||''] ?? -1) > si).length;
+    const blk      = rows.filter(r => (r.stage||'') === 'discrepancy').length;
     const pct      = total ? Math.round(reached / total * 100) : 0;
     return `<div style="background:#fff;padding:.9rem .75rem;text-align:center">
       <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem">${step.label}</div>
@@ -1725,7 +1731,7 @@ function renderPipeline() {
 
   // Migration details table
   tbodyEl.innerHTML = rows.map(r => {
-    const stageIdx  = PL_STAGE_IDX[r.stage||''] ?? 0;
+    const stageIdx  = PL_STAGE_IDX[r.stage||''] ?? -1;
     const isBlocked = (r.stage||'') === 'discrepancy';
     const days      = plDaysBlocked(r);
     const jira      = (r.jira_tickets||'').trim();
