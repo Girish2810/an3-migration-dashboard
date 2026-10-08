@@ -434,29 +434,53 @@
 </section>
 
 <section id="pipeline" class="page hidden">
-  <div class="card">
-    <div class="card-head">
-      <h2>🗂 Migration Pipeline</h2>
-      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-        <span id="pl-count" style="font-size:.78rem;color:var(--muted)"></span>
-        <input id="pl-q" type="search" placeholder="Search account…" style="min-width:180px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
-        <select id="pl-type-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
-          <option value="">All types</option>
-          <option value="migration">Migration</option>
-          <option value="deletion">Deletion</option>
-        </select>
-        <select id="pl-em-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
-          <option value="">All EMs</option>
-        </select>
-        <button class="btn light" id="btn-pl-refresh">↻ Refresh</button>
-      </div>
+  <!-- KPI bar -->
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+    <div id="pl-kpi-bar" style="display:flex;gap:.75rem;flex:1;flex-wrap:wrap"></div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+      <input id="pl-q" type="search" placeholder="Search customer, assignee…" style="width:200px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+      <select id="pl-em-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem"><option value="">All Assignees</option></select>
+      <button class="btn light" id="btn-pl-refresh">↻ Refresh</button>
     </div>
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
-      Live view of all accounts in the migration pipeline. Reads from <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">AN3_Workflow</code> tab. Add/move accounts via <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">python agent.py</code>.
-    </p>
-    <div id="pl-kpi-strip" class="daily-kpi-strip"></div>
-    <div id="pl-board" style="display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem;margin-top:1rem"></div>
   </div>
+
+  <!-- Step funnel -->
+  <div class="card" style="margin-bottom:1rem">
+    <div style="font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem">Migration Pipeline
+      <span style="font-weight:400;margin-left:.5rem">Each stage must be completed in order.</span>
+    </div>
+    <div id="pl-funnel" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--radius-sm);overflow:hidden"></div>
+  </div>
+
+  <!-- Blocked cards -->
+  <div id="pl-blocked-section" style="margin-bottom:1rem"></div>
+
+  <!-- Details table -->
+  <div class="card">
+    <div style="font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem">Migration Details
+      <span id="pl-count" style="font-weight:400;margin-left:.5rem"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="pl-table" style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead>
+          <tr style="background:var(--bg);border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:.5rem .75rem;font-weight:600;white-space:nowrap">Customer</th>
+            <th style="text-align:left;padding:.5rem .75rem;font-weight:600;white-space:nowrap">AMG ID</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">1. Data<br>Gathering</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">2. EM<br>Verification</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">3. HLS /<br>Delivery Check</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">4. Ready for<br>Switchover</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">5. Switched<br>Over</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center">Blocked</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center">Jira</th>
+          </tr>
+        </thead>
+        <tbody id="pl-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- History panel -->
   <div id="pl-history-panel" style="display:none;position:fixed;right:0;top:0;width:380px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:200;overflow-y:auto;padding:1.5rem">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
       <h3 id="pl-history-title" style="margin:0;font-size:1rem"></h3>
@@ -479,16 +503,18 @@ const DAILY_SHEET_ID  = '1uM1F9S9B072XyvjZICNJ-_qzBlIOI-P_5lGTIEep0ps';
 const DAILY_SHEET_GID = '0';
 const PIPELINE_WORKFLOW_SHEET = 'AN3_Workflow';
 const PIPELINE_HISTORY_SHEET  = 'AN3_History';
-const PIPELINE_STAGES = [
-  {key:'identified',     label:'Identified',      color:'#64748b', bg:'#f8fafc'},
-  {key:'data_gathering', label:'Data Gathering',  color:'#2563eb', bg:'#eff6ff'},
-  {key:'em_verification',label:'EM Verification', color:'#ea580c', bg:'#fff7ed'},
-  {key:'hls_check',      label:'HLS Check',       color:'#7c3aed', bg:'#f5f3ff'},
-  {key:'discrepancy',    label:'Discrepancy',     color:'#dc2626', bg:'#fef2f2'},
-  {key:'ready',          label:'Ready',           color:'#16a34a', bg:'#f0fdf4'},
-  {key:'approved',       label:'Approved',        color:'#0891b2', bg:'#ecfeff'},
-  {key:'done',           label:'Done',            color:'#059669', bg:'#ecfdf5'},
+const PIPELINE_STEPS = [
+  {key:'data_gathering',  label:'Data Gathering',      desc:'Delivery data collected & verified'},
+  {key:'em_verification', label:'EM Verification',     desc:'EM confirms delivery list'},
+  {key:'hls_check',       label:'HLS / Delivery Check',desc:'HLS data verified, non-HLS added'},
+  {key:'ready',           label:'Ready for Switchover',desc:'All checks passed'},
+  {key:'done',            label:'Switched Over',       desc:'Migration complete'},
 ];
+// stage → step index completed (stages BEYOND this step are "done" for it)
+const PL_STAGE_IDX = {
+  identified:0, data_gathering:1, em_verification:2,
+  hls_check:3, discrepancy:3, ready:4, approved:4, done:5,
+};
 const DAILY_ALIASES = {
   date:         ['date'],
   category:     ['category'],
@@ -1205,7 +1231,7 @@ function renderDetailTable() {
       </tr></thead>
       <tbody>
         ${filtered.length===0
-          ? `<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
+          ? `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
           : filtered.map((r,i) => {
               const isDone = f(r,'status')==='switchover completed';
               return `<tr class="${isDone?'row-done':''}">
@@ -1583,61 +1609,27 @@ function parsePipelineDate(val) {
   try { return new Date(String(val).slice(0,10)); } catch { return null; }
 }
 
-function plDaysInStage(row) {
+function plDaysBlocked(row) {
   const d = parsePipelineDate(row.stage_since);
   if (!d) return 0;
   return Math.floor((Date.now() - d.getTime()) / 86400000);
 }
+function plDaysInStage(row) { return plDaysBlocked(row); }
 
-function plStaleBadge(days) {
-  if (days >= 7)  return `<span style="background:#fef2f2;color:#dc2626;padding:.15rem .4rem;border-radius:99px;font-size:.72rem;font-weight:700">${days}d ⚠</span>`;
-  if (days >= 3)  return `<span style="background:#fffbeb;color:#d97706;padding:.15rem .4rem;border-radius:99px;font-size:.72rem;font-weight:600">${days}d</span>`;
-  return `<span style="background:#f0fdf4;color:#16a34a;padding:.15rem .4rem;border-radius:99px;font-size:.72rem">${days > 0 ? days+'d' : 'today'}</span>`;
-}
-
-function plTypeBadge(type) {
-  const t = (type||'').toLowerCase();
-  const c = t === 'deletion' ? '#dc2626' : '#2563eb';
-  const bg = t === 'deletion' ? '#fef2f2' : '#eff6ff';
-  return `<span style="background:${bg};color:${c};padding:.1rem .35rem;border-radius:99px;font-size:.7rem;font-weight:600">${t||'migration'}</span>`;
-}
-
-function plCard(row) {
-  const name   = esc(row.account_name || row.amg_id || '?');
-  const amg    = esc(row.amg_id || '');
-  const em     = esc(row.assigned_to || '');
-  const jira   = esc(row.jira_tickets || '');
-  const notes  = esc(row.notes || '');
-  const days   = plDaysInStage(row);
-  const jiraLinks = jira ? jira.split(',').map(t => {
-    const k = t.trim();
-    return k ? `<a href="https://amagiengg.atlassian.net/browse/${k}" target="_blank" rel="noopener" style="color:#2563eb;font-size:.72rem">${k}</a>` : '';
-  }).filter(Boolean).join(' ') : '';
-
-  return `<div class="pl-card" data-amg="${esc(amg)}" onclick="plOpenHistory('${esc(amg)}','${name}')" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem;cursor:pointer;transition:box-shadow .15s;margin-bottom:.5rem" onmouseenter="this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'" onmouseleave="this.style.boxShadow=''">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.4rem;margin-bottom:.3rem">
-      <span style="font-weight:600;font-size:.85rem;flex:1">${name}</span>
-      ${plStaleBadge(days)}
-    </div>
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">${amg} ${plTypeBadge(row.type)}</div>
-    ${em ? `<div style="font-size:.76rem;margin-bottom:.3rem">👤 ${em}</div>` : ''}
-    ${jiraLinks ? `<div style="margin-bottom:.3rem">${jiraLinks}</div>` : ''}
-    ${notes ? `<div style="font-size:.72rem;color:var(--muted);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(notes)}">${notes}</div>` : ''}
-  </div>`;
+function plStepBadge(stepIdx, accountStageIdx, isBlocked) {
+  if (isBlocked && stepIdx === accountStageIdx)
+    return '<span style="background:#fef2f2;color:#dc2626;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700">BLOCKED</span>';
+  if (stepIdx < accountStageIdx)
+    return '<span style="background:#dcfce7;color:#16a34a;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700">DONE</span>';
+  if (stepIdx === accountStageIdx)
+    return '<span style="background:#dbeafe;color:#2563eb;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:600">IN PROGRESS</span>';
+  return '<span style="background:#f1f5f9;color:#94a3b8;padding:.15rem .45rem;border-radius:4px;font-size:.72rem">NO</span>';
 }
 
 function renderPipeline() {
   if (!pipelineLoaded) return;
-  const q       = ($('#pl-q')?.value || '').toLowerCase();
-  const typeF   = $('#pl-type-filter')?.value || '';
-  const emF     = ($('#pl-em-filter')?.value || '').toLowerCase();
-
-  let rows = pipelineRows.filter(r => {
-    if (q && !((r.account_name||'').toLowerCase().includes(q) || (r.amg_id||'').toLowerCase().includes(q))) return false;
-    if (typeF && (r.type||'').toLowerCase() !== typeF) return false;
-    if (emF && !(r.assigned_to||'').toLowerCase().includes(emF)) return false;
-    return true;
-  });
+  const q   = ($('#pl-q')?.value || '').toLowerCase();
+  const emF = ($('#pl-em-filter')?.value || '').toLowerCase();
 
   // Populate EM dropdown on first render
   const emSel = $('#pl-em-filter');
@@ -1649,54 +1641,108 @@ function renderPipeline() {
     });
   }
 
-  const total  = rows.length;
-  const done   = rows.filter(r => r.stage === 'done').length;
-  const stale  = rows.filter(r => plDaysInStage(r) >= 5 && r.stage !== 'done').length;
-  const active = total - done;
+  const kpiEl      = $('#pl-kpi-bar');
+  const funnelEl   = $('#pl-funnel');
+  const blockedEl  = $('#pl-blocked-section');
+  const tbodyEl    = $('#pl-table-body');
+  const countEl    = $('#pl-count');
 
-  $('#pl-count').textContent = `${total} accounts`;
-  $('#pl-kpi-strip').innerHTML = `
-    <div class="daily-kpi-card"><div class="daily-kpi-num">${total}</div><div class="daily-kpi-label">Total</div></div>
-    <div class="daily-kpi-card"><div class="daily-kpi-num" style="color:#2563eb">${active}</div><div class="daily-kpi-label">Active</div></div>
-    <div class="daily-kpi-card"><div class="daily-kpi-num" style="color:#16a34a">${done}</div><div class="daily-kpi-label">Done</div></div>
-    <div class="daily-kpi-card"><div class="daily-kpi-num" style="color:${stale>0?'#dc2626':'#16a34a'}">${stale}</div><div class="daily-kpi-label">Stale ≥5d</div></div>
-  `;
-
-  // Build kanban columns
-  const byStage = {};
-  PIPELINE_STAGES.forEach(s => { byStage[s.key] = []; });
-  rows.forEach(r => {
-    const sk = (r.stage||'identified').trim().toLowerCase();
-    (byStage[sk] = byStage[sk] || []).push(r);
-  });
-
-  const board = $('#pl-board');
   if (!pipelineRows.length) {
-    board.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);width:100%">
-      <div style="font-size:2rem;margin-bottom:.75rem">🗂</div>
-      <div style="font-weight:600;margin-bottom:.5rem">Pipeline not set up yet</div>
-      <div style="font-size:.83rem;margin-bottom:1rem">The <code>AN3_Workflow</code> sheet hasn't been created in this spreadsheet.</div>
-      <div style="font-size:.8rem;background:var(--bg);padding:.75rem 1rem;border-radius:var(--radius-sm);display:inline-block;text-align:left;line-height:1.8">
-        <strong>One-time setup:</strong><br>
-        1. Redeploy the Apps Script with the new workflow actions<br>
-        2. Run: <code>python3 agent.py setup</code><br>
-        3. Run: <code>python3 agent.py jira-sync</code><br>
-        4. Click ↻ Refresh
-      </div>
-    </div>`;
+    kpiEl.innerHTML = '';
+    funnelEl.innerHTML = '';
+    blockedEl.innerHTML = '';
+    tbodyEl.innerHTML = `<tr><td colspan="9" style="padding:2rem;text-align:center;color:var(--muted)">
+      <strong>Pipeline not set up yet.</strong><br>
+      <span style="font-size:.82rem">Run: <code>python3 agent.py setup</code> then <code>python3 agent.py jira-sync</code></span>
+    </td></tr>`;
+    if (countEl) countEl.textContent = '';
     return;
   }
-  board.innerHTML = PIPELINE_STAGES.map(st => {
-    const cards = (byStage[st.key]||[]);
-    const isEmpty = !cards.length;
-    return `<div style="min-width:200px;flex:1;background:${st.bg};border:1px solid ${st.color}22;border-radius:var(--radius-sm);padding:.75rem">
-      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem">
-        <span style="width:10px;height:10px;background:${st.color};border-radius:50%;flex-shrink:0"></span>
-        <span style="font-weight:700;font-size:.82rem;color:${st.color}">${st.label}</span>
-        <span style="margin-left:auto;background:${st.color}22;color:${st.color};padding:.05rem .4rem;border-radius:99px;font-size:.75rem;font-weight:600">${cards.length}</span>
+
+  let rows = pipelineRows.filter(r => {
+    if (q && !((r.account_name||'').toLowerCase().includes(q) || (r.amg_id||'').toLowerCase().includes(q))) return false;
+    if (emF && !(r.assigned_to||'').toLowerCase().includes(emF)) return false;
+    return true;
+  });
+
+  const total    = rows.length;
+  const doneRows = rows.filter(r => (r.stage||'') === 'done' || (r.stage||'') === 'approved');
+  const blocked  = rows.filter(r => (r.stage||'') === 'discrepancy');
+  const active   = rows.filter(r => !['done','approved'].includes(r.stage||''));
+
+  if (countEl) countEl.textContent = `${total} accounts`;
+
+  // KPI bar
+  kpiEl.innerHTML = [
+    {num: total,          label: 'Total Accounts', color: ''},
+    {num: active.length,  label: 'Yet to Switch',  color: '#2563eb'},
+    {num: doneRows.length,label: 'Switched Over',  color: '#16a34a'},
+    {num: blocked.length, label: 'Blocked',         color: blocked.length ? '#dc2626' : '#94a3b8'},
+  ].map(k => `
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.6rem 1rem;min-width:110px">
+      <div style="font-size:1.5rem;font-weight:700;line-height:1.1${k.color?';color:'+k.color:''}">${k.num}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${k.label}</div>
+    </div>`).join('');
+
+  // Step funnel — count how many accounts have reached/passed each step
+  funnelEl.innerHTML = PIPELINE_STEPS.map((step, si) => {
+    const reached  = rows.filter(r => (PL_STAGE_IDX[r.stage||''] || 0) >= si + 1).length;
+    const blk      = rows.filter(r => (r.stage||'') === 'discrepancy' && (PL_STAGE_IDX[r.stage||''] || 0) === si).length;
+    const pct      = total ? Math.round(reached / total * 100) : 0;
+    return `<div style="background:#fff;padding:.9rem .75rem;text-align:center">
+      <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem">${step.label}</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">${reached}<span style="font-size:.8rem;font-weight:400;color:var(--muted)">/${total}</span></div>
+      <div style="height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:.3rem">
+        <div style="height:100%;width:${pct}%;background:#2563eb;border-radius:99px;transition:width .4s"></div>
       </div>
-      ${isEmpty ? `<div style="font-size:.75rem;color:var(--muted);text-align:center;padding:.5rem 0">—</div>` : cards.map(plCard).join('')}
+      <div style="font-size:.72rem;color:var(--muted)">${step.desc}</div>
+      ${blk ? `<div style="font-size:.7rem;color:#dc2626;margin-top:.2rem;font-weight:600">${blk} blocked</div>` : ''}
     </div>`;
+  }).join('');
+
+  // Blocked cards
+  if (blocked.length) {
+    blockedEl.innerHTML = `
+      <div style="font-weight:700;font-size:.85rem;margin-bottom:.6rem;color:#dc2626">Currently Blocked (${blocked.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+        ${blocked.map(r => {
+          const days = plDaysBlocked(r);
+          const jira = (r.jira_tickets||'').trim();
+          const jiraLink = jira ? `<a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="color:#2563eb;font-size:.75rem">${esc(jira)}</a>` : '';
+          return `<div onclick="plOpenHistory('${esc(r.amg_id||'')}','${esc(r.account_name||r.amg_id||'')}')" style="background:#fff;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:.75rem 1rem;min-width:220px;max-width:280px;cursor:pointer" onmouseenter="this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'" onmouseleave="this.style.boxShadow=''">
+            <div style="font-weight:600;font-size:.85rem;margin-bottom:.2rem">${esc(r.account_name||r.amg_id||'?')}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">${esc(r.amg_id||'')}</div>
+            ${days ? `<div style="font-size:.75rem;color:#dc2626;font-weight:600;margin-bottom:.3rem">${days}d blocked</div>` : ''}
+            ${r.assigned_to ? `<div style="font-size:.75rem;margin-bottom:.3rem">👤 ${esc(r.assigned_to)}</div>` : ''}
+            ${jiraLink ? `<div>${jiraLink}</div>` : ''}
+            ${r.notes ? `<div style="font-size:.72rem;color:var(--muted);font-style:italic;margin-top:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(r.notes)}">${esc(r.notes)}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    blockedEl.innerHTML = '';
+  }
+
+  // Migration details table
+  tbodyEl.innerHTML = rows.map(r => {
+    const stageIdx  = PL_STAGE_IDX[r.stage||''] ?? 0;
+    const isBlocked = (r.stage||'') === 'discrepancy';
+    const days      = plDaysBlocked(r);
+    const jira      = (r.jira_tickets||'').trim();
+    const jiraCell  = jira
+      ? `<a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="color:#2563eb">${esc(jira)}</a>`
+      : '<span style="color:var(--muted)">—</span>';
+    const stepBadges = PIPELINE_STEPS.map((_, si) => `<td style="padding:.5rem .4rem;text-align:center;border-bottom:1px solid var(--border)">${plStepBadge(si, stageIdx, isBlocked)}</td>`).join('');
+    const blockedCell = isBlocked && days
+      ? `<span style="color:#dc2626;font-weight:600">${days}d</span>`
+      : (isBlocked ? '<span style="color:#dc2626">yes</span>' : '—');
+    return `<tr onclick="plOpenHistory('${esc(r.amg_id||'')}','${esc(r.account_name||r.amg_id||'')}')" style="cursor:pointer" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <td style="padding:.5rem .6rem;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap">${esc(r.account_name||r.amg_id||'?')}</td>
+      <td style="padding:.5rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem;color:var(--muted);white-space:nowrap">${esc(r.amg_id||'')}</td>
+      ${stepBadges}
+      <td style="padding:.5rem .4rem;text-align:center;border-bottom:1px solid var(--border);font-size:.8rem">${blockedCell}</td>
+      <td style="padding:.5rem .6rem;border-bottom:1px solid var(--border);font-size:.78rem">${jiraCell}</td>
+    </tr>`;
   }).join('');
 }
 
@@ -1734,7 +1780,7 @@ function plOpenHistory(amg, name) {
 }
 
 async function loadPipeline() {
-  $('#pl-board').innerHTML = `<div style="padding:1.5rem;width:100%"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading pipeline…</div></div></div>`;
+  $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem;text-align:center"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading pipeline…</div></div></td></tr>`;
   try {
     const [wfParsed, histParsed] = await Promise.all([
       fetchTab(PIPELINE_WORKFLOW_SHEET).catch(() => null),
@@ -1778,7 +1824,7 @@ async function loadPipeline() {
     if (pipelineRows.length) toast(`Pipeline: ${pipelineRows.length} accounts`);
     else toast('Pipeline sheets not set up yet — run: python3 agent.py setup && python3 agent.py jira-sync');
   } catch(err) {
-    $('#pl-board').innerHTML = `<div style="padding:1.5rem;width:100%"><div class="error-box">Could not load pipeline: ${esc(err.message)}</div></div>`;
+    $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem"><div class="error-box">Could not load pipeline: ${esc(err.message)}</div></td></tr>`;
   }
 }
 
@@ -2047,7 +2093,6 @@ $('#btn-daily-refresh').addEventListener('click', loadDailyLog);
 
 $('#btn-pl-refresh').addEventListener('click', () => { pipelineLoaded = false; loadPipeline(); });
 $('#pl-q').addEventListener('input', () => { if (pipelineLoaded) renderPipeline(); });
-$('#pl-type-filter').addEventListener('change', () => { if (pipelineLoaded) renderPipeline(); });
 $('#pl-em-filter').addEventListener('change', () => { if (pipelineLoaded) renderPipeline(); });
 $('#pl-history-close').addEventListener('click', () => { $('#pl-history-panel').style.display='none'; });
 
