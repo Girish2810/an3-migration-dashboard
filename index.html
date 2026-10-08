@@ -1752,8 +1752,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 $('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) renderDelOverview(); });
 $('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDelOverview(); });
 $('#btn-del-refresh').addEventListener('click', loadDeletions);
-$('#daily-q').addEventListener('input', () => { if (dailyLoaded) renderDailyLog(); });
-$('#daily-date-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
+$('#daily-q').addEventListener('input', () => {
+  if ($('#daily-q').value) $('#daily-date-filter').value = '';
+  if (dailyLoaded) renderDailyLog();
+});
+$('#daily-date-filter').addEventListener('change', () => {
+  if ($('#daily-date-filter').value) $('#daily-q').value = '';
+  if (dailyLoaded) renderDailyLog();
+});
 $('#daily-cat-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
 $('#daily-actor-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
 $('#btn-daily-refresh').addEventListener('click', loadDailyLog);
