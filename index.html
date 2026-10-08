@@ -1671,6 +1671,21 @@ function renderPipeline() {
   });
 
   const board = $('#pl-board');
+  if (!pipelineRows.length) {
+    board.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);width:100%">
+      <div style="font-size:2rem;margin-bottom:.75rem">🗂</div>
+      <div style="font-weight:600;margin-bottom:.5rem">Pipeline not set up yet</div>
+      <div style="font-size:.83rem;margin-bottom:1rem">The <code>AN3_Workflow</code> sheet hasn't been created in this spreadsheet.</div>
+      <div style="font-size:.8rem;background:var(--bg);padding:.75rem 1rem;border-radius:var(--radius-sm);display:inline-block;text-align:left;line-height:1.8">
+        <strong>One-time setup:</strong><br>
+        1. Redeploy the Apps Script with the new workflow actions<br>
+        2. Run: <code>python3 agent.py setup</code><br>
+        3. Run: <code>python3 agent.py jira-sync</code><br>
+        4. Click ↻ Refresh
+      </div>
+    </div>`;
+    return;
+  }
   board.innerHTML = PIPELINE_STAGES.map(st => {
     const cards = (byStage[st.key]||[]);
     const isEmpty = !cards.length;
@@ -1733,9 +1748,13 @@ async function loadPipeline() {
         stage_since:['stage since','stage_since'], jira_tickets:['jira tickets','jira_tickets'],
         notes:['notes'],
       });
-      pipelineRows = wfParsed.table.rows
-        .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
-        .filter(o => o.amg_id || o.account_name);
+      // If 'stage' column not found, gviz returned the wrong sheet (AN3_Workflow not created yet)
+      const hasStageCol = Object.values(labelMap).includes('stage');
+      if (hasStageCol) {
+        pipelineRows = wfParsed.table.rows
+          .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
+          .filter(o => o.stage);  // only rows with a real stage value
+      }
     }
 
     if (histParsed) {
@@ -1745,15 +1764,19 @@ async function loadPipeline() {
         assigned_to:['assigned to','assigned_to'], actor:['actor'],
         jira_ticket:['jira ticket','jira_ticket'], notes:['notes'],
       });
-      pipelineHistory = histParsed.table.rows
-        .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
-        .filter(o => o.amg_id);
+      const hasFromCol = Object.values(labelMap).includes('from_stage');
+      if (hasFromCol) {
+        pipelineHistory = histParsed.table.rows
+          .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
+          .filter(o => o.amg_id);
+      }
     }
 
     pipelineLoaded = true;
     renderBanner();
     renderPipeline();
-    toast(`Pipeline: ${pipelineRows.length} accounts`);
+    if (pipelineRows.length) toast(`Pipeline: ${pipelineRows.length} accounts`);
+    else toast('Pipeline sheets not set up yet — run: python3 agent.py setup && python3 agent.py jira-sync');
   } catch(err) {
     $('#pl-board').innerHTML = `<div style="padding:1.5rem;width:100%"><div class="error-box">Could not load pipeline: ${esc(err.message)}</div></div>`;
   }
