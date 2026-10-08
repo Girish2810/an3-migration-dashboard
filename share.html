@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AN3 Migration Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#f0f2f5;--surface:#ffffff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;
+      --primary:#2563eb;--primary-bg:#eff6ff;
+      --green:#16a34a;--green-bg:#dcfce7;--green-border:#86efac;
+      --yellow:#b45309;--yellow-bg:#fef9c3;--yellow-border:#fde047;
+      --red:#dc2626;--red-bg:#fee2e2;--red-border:#fca5a5;
+      --purple:#7c3aed;--purple-bg:#ede9fe;--purple-border:#c4b5fd;
+      --teal:#0e7490;--teal-bg:#cffafe;--teal-border:#67e8f9;
+      --grey:#475569;--grey-bg:#f1f5f9;--grey-border:#cbd5e1;
+      --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-border:#93c5fd;
+      --radius:14px;--radius-sm:8px;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:0 4px 12px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+      --font:"Inter","Segoe UI",system-ui,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    a{color:var(--primary);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* HEADER */
+    .top{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d4ed8 100%);padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;position:sticky;top:0;z-index:20;min-height:64px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+    .brand{display:flex;gap:.9rem;align-items:center;padding:.75rem 0}
+    .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.78rem;letter-spacing:.06em;box-shadow:0 2px 8px rgba(29,78,216,.5)}
+    .brand-text h1{font-size:1.05rem;font-weight:700;color:#fff;letter-spacing:-.01em}
+    .brand-text p{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:.1rem}
+    .hdr-right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;padding:.5rem 0}
+    .btn{display:inline-flex;align-items:center;gap:.35rem;justify-content:center;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;border-radius:var(--radius-sm);padding:.42rem .85rem;font-size:.8rem;cursor:pointer;font-family:inherit;text-decoration:none;white-space:nowrap;font-weight:500;transition:background .15s,border-color .15s}
+    .btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);text-decoration:none}
+    .btn.primary{background:#2563eb;border-color:#3b82f6}
+    .btn.primary:hover{background:#1d4ed8}
+    .btn.light{background:var(--surface);border-color:var(--border);color:var(--text)}
+    .btn.light:hover{background:#f1f5f9}
+    .btn:disabled{opacity:.5;cursor:wait}
+
+    /* TAB NAV */
+    .tab-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex}
+    .tab-btn{padding:.7rem 1.1rem;font-size:.83rem;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;margin-bottom:-1px;transition:color .15s,border-color .15s}
+    .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .tab-btn:hover:not(.active){color:var(--text)}
+
+    /* BANNER */
+    #banner{padding:.5rem 1.5rem;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+    #banner a{color:var(--primary);font-weight:500}
+    .banner-dot{color:var(--muted2)}
+
+    /* TOAST */
+    #toast{position:fixed;right:1rem;bottom:1.25rem;background:#0f172a;color:#fff;padding:.65rem 1rem;border-radius:10px;display:none;z-index:50;max-width:380px;font-size:.82rem;box-shadow:var(--shadow-md);border-left:3px solid #3b82f6}
+
+    /* SETUP CARD */
+    #setup-card{margin:1.5rem auto;max-width:640px;background:var(--surface);border:1px solid #f59e0b;border-radius:var(--radius);padding:1.25rem 1.5rem;box-shadow:var(--shadow)}
+    #setup-card h3{font-size:1rem;margin-bottom:.5rem}
+    #setup-card p{color:var(--muted);font-size:.85rem;margin:.35rem 0}
+    #setup-card code{background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.8rem}
+    .setup-row{display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap}
+    #sheet-id-input{flex:1;min-width:220px;padding:.45rem .65rem;border:1px solid var(--border);border-radius:var(--radius-sm);font:inherit;color:var(--text);background:#fff;font-size:.85rem}
+    #sheet-id-input:focus{outline:none;border-color:var(--primary)}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;z-index:60;padding:1rem;backdrop-filter:blur(3px)}
+    .modal-box{background:#fff;border-radius:var(--radius);padding:1.5rem;width:min(460px,100%);border:1px solid var(--border);box-shadow:var(--shadow-md)}
+    .modal-box h3{font-size:1.05rem;margin-bottom:.25rem}
+    .modal-desc{font-size:.82rem;color:var(--muted);margin-bottom:1rem}
+    .modal-field{margin-bottom:.85rem}
+    .modal-label{display:block;font-size:.73rem;color:var(--muted);margin-bottom:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .modal-input{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:var(--radius-sm);font:inherit;font-size:.85rem}
+    .modal-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem}
+    .modal-error{color:var(--red);font-size:.78rem;margin-top:.4rem}
+    .modal-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-sm);padding:.48rem .95rem;font-size:.83rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s}
+    .modal-btn:hover{background:#f1f5f9}
+    .modal-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .modal-btn.primary:hover{background:var(--blue)}
+    .modal-btn:disabled{opacity:.5;cursor:wait}
+
+    /* PAGES */
+    .page{padding:1.4rem 1.5rem 4rem;max-width:1340px;margin:0 auto}
+    .hidden{display:none!important}
+
+    /* KPIs */
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.25rem}
+    .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;box-shadow:var(--shadow);border-top:3px solid var(--border);display:flex;flex-direction:column;gap:.35rem;cursor:pointer;transition:box-shadow .15s,transform .15s}
+    .kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+    .kpi .k-label{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+    .kpi .k-value{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+    .kpi .k-sub{font-size:.72rem;color:var(--muted2)}
+    .kpi.total{border-top-color:#2563eb} .kpi.total .k-value{color:#2563eb}
+    .kpi.done{border-top-color:#16a34a} .kpi.done .k-value{color:#16a34a}
+    .kpi.ready{border-top-color:#ea580c} .kpi.ready .k-value{color:#ea580c}
+    .kpi.blocked{border-top-color:#dc2626} .kpi.blocked .k-value{color:#dc2626}
+    .kpi.pending{border-top-color:#9333ea} .kpi.pending .k-value{color:#9333ea}
+    .kpi.noneed{border-top-color:#0891b2} .kpi.noneed .k-value{color:#0891b2}
+    .kpi.inprog{border-top-color:#3b82f6} .kpi.inprog .k-value{color:#3b82f6}
+    .kpi.notstarted{border-top-color:#94a3b8} .kpi.notstarted .k-value{color:#64748b}
+
+    /* GRID */
+    .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:.85rem;margin-bottom:.85rem}
+    @media(max-width:920px){.grid-2{grid-template-columns:1fr}}
+
+    /* CARDS */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;box-shadow:var(--shadow)}
+    .card h2{font-size:.92rem;font-weight:700;margin-bottom:.9rem;color:var(--text)}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+    .card-head h2{margin:0}
+
+    /* DASHBOARD FILTER CHIPS */
+    .dash-filters{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+    .fchip{padding:.3rem .75rem;border-radius:999px;font-size:.76rem;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+    .fchip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
+    .fchip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .fchip.active-done{background:var(--green);border-color:var(--green);color:#fff}
+    .fchip.active-ready{background:#b45309;border-color:#b45309;color:#fff}
+    .fchip.active-inprog{background:var(--blue);border-color:var(--blue);color:#fff}
+    .fchip.active-blocked{background:var(--red);border-color:var(--red);color:#fff}
+    .fchip.active-pending{background:var(--purple);border-color:var(--purple);color:#fff}
+
+    /* DONUT */
+    .donut-slice{cursor:pointer;transition:opacity .15s}
+    .donut-slice:hover{opacity:1!important}
+    .donut-legend-row{display:flex;align-items:center;gap:.45rem;padding:.22rem .3rem;cursor:pointer;border-radius:6px;margin-left:-.3rem;transition:background .1s}
+    .donut-legend-row:hover{background:var(--bg)}
+
+    /* ACCOUNT CARDS */
+    .accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem}
+    .section-label{grid-column:1/-1;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:.25rem 0 .1rem;display:flex;align-items:center;gap:.6rem}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .account{border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s;position:relative;overflow:hidden}
+    .account::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border)}
+    .account:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(37,99,235,.12);transform:translateY(-2px)}
+    .account:hover::before{background:var(--primary)}
+    .account.migrated{background:#f0fdf4;border-color:var(--green-border)}
+    .account.migrated::before{background:var(--green)}
+    .account.not-picked{background:#f8fafc;border-color:var(--grey-border);border-style:dashed;cursor:default;opacity:.85}
+    .account.not-picked::before{background:var(--grey)}
+    .account.not-picked:hover{border-color:var(--grey);box-shadow:none;transform:none}
+    .acct-head{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.6rem}
+    .acct-avatar{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:var(--primary-bg);color:var(--primary)}
+    .account.migrated .acct-avatar{background:var(--green-bg);color:var(--green)}
+    .acct-name{font-size:.9rem;font-weight:700;line-height:1.25;margin-bottom:.12rem}
+    .acct-meta{color:var(--muted);font-size:.74rem}
+    .badge-done{display:inline-flex;align-items:center;gap:.25rem;font-size:.65rem;font-weight:700;background:var(--green);color:#fff;padding:.12rem .48rem;border-radius:999px;margin-left:auto;flex-shrink:0}
+    .mini-bars{display:flex;height:7px;border-radius:999px;overflow:hidden;background:#f1f5f9;margin-bottom:.6rem;gap:1px}
+    .mini-bars span{display:block;height:100%;min-width:0}
+    .pills{display:flex;flex-wrap:wrap;gap:.3rem}
+    .pill{font-size:.67rem;padding:.12rem .42rem;border-radius:999px;background:#f1f5f9;color:var(--muted);font-weight:500}
+    .pill.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+    .pill.ready{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+    .pill.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .pill.pending{background:#faf5ff;color:#9333ea;border:1px solid #d8b4fe}
+    .pill.noneed{background:#ecfeff;color:#0891b2;border:1px solid #a5f3fc}
+    .pill.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+    .pill.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
+    .pill-nav{cursor:pointer}
+    .pill-nav:hover{filter:brightness(.9)}
+
+    /* BLOCKED DETAIL */
+    .blocked-detail{display:flex;align-items:flex-start;gap:.5rem;margin-top:.65rem;padding:.55rem .7rem;border-radius:8px;background:#fff5f5;border:1px solid #fca5a5;cursor:pointer;transition:background .15s}
+    .blocked-detail:hover{background:#fee2e2}
+    .blocked-icon{font-size:.88rem;line-height:1.4;flex-shrink:0}
+    .blocked-title{font-size:.75rem;font-weight:700;color:var(--red);margin-bottom:.3rem}
+    .blocked-teams{display:flex;flex-wrap:wrap;gap:.3rem}
+    .blocked-team{font-size:.68rem;padding:.12rem .42rem;border-radius:999px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5}
+    .blocked-team.cx-team{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+    .blocked-team.client{background:#ede9fe;color:var(--purple);border-color:#c4b5fd}
+    .blocked-team.dev-team{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+    .blocked-team.infra{background:#f0fdf4;color:var(--green);border-color:var(--green-border)}
+
+    /* DETAIL VIEW */
+    .detail-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin:.85rem 0 1.1rem;flex-wrap:wrap}
+    .detail-head h2{font-size:1.3rem;font-weight:800}
+    .muted{color:var(--muted);font-size:.82rem;margin-top:.2rem}
+    .filters{display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap;align-items:center}
+    .filters input,.filters select,#account-search{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem}
+    .filters input:focus,.filters select:focus,#account-search:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    #account-search{min-width:200px}
+
+    /* ACCOUNT LINKS */
+    .acct-links-panel{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;padding:.75rem 1rem;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);align-items:center}
+    .acct-link-item{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:999px;font-size:.76rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--primary);text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+    .acct-link-item:hover{background:var(--primary-bg);border-color:var(--primary);text-decoration:none}
+    .acct-link-label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .acct-link-sep{color:var(--muted2)}
+    .jira-wrap{position:relative;display:inline-block}
+    .jira-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:999px;font-size:.76rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--primary);cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s,border-color .15s}
+    .jira-btn:hover{background:var(--primary-bg);border-color:var(--primary)}
+    .jira-drop{position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);min-width:180px;z-index:30;padding:.4rem;display:flex;flex-direction:column;gap:.2rem}
+    .jira-drop a{display:flex;align-items:center;gap:.5rem;padding:.45rem .65rem;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--primary);text-decoration:none;transition:background .1s}
+    .jira-drop a:hover{background:var(--primary-bg);text-decoration:none}
+    .jira-drop .jira-ticket-id{font-family:monospace;font-size:.8rem;background:var(--primary-bg);color:var(--primary);padding:.1rem .35rem;border-radius:4px}
+    .jira-drop .jira-ticket-url{font-size:.7rem;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+
+    /* TABLE */
+    .table-wrap{overflow:auto;border-radius:8px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    th,td{text-align:left;padding:.55rem .65rem;border-bottom:1px solid var(--border);vertical-align:top}
+    th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:#f8fafc}
+    th:first-child{border-radius:8px 0 0 0}
+    th:last-child{border-radius:0 8px 0 0}
+    tr.row-done{background:#f0fdf4}
+    tr:last-child td{border-bottom:none}
+    tr:hover:not(thead tr){background:#f8fafc}
+    tr.row-done:hover{background:#dcfce7}
+    tr.row-clickable{cursor:pointer}
+    tr.row-clickable:hover td{background:#eff6ff!important}
+    td strong{font-weight:600}
+
+    /* STATUS CHIP */
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:.18rem .52rem;border-radius:999px;font-size:.71rem;font-weight:700;white-space:nowrap}
+    .chip.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+    .chip.ready{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+    .chip.blocked{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .chip.pending{background:#faf5ff;color:#9333ea;border:1px solid #d8b4fe}
+    .chip.noneed{background:#ecfeff;color:#0891b2;border:1px solid #a5f3fc}
+    .chip.inprog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+    .chip.notpicked{background:var(--grey-bg);color:var(--grey);border:1px solid var(--grey-border)}
+    .chip.other{background:#f1f5f9;color:var(--muted)}
+    .chip.del-deleted{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+    .chip.del-pending{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+
+    /* SPINNER / ERROR */
+    .spinner-wrap{display:flex;align-items:center;justify-content:center;padding:5rem;gap:.85rem;color:var(--muted);flex-direction:column}
+    .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite}
+    .spinner-text{font-size:.85rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:.9rem 1.1rem;color:var(--red);font-size:.85rem;margin:.75rem 0}
+
+    /* EDIT MODE */
+    .status-select{border:1px solid var(--border);border-radius:6px;padding:.3rem .45rem;font:inherit;font-size:.75rem;background:#fff;color:var(--text);cursor:pointer;max-width:180px}
+    .status-select:focus{outline:none;border-color:var(--primary)}
+    .saving{opacity:.5;pointer-events:none}
+    .save-ok{color:var(--green);font-size:.72rem;margin-left:.3rem}
+    .save-err{color:var(--red);font-size:.72rem;margin-left:.3rem}
+    #edit-badge{font-size:.75rem;padding:.3rem .65rem;border-radius:6px;background:rgba(22,163,74,.2);color:#86efac;font-weight:700;border:1px solid rgba(134,239,172,.3)}
+    #last-updated{font-size:.76rem;color:rgba(255,255,255,.5)}
+
+    /* DELETIONS */
+    .del-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
+
+    /* DAILY LOG */
+    .daily-entry{padding:.7rem 1rem;border-radius:0 8px 8px 0;background:#fff;margin-bottom:.45rem;border:1px solid var(--border);border-left-width:3px;transition:box-shadow .15s}
+    .daily-entry:hover{box-shadow:var(--shadow)}
+    .daily-entry-head{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.3rem}
+    .daily-cat-badge{font-size:.68rem;font-weight:700;padding:.12rem .5rem;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+    .daily-amg{font-size:.72rem;color:var(--muted2);font-family:monospace;padding:.08rem .28rem;background:var(--bg);border-radius:4px}
+    .daily-task{font-size:.84rem;color:var(--text);line-height:1.48}
+    .daily-outcome{margin-top:.4rem;font-size:.78rem;color:var(--muted);padding:.3rem .55rem;background:var(--bg);border-radius:6px;border-left:2px solid var(--border);line-height:1.4}
+    .daily-jira-link{font-size:.72rem;font-family:monospace;color:var(--primary);text-decoration:none;font-weight:600;padding:.15rem .4rem;background:var(--primary-bg);border-radius:4px;white-space:nowrap}
+    .daily-jira-link:hover{text-decoration:underline}
+    .daily-actor{font-size:.72rem;color:var(--muted);padding:.12rem .4rem;background:var(--bg);border-radius:999px;border:1px solid var(--border)}
+    .daily-date-header{font-size:.78rem;font-weight:700;color:var(--text);padding:.55rem 0 .35rem;margin-bottom:.45rem;margin-top:1.1rem;display:flex;align-items:center;gap:.5rem;border-bottom:2px solid var(--primary)}
+    .daily-date-header:first-child{margin-top:0}
+    .daily-date-day{font-size:.92rem;font-weight:800;color:var(--primary)}
+    .daily-date-label{color:var(--muted);font-weight:500}
+    .daily-date-count{margin-left:auto;font-size:.7rem;color:var(--muted2);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:.1rem .45rem;font-weight:400}
+    .daily-kpi-strip{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
+    .daily-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;min-width:110px}
+    .daily-kpi .dk-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+    .daily-kpi .dk-value{font-size:1.45rem;font-weight:800;margin-top:.1rem}
+    .daily-empty{text-align:center;padding:3.5rem 1rem;color:var(--muted);font-size:.85rem}
+  </style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="logo">AN3</div>
+    <div class="brand-text">
+      <h1>Migration Dashboard</h1>
+      <p id="mode-label">Read-only · Live from Google Sheet</p>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <span id="last-updated"></span>
+    <span id="edit-badge" style="display:none">✎ Edit mode</span>
+    <button class="btn" id="btn-edit-toggle">🔒 Edit</button>
+    <button class="btn" id="btn-config">⚙ Sheet</button>
+    <button class="btn primary" id="btn-refresh">↻ Refresh</button>
+  </div>
+</header>
+
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="deletions">Deletion Tracker</button>
+  <button class="tab-btn" data-tab="daily">Daily Log</button>
+  <button class="tab-btn" data-tab="pipeline">Pipeline</button>
+</nav>
+
+<div id="banner"></div>
+
+<div id="setup-card" class="hidden">
+  <h3>Connect your Google Sheet</h3>
+  <p>This is a <strong>read-only</strong> live view. It reads the <code>data</code> tab directly from your sheet.</p>
+  <p><strong>Before connecting:</strong> open the sheet → <em>Share</em> → set to <strong>"Anyone with the link can view"</strong>.</p>
+  <div class="setup-row">
+    <input id="sheet-id-input" placeholder="Paste Sheet ID  (…/spreadsheets/d/SHEET_ID/…)" />
+    <button class="btn light" id="btn-sheet-save">Connect</button>
+  </div>
+</div>
+
+<div id="error-container"></div>
+
+<!-- OVERVIEW -->
+<section id="overview" class="page hidden">
+  <div class="kpis" id="kpis"></div>
+  <div class="card" style="margin-bottom:.85rem">
+    <h2>Overall progress <span style="font-size:.73rem;color:var(--muted);font-weight:400">· click a segment to view those deliveries</span></h2>
+    <div id="progress-block"></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <h2>Accounts</h2>
+      <input id="account-search" type="search" placeholder="Filter by account or AMG ID…" />
+    </div>
+    <div class="dash-filters" id="dash-filters">
+      <button class="fchip active" data-key="">All</button>
+      <button class="fchip" data-key="done">Completed</button>
+      <button class="fchip" data-key="ready">Ready to Switch</button>
+      <button class="fchip" data-key="inprog">In Progress</button>
+      <button class="fchip" data-key="blocked">Has Blocked</button>
+      <button class="fchip" data-key="pending">NM Pending</button>
+    </div>
+    <div id="accounts-grid" class="accounts-grid"></div>
+  </div>
+</section>
+
+<!-- GLOBAL STATUS VIEW -->
+<section id="status-view" class="page hidden">
+  <button id="btn-status-back" class="btn light" style="margin-bottom:.5rem">← Back to overview</button>
+  <div class="detail-head">
+    <div>
+      <h2 id="sv-title"></h2>
+      <p id="sv-meta" class="muted"></p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters">
+      <input id="sv-search" type="search" placeholder="Search account, channel, distribution, remarks…" style="min-width:240px" />
+      <span id="sv-count" style="font-size:.78rem;color:var(--muted);align-self:center"></span>
+    </div>
+    <div id="sv-table" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ACCOUNT DETAIL -->
+<section id="detail" class="page hidden">
+  <button id="btn-back" class="btn light" style="margin-bottom:.5rem">← Back to overview</button>
+  <div class="detail-head">
+    <div>
+      <h2 id="detail-title"></h2>
+      <p id="detail-meta" class="muted"></p>
+    </div>
+  </div>
+  <div id="acct-links-wrap"></div>
+  <div class="card">
+    <div class="filters">
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option>switchover completed</option>
+        <option>ready for switchover</option>
+        <option>in-progress</option>
+        <option>blocked</option>
+        <option>non-ssai pending</option>
+        <option>no need of migration</option>
+        <option>not yet picked for migration</option>
+      </select>
+      <input id="filter-q" type="search" placeholder="Search channel / distribution / remarks…" />
+      <span id="detail-count" style="font-size:.78rem;color:var(--muted);align-self:center;margin-left:.1rem"></span>
+    </div>
+    <div id="detail-table" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- DELETIONS -->
+<section id="deletions" class="page hidden">
+  <div class="card">
+    <div class="card-head">
+      <h2>Channel Deletion Tracker</h2>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span id="del-count" style="font-size:.78rem;color:var(--muted)"></span>
+        <input id="del-filter-q" type="search" placeholder="Filter by account or AMG ID…" style="min-width:180px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+        <select id="del-filter-status" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
+          <option value="">All statuses</option>
+          <option value="deleted">Deleted</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button class="btn light" id="btn-del-refresh">↻ Refresh</button>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
+      Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">Channel deletion sheet</code> tab. Click an account card to see its channels.
+    </p>
+    <div id="deletions-table">
+      <div class="del-empty">Click <strong>↻ Refresh</strong> to load channel deletion data.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DAILY LOG -->
+<section id="daily-log" class="page hidden">
+  <div class="card">
+    <div class="card-head">
+      <h2>📋 Daily Work Log</h2>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span id="daily-count" style="font-size:.78rem;color:var(--muted)"></span>
+        <input id="daily-q" type="search" placeholder="Search task, account, outcome…" style="min-width:180px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+        <input id="daily-date-filter" type="date" title="Filter by date" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem;cursor:pointer" />
+        <select id="daily-cat-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
+          <option value="">All categories</option>
+        </select>
+        <select id="daily-actor-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
+          <option value="">All actors</option>
+        </select>
+        <button class="btn light" id="btn-daily-refresh">↻ Refresh</button>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem">
+      Timeline of daily work — grouped by date, newest first. Reads from the <code style="background:var(--bg);padding:.1rem .3rem;border-radius:4px;font-size:.78rem">Daily updates tracker</code> sheet.
+    </p>
+    <div id="daily-kpi-strip" class="daily-kpi-strip"></div>
+    <div id="daily-timeline">
+      <div class="daily-empty">Click <strong>↻ Refresh</strong> to load the daily work log.</div>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline" class="page hidden">
+  <!-- KPI bar -->
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+    <div id="pl-kpi-bar" style="display:flex;gap:.75rem;flex:1;flex-wrap:wrap"></div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+      <input id="pl-q" type="search" placeholder="Search customer, assignee…" style="width:200px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem" />
+      <select id="pl-em-filter" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem"><option value="">All Assignees</option></select>
+      <button class="btn light" id="btn-pl-refresh">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Step funnel -->
+  <div class="card" style="margin-bottom:1rem">
+    <div style="font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem">Migration Pipeline
+      <span style="font-weight:400;margin-left:.5rem">Each stage must be completed in order.</span>
+    </div>
+    <div id="pl-funnel" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--radius-sm);overflow:hidden"></div>
+  </div>
+
+  <!-- Blocked cards -->
+  <div id="pl-blocked-section" style="margin-bottom:1rem"></div>
+
+  <!-- Details table -->
+  <div class="card">
+    <div style="font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem">Migration Details
+      <span id="pl-count" style="font-weight:400;margin-left:.5rem"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="pl-table" style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead>
+          <tr style="background:var(--bg);border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:.5rem .75rem;font-weight:600;white-space:nowrap">Customer</th>
+            <th style="text-align:left;padding:.5rem .75rem;font-weight:600;white-space:nowrap">AMG ID</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">1. Data<br>Gathering</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">2. EM<br>Verification</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">3. HLS /<br>Delivery Check</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">4. Ready for<br>Switchover</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center;font-size:.72rem;color:#1a73e8">5. Switched<br>Over</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center">Blocked</th>
+            <th style="padding:.5rem .75rem;font-weight:600;white-space:nowrap;text-align:center">Jira</th>
+          </tr>
+        </thead>
+        <tbody id="pl-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- History panel -->
+  <div id="pl-history-panel" style="display:none;position:fixed;right:0;top:0;width:380px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:200;overflow-y:auto;padding:1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 id="pl-history-title" style="margin:0;font-size:1rem"></h3>
+      <button id="pl-history-close" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div id="pl-history-body"></div>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY   = 'an3_sheet_id';
+const SHEET_NAME    = 'data';
+const DELETIONS_TAB = 'Channel deletion sheet';
+const DEL_SHEET_ID  = '1oKd7Dx02mIA8b_k9d4VRbXlHZIMv956B6CuJ4kzmTdA';
+const DEL_SHEET_GID = '1182719966';
+const DAILY_SHEET_ID  = '1uM1F9S9B072XyvjZICNJ-_qzBlIOI-P_5lGTIEep0ps';
+const DAILY_SHEET_GID = '0';
+const PIPELINE_WORKFLOW_SHEET = 'AN3_Workflow';
+const PIPELINE_HISTORY_SHEET  = 'AN3_History';
+const PIPELINE_STEPS = [
+  {key:'data_gathering',  label:'Data Gathering',      desc:'Delivery data collected & verified'},
+  {key:'em_verification', label:'EM Verification',     desc:'EM confirms delivery list'},
+  {key:'hls_check',       label:'HLS / Delivery Check',desc:'HLS data verified, non-HLS added'},
+  {key:'ready',           label:'Ready for Switchover',desc:'All checks passed'},
+  {key:'done',            label:'Switched Over',       desc:'Migration complete'},
+];
+// stage → step index completed (stages BEYOND this step are "done" for it)
+const PL_STAGE_IDX = {
+  identified:0, data_gathering:1, em_verification:2,
+  hls_check:3, discrepancy:3, ready:4, approved:4, done:5,
+};
+const DAILY_ALIASES = {
+  date:         ['date'],
+  category:     ['category'],
+  account_name: ['accountname','account_name','account name','account'],
+  amg_id:       ['amg_id','amg id','amgid'],
+  task:         ['task_description','task description','task'],
+  jira:         ['jira'],
+  actor:        ['actor'],
+  outcome:      ['outcome'],
+};
+const DAILY_CAT_COLORS = {
+  'migration':                     {color:'#2563eb',bg:'#eff6ff'},
+  'deletion':                      {color:'#dc2626',bg:'#fef2f2'},
+  'channel deletion':              {color:'#dc2626',bg:'#fef2f2'},
+  'channel merging':               {color:'#ea580c',bg:'#fff7ed'},
+  'channel merging and migration': {color:'#7c3aed',bg:'#f5f3ff'},
+  'meeting':                       {color:'#9333ea',bg:'#faf5ff'},
+  'discussion':                    {color:'#9333ea',bg:'#faf5ff'},
+  'bug fix':                       {color:'#d97706',bg:'#fffbeb'},
+  'review':                        {color:'#0891b2',bg:'#ecfeff'},
+  'planning':                      {color:'#64748b',bg:'#f8fafc'},
+  'customer call':                 {color:'#16a34a',bg:'#f0fdf4'},
+};
+const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
+const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNqlM9pBTYkMySUDJuY80fy1Tn6C_DpHxILUfcEV1qX3LIe38bl5d8JmYgAvgFpiwTAg/exec';
+
+const ALIASES = {
+  amg_id:            ['amg_id','amg id','amgid'],
+  channel_id:        ['channel_id','channel id','channel'],
+  distribution_id:   ['distribution_id','distribution id','distribution','dist_id'],
+  prepare_date:      ['prepare_date','prepare date','initial_start_date','initial start date','start_date','start date'],
+  eta_provided_date: ['eta_provided_date','eta provided date','eta date','eta'],
+  switchover_date:   ['switchover_date','switchover date','completed_date','completed date','date_completed','completion_date'],
+  account_name:      ['account_name','account name','account','client','network','customer','org'],
+  status:            ['status','migration_status','migration status'],
+  remarks:           ['remarks','notes','comment','comments','note'],
+  hls_sheet:         ['hls_sheet','hls sheet','hls_data_sheet','hls data sheet','hls_data_gathering_sheet','hls data gathering sheet','hls_gathering_sheet','hls gathering sheet'],
+  non_hls_sheet:     ['non_hls_sheet','non hls sheet','non_hls_data_sheet','non hls data sheet','non_hls_data_gathering_sheet','non hls data gathering sheet'],
+  discrepancies:     ['discrepancies','discrepancy','discrepancies_link'],
+  jira_links:        ['jira','jira_links','jira links','jira_link','jira link','jira_url','jira url','jira_tickets','jira tickets'],
+};
+
+const DELETION_ALIASES = {
+  amg_id:       ['amgid','amg_id','amg id','account_amg_id','account amg id','account_amgid'],
+  account_name: ['account_name','account name','account'],
+  channel_name: ['channel_name','channel name','name'],
+  channel_id:   ['channel_id','channel id','channel'],
+  del_status:   ['deletion_status','deletion status','del_status','status','state'],
+  jira:         ['jira','jira_key','jira key','jira_link','jira link','jira_url'],
+};
+
+const KNOWN_HEADER_MARKERS = new Set([
+  'status','amg_id','amg id','account_name','account name',
+  'channel_id','channel id','distribution_id','eta_provided_date',
+]);
+
+const KEY_TO_STATUS = {
+  done:'switchover completed', ready:'ready for switchover', inprog:'in-progress',
+  blocked:'blocked', pending:'non-ssai pending', noneed:'no need of migration',
+  notstarted:'not-started',
+};
+const STATUS_TITLES = {
+  all:'All Deliveries', done:'Completed Deliveries', ready:'Ready to Switch',
+  inprog:'In Progress', blocked:'Blocked Deliveries', pending:'NM Pending',
+  noneed:'No Migration Needed', notstarted:'Not Started',
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let canEdit = false;
+let rows = [], accounts = [], selected = null, detailRows = [];
+let dashboardFilter = '';
+let deletionsRows = [], deletionsLoaded = false;
+let delAccounts = [], delSelected = null, delDetailRows = [];
+let svRows = [];
+let dailyRows = [], dailyLoaded = false;
+
+let pipelineRows = [], pipelineHistory = [], pipelineLoaded = false;
+
+// ── Edit key ─────────────────────────────────────────────────────────────────
+function getEditKey()   { return sessionStorage.getItem('an3_edit_key') || ''; }
+function setEditKey(k)  { sessionStorage.setItem('an3_edit_key', k); }
+function clearEditKey() { sessionStorage.removeItem('an3_edit_key'); canEdit = false; }
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const $ = s => document.querySelector(s);
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+function pct(n, total) { return total ? Math.round(100 * n / total) : 0; }
+function f(row, key)   { return (row[key] ?? '').toString().trim(); }
+function esc(s)        { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n)   { return n.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+
+function formatGvizDate(s) {
+  const m = String(s).match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (!m) return s;
+  return new Date(+m[1],+m[2],+m[3]).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function gvizCellValue(c) {
+  if (!c) return '';
+  const v = c.v, fv = c.f;
+  if (v == null) return fv != null ? String(fv) : '';
+  if (typeof v === 'string' && v.startsWith('Date(')) return fv != null ? String(fv) : formatGvizDate(v);
+  if (typeof v === 'number' && fv != null) return String(fv);
+  return String(v);
+}
+
+function statusClass(s) {
+  const v = (s||'').toLowerCase();
+  if (v === 'switchover completed')             return 'done';
+  if (v === 'ready for switchover')             return 'ready';
+  if (v === 'blocked')                          return 'blocked';
+  if (v.includes('pending'))                    return 'pending';
+  if (v === 'in-progress' || v === 'in progress') return 'inprog';
+  if (v === 'no need of migration')             return 'noneed';
+  if (v === 'not yet picked for migration')     return 'notpicked';
+  return 'other';
+}
+const STATUS_ICON = {done:'✓',ready:'→',blocked:'✗',pending:'◷',inprog:'⚡',noneed:'⊘',notpicked:'○',other:'○'};
+function chipHtml(s) {
+  const cls = statusClass(s);
+  return `<span class="chip ${cls}">${STATUS_ICON[cls]||'○'} ${esc(s)||'—'}</span>`;
+}
+function delStatusChip(s) {
+  const v = (s||'').toLowerCase().trim();
+  if (v === 'deleted') return `<span class="chip del-deleted">✗ Deleted</span>`;
+  if (v === 'pending') return `<span class="chip del-pending">◷ Pending</span>`;
+  return `<span class="chip other">${esc(s)||'—'}</span>`;
+}
+
+function rowMatchesKey(row, key) {
+  const s = f(row,'status').toLowerCase();
+  if (!key || key === 'all') return true;
+  if (key === 'done')       return s === 'switchover completed';
+  if (key === 'ready')      return s === 'ready for switchover';
+  if (key === 'blocked')    return s === 'blocked';
+  if (key === 'pending')    return s.includes('pending');
+  if (key === 'inprog')     return s === 'in-progress' || s === 'in progress';
+  if (key === 'noneed')     return s === 'no need of migration';
+  if (key === 'notpicked')  return s === 'not yet picked for migration';
+  if (key === 'notstarted') {
+    return s !== 'switchover completed' && s !== 'ready for switchover' &&
+           s !== 'blocked' && !s.includes('pending') &&
+           s !== 'in-progress' && s !== 'in progress' &&
+           s !== 'no need of migration' && s !== 'not yet picked for migration';
+  }
+  return true;
+}
+
+// ── Hash routing ─────────────────────────────────────────────────────────────
+function hideAll() {
+  ['#overview','#status-view','#detail','#deletions','#daily-log','#pipeline'].forEach(s => {
+    const el = $(s); if (el) el.classList.add('hidden');
+  });
+}
+
+function renderFromHash() {
+  if (!rows.length) return;
+  const hash = location.hash || '';
+  hideAll();
+  renderBanner();
+  if (!hash || hash === '#' || hash === '#overview') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#overview').classList.remove('hidden');
+    renderOverview();
+  } else if (hash.startsWith('#status/')) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#status-view').classList.remove('hidden');
+    _showStatusView(decodeURIComponent(hash.slice(8)));
+  } else if (hash.startsWith('#account/')) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'overview'));
+    $('#detail').classList.remove('hidden');
+    const parts = hash.slice(9).split('/');
+    _showAccountDetail(decodeURIComponent(parts[0]), parts[1] ? decodeURIComponent(parts[1]) : '');
+  } else if (hash === '#deletions') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'deletions'));
+    $('#deletions').classList.remove('hidden');
+    if (!deletionsLoaded) loadDeletions();
+  } else if (hash.startsWith('#deletions/account/')) {
+    const amg = decodeURIComponent(hash.slice(19));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'deletions'));
+    $('#deletions').classList.remove('hidden');
+    const doOpen = () => {
+      const acct = delAccounts.find(a => a.amg_id === amg);
+      if (acct) openDelAccount(acct.account_name, amg);
+    };
+    if (!deletionsLoaded) loadDeletions().then(doOpen);
+    else doOpen();
+  } else if (hash === '#daily') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'daily'));
+    $('#daily-log').classList.remove('hidden');
+    if (!dailyLoaded) loadDailyLog();
+  } else if (hash === '#pipeline') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'pipeline'));
+    $('#pipeline').classList.remove('hidden');
+    if (!pipelineLoaded) loadPipeline();
+    else renderPipeline();
+  } else {
+    $('#overview').classList.remove('hidden');
+    renderOverview();
+  }
+}
+window.addEventListener('hashchange', renderFromHash);
+
+// ── Sheet fetch ──────────────────────────────────────────────────────────────
+function getSheetId() { return localStorage.getItem(STORAGE_KEY) || DEFAULT_ID; }
+function normalizeLabel(s) { return (s||'').trim().toLowerCase().replace(/[\s\-]+/g,'_').replace(/[^a-z0-9_]/g,''); }
+
+async function fetchTab(tabName) {
+  const id  = getSheetId();
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response format. Is the sheet publicly viewable?');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  return parsed;
+}
+
+async function fetchDelTab() {
+  const url = `https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${DEL_SHEET_GID}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response format from deletion sheet.');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  return parsed;
+}
+
+function buildLabelToKey(parsed, aliasMap) {
+  const labels = parsed.table.cols.map(c => normalizeLabel(c.label || c.id || ''));
+  const map = {};
+  for (const [key, aliases] of Object.entries(aliasMap)) {
+    for (let i = 0; i < labels.length; i++) {
+      if (aliases.includes(labels[i])) { map[i] = key; break; }
+    }
+  }
+  return map;
+}
+
+async function fetchRows() {
+  const parsed = await fetchTab(SHEET_NAME);
+  const labelToKey = buildLabelToKey(parsed, ALIASES);
+  const result = [];
+  let lastChannelId = '';
+
+  for (let idx = 0; idx < parsed.table.rows.length; idx++) {
+    const cells = parsed.table.rows[idx].c.map(gvizCellValue);
+    const statusVal  = cells[Object.entries(labelToKey).find(([,k]) => k==='status')?.[0]] || '';
+    const accountVal = cells[Object.entries(labelToKey).find(([,k]) => k==='account_name')?.[0]] || '';
+    if (KNOWN_HEADER_MARKERS.has(statusVal.toLowerCase()) || KNOWN_HEADER_MARKERS.has(accountVal.toLowerCase())) continue;
+    if (cells.every(v => !v)) continue;
+
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    obj._row_num = idx + 2;
+
+    // Inherit channel_id from previous row if empty
+    if (!obj.channel_id && lastChannelId) obj.channel_id = lastChannelId;
+    if (obj.channel_id) lastChannelId = obj.channel_id;
+
+    result.push(obj);
+  }
+  return result;
+}
+
+async function fetchDeletions() {
+  const parsed = await fetchDelTab();
+  const labelToKey = buildLabelToKey(parsed, DELETION_ALIASES);
+  const result = [];
+  let lastAmgId = '';
+  let lastAccountName = '';
+  for (const gvizRow of parsed.table.rows) {
+    const cells = gvizRow.c.map(gvizCellValue);
+    if (cells.every(v => !v)) continue;
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    if (!obj.amg_id && lastAmgId) obj.amg_id = lastAmgId;
+    if (obj.amg_id) lastAmgId = obj.amg_id;
+    if (!obj.account_name && lastAccountName) obj.account_name = lastAccountName;
+    if (obj.account_name) lastAccountName = obj.account_name;
+    result.push(obj);
+  }
+  return result;
+}
+
+// ── Aggregate ────────────────────────────────────────────────────────────────
+function parseBlockedWhere(remarks) {
+  const r = remarks.toLowerCase();
+  if (r.includes('cx team')||r.includes('cx-team')) return 'CX team';
+  if (/\bcx\b/.test(r)) return 'CX team';
+  if (r.includes('client')) return 'Client';
+  if (r.includes('dev team')||r.includes('engineering')) return 'Dev team';
+  if (r.includes('infra')) return 'Infra';
+  if (r.includes('legal')||r.includes('compliance')) return 'Legal';
+  if (r.includes('ops')) return 'Ops';
+  return null;
+}
+
+function aggregate(data) {
+  const map = {};
+  for (const row of data) {
+    const name = f(row,'account_name'); if (!name) continue;
+    const amg = f(row,'amg_id');
+    const s = f(row,'status').toLowerCase();
+    if (!map[name]) map[name] = {
+      account_name:name, amg_id:amg,
+      total:0, completed:0, ready:0, blocked:0, pending:0, inprog:0, noneed:0, notpicked:0, notstarted:0,
+      blockedRows:[], hls_sheet:'', non_hls_sheet:'', discrepancies:'', jira_set: new Set(),
+    };
+    const a = map[name];
+    if (!a.amg_id && amg) a.amg_id = amg;
+    if (!a.hls_sheet && f(row,'hls_sheet'))       a.hls_sheet = f(row,'hls_sheet');
+    if (!a.non_hls_sheet && f(row,'non_hls_sheet')) a.non_hls_sheet = f(row,'non_hls_sheet');
+    if (!a.discrepancies && f(row,'discrepancies')) a.discrepancies = f(row,'discrepancies');
+    const jv = f(row,'jira_links');
+    if (jv) jv.split(/[,\n]+/).map(j=>j.trim()).filter(Boolean).forEach(j=>a.jira_set.add(j));
+    a.total++;
+    if (s==='switchover completed')                                    a.completed++;
+    else if (s==='ready for switchover')                               a.ready++;
+    else if (s==='blocked') { a.blocked++; a.blockedRows.push({channel:f(row,'channel_id'),remark:f(row,'remarks')}); }
+    else if (s.includes('pending'))                                    a.pending++;
+    else if (s.includes('in-progress')||s.includes('in progress'))    a.inprog++;
+    else if (s==='no need of migration')                               a.noneed++;
+    else if (s==='not yet picked for migration')                       a.notpicked++;
+    else                                                               a.notstarted++;
+  }
+  return Object.values(map).map(a => {
+    const tc = {};
+    for (const br of a.blockedRows) { const w = parseBlockedWhere(br.remark)||'Unknown'; tc[w]=(tc[w]||0)+1; }
+    return { ...a, jira_links:[...a.jira_set],
+      blockedTeams: Object.entries(tc).sort((x,y)=>y[1]-x[1]).map(([t,n])=>({team:t,count:n})),
+      actionable: a.total - a.completed - a.noneed,
+      fully_done: a.completed + a.noneed === a.total && a.total > 0,
+    };
+  }).sort((a,b) => b.total - a.total);
+}
+
+// ── Dashboard filter ─────────────────────────────────────────────────────────
+const FCHIP_CLASS = {'':'active',done:'active-done',ready:'active-ready',inprog:'active-inprog',blocked:'active-blocked',pending:'active-pending'};
+function matchesDashboardFilter(a) {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter==='done')    return a.fully_done;
+  if (dashboardFilter==='blocked') return a.blocked > 0;
+  if (dashboardFilter==='ready')   return a.ready > 0;
+  if (dashboardFilter==='inprog')  return a.inprog > 0;
+  if (dashboardFilter==='pending') return a.pending > 0;
+  return true;
+}
+function setDashboardFilter(key) {
+  dashboardFilter = key;
+  document.querySelectorAll('.fchip').forEach(btn => {
+    btn.className = 'fchip';
+    if (btn.dataset.key === key) btn.classList.add(FCHIP_CLASS[key]||'active');
+  });
+  renderAccountCards($('#account-search').value||'');
+}
+
+// ── Donut chart ───────────────────────────────────────────────────────────────
+function donutPieChart(counts, total) {
+  const slices = [
+    {key:'done',       label:'Completed',       count:counts.done,       color:'#16a34a'},
+    {key:'ready',      label:'Ready to switch', count:counts.ready,      color:'#ea580c'},
+    {key:'inprog',     label:'In-progress',     count:counts.inprog,     color:'#3b82f6'},
+    {key:'pending',    label:'NM Pending',      count:counts.pending,    color:'#9333ea'},
+    {key:'blocked',    label:'Blocked',         count:counts.blocked,    color:'#dc2626'},
+    {key:'noneed',     label:'No migration',    count:counts.noneed,     color:'#0891b2'},
+    {key:'notstarted', label:'Not started',     count:counts.notstarted, color:'#94a3b8'},
+  ].filter(d=>d.count>0);
+
+  const cx=80,cy=80,R=66,ri=38,gap=0.018;
+  let angle = -Math.PI/2;
+
+  const paths = slices.map(d => {
+    const sa=angle, sw=(d.count/total)*2*Math.PI;
+    angle += sw; const ea=angle;
+    const x1=cx+R*Math.cos(sa+gap),y1=cy+R*Math.sin(sa+gap);
+    const x2=cx+R*Math.cos(ea-gap),y2=cy+R*Math.sin(ea-gap);
+    const xi1=cx+ri*Math.cos(ea-gap),yi1=cy+ri*Math.sin(ea-gap);
+    const xi2=cx+ri*Math.cos(sa+gap),yi2=cy+ri*Math.sin(sa+gap);
+    const lg=sw>Math.PI?1:0;
+    return `<path class="donut-slice" data-key="${d.key}" title="View ${d.label} deliveries" d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi1.toFixed(1)} ${yi1.toFixed(1)} A${ri} ${ri} 0 ${lg} 0 ${xi2.toFixed(1)} ${yi2.toFixed(1)} Z" fill="${d.color}" opacity=".92"/>`;
+  });
+
+  const legendRows = slices.map(d => `
+    <div class="donut-legend-row" data-key="${d.key}" title="View ${d.label} deliveries">
+      <span style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></span>
+      <span style="font-size:.77rem;flex:1;color:var(--text);font-weight:500">${d.label}</span>
+      <span style="font-size:.78rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-width:24px;text-align:right">${d.count}</span>
+      <span style="font-size:.7rem;color:var(--muted2);min-width:34px;text-align:right">${pct(d.count,total)}%</span>
+    </div>`).join('');
+
+  return `
+    <div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap">
+      <div style="flex-shrink:0">
+        <svg id="donut-svg" width="160" height="160" viewBox="0 0 160 160" style="cursor:pointer">
+          ${paths.join('')}
+          <text x="80" y="73" text-anchor="middle" font-size="21" font-weight="800" fill="#0f172a" font-family="Inter,sans-serif">${pct(counts.done,total)}%</text>
+          <text x="80" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,sans-serif">complete</text>
+          <text x="80" y="101" text-anchor="middle" font-size="8.5" fill="#94a3b8" font-family="Inter,sans-serif">${counts.done} of ${total}</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:160px;border-left:1px solid var(--border);padding-left:1.1rem">
+        ${legendRows}
+      </div>
+    </div>`;
+}
+
+// ── Render overview ───────────────────────────────────────────────────────────
+function renderOverview() {
+  const total      = rows.length;
+  const done       = rows.filter(r=>f(r,'status')==='switchover completed').length;
+  const ready      = rows.filter(r=>f(r,'status')==='ready for switchover').length;
+  const blocked    = rows.filter(r=>f(r,'status')==='blocked').length;
+  const pending    = rows.filter(r=>f(r,'status').includes('pending')).length;
+  const noneed     = rows.filter(r=>f(r,'status')==='no need of migration').length;
+  const inprog     = rows.filter(r=>{ const s=f(r,'status'); return s==='in-progress'||s==='in progress'; }).length;
+  const notstarted = total - done - ready - inprog - blocked - pending - noneed;
+
+  $('#kpis').innerHTML = `
+    <div class="kpi total"      data-key="all"       title="View all deliveries"><div class="k-label">Total Deliveries</div><div class="k-value">${total}</div><div class="k-sub">${accounts.length} accounts</div></div>
+    <div class="kpi done"       data-key="done"      title="View completed"><div class="k-label">Completed</div><div class="k-value">${done}</div><div class="k-sub">${pct(done,total)}% of total</div></div>
+    <div class="kpi ready"      data-key="ready"     title="View ready to switch"><div class="k-label">Ready to Switch</div><div class="k-value">${ready}</div><div class="k-sub">awaiting switchover</div></div>
+    <div class="kpi inprog"     data-key="inprog"    title="View in progress"><div class="k-label">In Progress</div><div class="k-value">${inprog}</div><div class="k-sub">active migration</div></div>
+    <div class="kpi blocked"    data-key="blocked"   title="View blocked"><div class="k-label">Blocked</div><div class="k-value">${blocked}</div><div class="k-sub">needs attention</div></div>
+    <div class="kpi pending"    data-key="pending"   title="View NM pending"><div class="k-label">NM Pending</div><div class="k-value">${pending}</div><div class="k-sub">non-SSAI</div></div>
+    <div class="kpi noneed"     data-key="noneed"    title="View no migration needed"><div class="k-label">No Migration</div><div class="k-value">${noneed}</div><div class="k-sub">not applicable</div></div>
+    <div class="kpi notstarted" data-key="notstarted"title="View not started"><div class="k-label">Not Started</div><div class="k-value">${notstarted}</div><div class="k-sub">no status assigned</div></div>
+  `;
+  document.querySelectorAll('.kpi[data-key]').forEach(kpi => {
+    kpi.addEventListener('click', () => { location.hash = '#status/' + kpi.dataset.key; });
+  });
+
+  $('#progress-block').innerHTML = donutPieChart({done,ready,inprog,pending,blocked,noneed,notstarted}, total);
+
+  const svg = $('#donut-svg');
+  if (svg) {
+    svg.addEventListener('click', e => {
+      const s = e.target.closest('.donut-slice');
+      if (s) location.hash = '#status/' + s.dataset.key;
+    });
+  }
+  document.querySelectorAll('.donut-legend-row').forEach(r => {
+    r.addEventListener('click', () => { location.hash = '#status/' + r.dataset.key; });
+  });
+
+  renderAccountCards($('#account-search').value||'');
+}
+
+// ── Account cards ─────────────────────────────────────────────────────────────
+function activeCardHtml(a) {
+  const t = a.total||1, w = n => `${pct(n||0,t)}%`;
+  const n = encodeURIComponent(a.account_name);
+  return `
+  <div class="account ${a.fully_done?'migrated':''}" data-name="${n}">
+    <div class="acct-head">
+      <div class="acct-avatar">${initials(a.account_name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="acct-name">${esc(a.account_name)}</div>
+        <div class="acct-meta">${esc(a.amg_id||'—')} · ${a.total} deliveries · ${pct(a.completed,a.total)}% done</div>
+      </div>
+      ${a.fully_done?`<span class="badge-done">✓ Done</span>`:''}
+    </div>
+    <div class="mini-bars">
+      <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
+      <span style="width:${w(a.ready)};background:#b45309" title="ready"></span>
+      <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
+      <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
+      <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
+      <span style="width:${w(a.noneed)};background:#0891b2" title="no need"></span>
+      <span style="width:${w(a.notstarted)};background:#cbd5e1" title="not started"></span>
+    </div>
+    <div class="pills">
+      ${a.completed ?`<span class="pill done    pill-nav" data-name="${n}" data-fk="done"       title="View completed">✓ ${a.completed} done</span>`:''}
+      ${a.ready     ?`<span class="pill ready   pill-nav" data-name="${n}" data-fk="ready"      title="View ready">→ ${a.ready} ready</span>`:''}
+      ${a.inprog    ?`<span class="pill inprog  pill-nav" data-name="${n}" data-fk="inprog"     title="View in progress">⚡ ${a.inprog} in progress</span>`:''}
+      ${a.pending   ?`<span class="pill pending pill-nav" data-name="${n}" data-fk="pending"    title="View pending">◷ ${a.pending} pending</span>`:''}
+      ${a.blocked   ?`<span class="pill blocked pill-nav" data-name="${n}" data-fk="blocked"    title="View blocked">✗ ${a.blocked} blocked</span>`:''}
+      ${a.noneed    ?`<span class="pill noneed  pill-nav" data-name="${n}" data-fk="noneed"     title="View no-migration">⊘ ${a.noneed} no migration</span>`:''}
+      ${a.notstarted?`<span class="pill         pill-nav" data-name="${n}" data-fk="notstarted" title="View not started">○ ${a.notstarted} not started</span>`:''}
+    </div>
+    ${a.blocked>0?`
+    <div class="blocked-detail pill-nav" data-name="${n}" data-fk="blocked">
+      <span class="blocked-icon">⚠</span>
+      <div>
+        <div class="blocked-title">${a.blocked} blocked${a.blockedTeams.length?' — by team':''} · click to view</div>
+        ${a.blockedTeams.length?`<div class="blocked-teams">${
+          a.blockedTeams.map(t=>`<span class="blocked-team ${t.team.toLowerCase().replace(/\s/g,'-')}">${esc(t.team)} <strong>${t.count}</strong></span>`).join('')
+        }</div>`:''}
+      </div>
+    </div>`:''}
+  </div>`;
+}
+
+function notPickedCardHtml(a) {
+  return `
+  <div class="account not-picked">
+    <div class="acct-head">
+      <div class="acct-avatar" style="background:var(--grey-bg);color:var(--grey)">${initials(a.account_name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="acct-name" style="color:var(--muted)">${esc(a.account_name)}</div>
+        <div class="acct-meta">${esc(a.amg_id||'No AMG ID')}</div>
+      </div>
+      <span style="font-size:.65rem;font-weight:700;background:var(--grey-bg);color:var(--grey);padding:.12rem .45rem;border-radius:999px;border:1px solid var(--grey-border);flex-shrink:0">○ Not picked</span>
+    </div>
+    <div style="font-size:.74rem;color:var(--muted2);margin-top:.35rem">Pending migration planning</div>
+  </div>`;
+}
+
+function renderAccountCards(filter) {
+  const q = filter.trim().toLowerCase();
+  const list = accounts.filter(a =>
+    matchesDashboardFilter(a) &&
+    (!q || a.account_name.toLowerCase().includes(q) || (a.amg_id||'').toLowerCase().includes(q))
+  );
+  const grid = $('#accounts-grid');
+  if (!list.length) {
+    grid.innerHTML = `<p class="muted">${accounts.length?'No matches.':'No data — click Refresh.'}</p>`; return;
+  }
+  const active    = list.filter(a => !(a.total > 0 && a.notpicked === a.total));
+  const notPicked = list.filter(a =>   a.total > 0 && a.notpicked === a.total);
+
+  let html = active.map(activeCardHtml).join('');
+  if (notPicked.length) {
+    html += `<div class="section-label">${notPicked.length} account${notPicked.length>1?'s':''} not yet picked for migration</div>`;
+    html += notPicked.map(notPickedCardHtml).join('');
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.account[data-name]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.pill-nav,.blocked-detail')) return;
+      location.hash = '#account/' + el.dataset.name;
+    });
+  });
+  grid.querySelectorAll('.pill-nav').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      location.hash = `#account/${el.dataset.name}/${encodeURIComponent(el.dataset.fk)}`;
+    });
+  });
+}
+
+// ── Global status view ────────────────────────────────────────────────────────
+function _showStatusView(key) {
+  svRows = rows.filter(r => rowMatchesKey(r, key));
+  $('#sv-title').textContent = STATUS_TITLES[key] || 'Deliveries';
+  $('#sv-meta').textContent  = `${svRows.length} deliveries across all accounts · click a row to open account`;
+  $('#sv-search').value = '';
+  renderSvTable('');
+}
+
+function renderSvTable(q) {
+  const lq = q.toLowerCase();
+  const filtered = svRows.filter(r => {
+    if (!lq) return true;
+    return [f(r,'account_name'),f(r,'amg_id'),f(r,'channel_id'),f(r,'distribution_id'),f(r,'remarks')]
+      .join(' ').toLowerCase().includes(lq);
+  });
+  $('#sv-count').textContent = `${filtered.length} / ${svRows.length} rows`;
+  $('#sv-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>Account</th><th>AMG ID</th><th>Channel ID</th><th>Distribution ID</th>
+        <th>Status</th><th>Prepare Date</th><th>Switchover Date</th><th>Remarks</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length===0
+          ? `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--muted)">No deliveries found.</td></tr>`
+          : filtered.map((r,i) => {
+              const isDone = f(r,'status')==='switchover completed';
+              return `<tr class="row-clickable ${isDone?'row-done':''}" data-acct="${encodeURIComponent(f(r,'account_name'))}">
+                <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+                <td style="font-weight:600;font-size:.8rem">${esc(f(r,'account_name'))}</td>
+                <td style="font-size:.74rem;color:var(--muted)">${esc(f(r,'amg_id'))||'—'}</td>
+                <td><strong>${esc(f(r,'channel_id'))||'—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id'))||'—'}</td>
+                <td>${chipHtml(f(r,'status'))}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date'))||'—'}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks'))||'—'}</td>
+              </tr>`;
+            }).join('')
+        }
+      </tbody>
+    </table>`;
+  $('#sv-table').querySelectorAll('tr[data-acct]').forEach(tr => {
+    tr.addEventListener('click', () => { location.hash = '#account/' + tr.dataset.acct; });
+  });
+}
+
+// ── Account detail ────────────────────────────────────────────────────────────
+function _showAccountDetail(name, filterKey = '') {
+  selected   = name;
+  detailRows = rows.filter(r => f(r,'account_name') === name);
+  const done = detailRows.filter(r => f(r,'status')==='switchover completed').length;
+  const amg  = detailRows.find(r => f(r,'amg_id'))?.amg_id || '';
+  $('#detail-title').textContent = name;
+  $('#detail-meta').textContent  = `${detailRows.length} deliveries · ${done} completed (${pct(done,detailRows.length)}%) · ${amg}`;
+  $('#filter-status').value = KEY_TO_STATUS[filterKey] || '';
+  $('#filter-q').value = '';
+  renderAccountLinks(accounts.find(a => a.account_name === name));
+  renderDetailTable();
+}
+
+function renderAccountLinks(a) {
+  const wrap = $('#acct-links-wrap');
+  const amg  = (a?.amg_id || '').trim();
+  const links = [];
+  if (a?.hls_sheet)     links.push({label:'HLS Data Sheet',     url:a.hls_sheet});
+  if (a?.non_hls_sheet) links.push({label:'Non-HLS Data Sheet', url:a.non_hls_sheet});
+  if (a?.discrepancies) links.push({label:'Discrepancies',       url:a.discrepancies});
+
+  const jiraList = a?.jira_links || [];
+  const hasJira = jiraList.length > 0;
+  const hasLinks = links.length > 0;
+
+  if (!hasLinks && !hasJira && !amg) { wrap.innerHTML=''; return; }
+
+  const ticketRe = /([A-Z][A-Z0-9]+-\d+)/;
+
+  function jiraLabel(url) {
+    const m = url.match(ticketRe);
+    return m ? m[1] : 'Jira';
+  }
+
+  // Build Jira HTML: single link if 1 ticket, dropdown button if multiple
+  let jiraHtml = '';
+  if (jiraList.length === 1) {
+    jiraHtml = `<a class="acct-link-item" href="${esc(jiraList[0])}" target="_blank" rel="noopener">
+      ↗ Jira · <span style="font-family:monospace;font-size:.78rem">${esc(jiraLabel(jiraList[0]))}</span>
+    </a>`;
+  } else if (jiraList.length > 1) {
+    const ticketRows = jiraList.map(j => {
+      const id = jiraLabel(j);
+      return `<a href="${esc(j)}" target="_blank" rel="noopener">
+        <span class="jira-ticket-id">${esc(id)}</span>
+        <span class="jira-ticket-url">${esc(j.replace(/^https?:\/\//,''))}</span>
+        <span style="margin-left:auto;font-size:.72rem;color:var(--primary)">↗</span>
+      </a>`;
+    }).join('');
+    jiraHtml = `<div class="jira-wrap">
+      <button class="jira-btn" id="jira-toggle-btn">
+        🔗 Jira Tickets (${jiraList.length}) <span id="jira-arrow">▾</span>
+      </button>
+      <div class="jira-drop hidden" id="jira-drop">${ticketRows}</div>
+    </div>`;
+  }
+
+  const delBtnHtml = amg
+    ? `<button class="acct-link-item" style="background:none;border:none;cursor:pointer;padding:0;color:var(--primary);font:inherit;font-size:.82rem" onclick="location.hash='#deletions/account/${encodeURIComponent(amg)}'">⬡ Channel Deletions →</button>`
+    : '';
+
+  wrap.innerHTML = `<div class="acct-links-panel">
+    <span class="acct-link-label">Links</span><span class="acct-link-sep">·</span>
+    ${links.map(l => {
+      const isUrl = /^https?:\/\//.test(l.url);
+      return isUrl
+        ? `<a class="acct-link-item" href="${esc(l.url)}" target="_blank" rel="noopener">↗ ${esc(l.label)}</a>`
+        : `<span class="acct-link-item" style="color:var(--muted);cursor:default">${esc(l.label)}: ${esc(l.url)}</span>`;
+    }).join('')}
+    ${jiraHtml}
+    ${delBtnHtml}
+  </div>`;
+
+  // Wire up Jira dropdown toggle
+  if (jiraList.length > 1) {
+    const btn  = document.getElementById('jira-toggle-btn');
+    const drop = document.getElementById('jira-drop');
+    const arrow = document.getElementById('jira-arrow');
+    btn?.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !drop.classList.contains('hidden');
+      drop.classList.toggle('hidden', open);
+      if (arrow) arrow.textContent = open ? '▾' : '▴';
+    });
+    // Close on outside click
+    document.addEventListener('click', function close(e) {
+      if (!btn?.contains(e.target)) {
+        drop?.classList.add('hidden');
+        if (arrow) arrow.textContent = '▾';
+        document.removeEventListener('click', close);
+      }
+    });
+  }
+}
+
+function renderDetailTable() {
+  const status = $('#filter-status').value;
+  const q = ($('#filter-q').value||'').toLowerCase();
+  const filtered = detailRows.filter(r => {
+    if (status && f(r,'status') !== status) return false;
+    if (q) {
+      const hay = ['channel_id','distribution_id','remarks'].map(k=>f(r,k)).join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  $('#detail-count').textContent = `${filtered.length} / ${detailRows.length} rows`;
+  $('#detail-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>Channel ID</th><th>Distribution ID</th>
+        <th>Status</th><th>Prepare Date</th><th>ETA Date</th>
+        <th>Switchover Date</th><th>Remarks</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length===0
+          ? `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
+          : filtered.map((r,i) => {
+              const isDone = f(r,'status')==='switchover completed';
+              return `<tr class="${isDone?'row-done':''}">
+                <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+                <td><strong>${esc(f(r,'channel_id'))||'—'}</strong></td>
+                <td style="font-size:.77rem;color:var(--muted)">${esc(f(r,'distribution_id'))||'—'}</td>
+                <td>${canEdit
+                  ? `<select class="status-select" data-dist="${esc(f(r,'distribution_id'))}" data-row="${r._row_num||''}">${STATUSES.map(s=>`<option value="${s}"${f(r,'status')===s?' selected':''}>${s}</option>`).join('')}</select><span></span>`
+                  : chipHtml(f(r,'status'))}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'prepare_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'eta_provided_date'))||'—'}</td>
+                <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date'))||'—'}</td>
+                <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
+                    title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks'))||'—'}</td>
+              </tr>`;
+            }).join('')
+        }
+      </tbody>
+    </table>`;
+  if (canEdit) {
+    document.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.dataset.row, sel.value, sel));
+    });
+  }
+}
+
+// ── Deletions ─────────────────────────────────────────────────────────────────
+async function loadDeletions() {
+  $('#deletions-table').innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading channel deletion sheet…</div></div>`;
+  $('#del-count').textContent = '';
+  try {
+    deletionsRows = await fetchDeletions();
+    delAccounts = aggregateDeletions(deletionsRows);
+    deletionsLoaded = true;
+    renderBanner();
+    renderDelOverview();
+    toast(`Loaded ${deletionsRows.length} channel deletion records`);
+  } catch(err) {
+    $('#deletions-table').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load Channel deletion sheet: ${esc(err.message)}<br/>Make sure your sheet has a tab named <strong>Channel deletion sheet</strong> and is publicly viewable.</div></div>`;
+  }
+}
+
+function aggregateDeletions(data) {
+  const map = {};
+  for (const row of data) {
+    const amg = (row.amg_id || '').trim();
+    const name = (row.account_name || '').trim();
+    const key = amg || name;
+    if (!key) continue;
+    if (!map[key]) map[key] = { amg_id: amg, account_name: name, total: 0, pending: 0, deleted: 0 };
+    const a = map[key];
+    if (!a.amg_id && amg) a.amg_id = amg;
+    if (!a.account_name && name) a.account_name = name;
+    a.total++;
+    const s = (row.del_status || '').toLowerCase().trim();
+    if (s === 'deleted') a.deleted++;
+    else a.pending++;
+  }
+  return Object.values(map).sort((a, b) => a.account_name.localeCompare(b.account_name) || a.amg_id.localeCompare(b.amg_id));
+}
+
+function renderDelOverview() {
+  const total   = deletionsRows.length;
+  const pending = deletionsRows.filter(r => (r.del_status||'').toLowerCase().trim() !== 'deleted').length;
+  const deleted = deletionsRows.filter(r => (r.del_status||'').toLowerCase().trim() === 'deleted').length;
+
+  const kpiHtml = `
+    <div class="kpis" style="margin-bottom:.85rem">
+      <div class="kpi total"><div class="k-label">Accounts</div><div class="k-value">${delAccounts.length}</div></div>
+      <div class="kpi total"><div class="k-label">Total Channels</div><div class="k-value">${total}</div></div>
+      <div class="kpi blocked"><div class="k-label">Pending</div><div class="k-value">${pending}</div></div>
+      <div class="kpi done"><div class="k-label">Deleted</div><div class="k-value">${deleted}</div></div>
+    </div>`;
+
+  const q = ($('#del-filter-q').value || '').toLowerCase();
+  const sf = ($('#del-filter-status').value || '').toLowerCase();
+  const list = delAccounts.filter(a => {
+    if (!q) return true;
+    return (a.account_name||'').toLowerCase().includes(q) || (a.amg_id||'').toLowerCase().includes(q);
+  }).filter(a => {
+    if (!sf) return true;
+    if (sf === 'deleted') return a.deleted > 0;
+    if (sf === 'pending') return a.pending > 0;
+    return true;
+  });
+
+  if (!list.length) {
+    $('#deletions-table').innerHTML = kpiHtml + `<div class="del-empty">${delAccounts.length === 0 ? 'No records found in Channel deletion sheet.' : 'No accounts match the filter.'}</div>`;
+    return;
+  }
+
+  const cardsHtml = list.map(a => {
+    const t = a.total || 1;
+    const allDone = a.deleted === a.total && a.total > 0;
+    return `<div class="account ${allDone ? 'migrated' : ''} del-acct-card" data-amg="${esc(a.amg_id)}" data-name="${esc(a.account_name)}" style="cursor:pointer">
+      <div class="acct-head">
+        <div class="acct-avatar">${initials(a.account_name || a.amg_id || '?')}</div>
+        <div style="flex:1;min-width:0">
+          <div class="acct-name">${esc(a.account_name || a.amg_id || '—')}</div>
+          <div class="acct-meta">${esc(a.amg_id || '')} · ${a.total} channels</div>
+        </div>
+        ${allDone ? `<span class="badge-done">✓ Done</span>` : ''}
+      </div>
+      <div class="mini-bars">
+        <span style="width:${Math.round(100*a.deleted/t)}%;background:#16a34a" title="deleted"></span>
+        <span style="width:${Math.round(100*a.pending/t)}%;background:#dc2626" title="pending"></span>
+      </div>
+      <div class="pills">
+        ${a.deleted ? `<span class="pill done">✓ ${a.deleted} deleted</span>` : ''}
+        ${a.pending ? `<span class="pill blocked">◷ ${a.pending} pending</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  $('#deletions-table').innerHTML = kpiHtml + `<div class="accounts-grid" id="del-accounts-grid">${cardsHtml}</div>`;
+  $('#del-count').textContent = `${list.length} of ${delAccounts.length} accounts`;
+
+  document.querySelectorAll('.del-acct-card').forEach(el => {
+    el.addEventListener('click', () => openDelAccount(el.dataset.name, el.dataset.amg));
+  });
+}
+
+function openDelAccount(name, amg) {
+  delSelected = { name, amg };
+  delDetailRows = deletionsRows.filter(r =>
+    (amg && r.amg_id === amg) || (name && r.account_name === name)
+  );
+  const deleted = delDetailRows.filter(r => (r.del_status||'').toLowerCase().trim() === 'deleted').length;
+  const backBtn = `<button id="del-btn-back-card" class="btn light" style="margin-bottom:.75rem">← Back to Channel Deletion</button>`;
+  const metaHtml = `<div style="margin-bottom:.85rem"><h2 style="font-size:1.2rem;font-weight:800">${esc(name||amg)}</h2><p class="muted">${esc(amg)} · ${delDetailRows.length} channels · ${deleted} deleted</p></div>`;
+  const filterHtml = `<div class="filters" style="margin-bottom:.75rem">
+    <input id="del-detail-q" type="search" placeholder="Search channel…" style="min-width:180px" />
+    <select id="del-detail-status">
+      <option value="">All statuses</option>
+      <option value="deleted">Deleted</option>
+      <option value="pending">Pending</option>
+    </select>
+  </div>`;
+  const tableHtml = renderDelDetailTableHtml(delDetailRows, '', '');
+  $('#deletions-table').innerHTML = backBtn + metaHtml + filterHtml + `<div class="table-wrap" id="del-detail-inner">${tableHtml}</div>`;
+  $('#del-count').textContent = `${delDetailRows.length} channels`;
+
+  document.getElementById('del-btn-back-card').addEventListener('click', () => {
+    delSelected = null;
+    renderDelOverview();
+  });
+  document.getElementById('del-detail-q').addEventListener('input', e => {
+    document.getElementById('del-detail-inner').innerHTML = renderDelDetailTableHtml(
+      delDetailRows, e.target.value, document.getElementById('del-detail-status').value
+    );
+  });
+  document.getElementById('del-detail-status').addEventListener('change', e => {
+    document.getElementById('del-detail-inner').innerHTML = renderDelDetailTableHtml(
+      delDetailRows, document.getElementById('del-detail-q').value, e.target.value
+    );
+  });
+}
+
+function renderDelDetailTableHtml(rows, q, sf) {
+  const lq = (q || '').toLowerCase();
+  const lsf = (sf || '').toLowerCase();
+  const filtered = rows.filter(r => {
+    if (lsf) {
+      const s = (r.del_status||'').toLowerCase().trim();
+      if (lsf === 'deleted' && s !== 'deleted') return false;
+      if (lsf === 'pending' && s === 'deleted') return false;
+    }
+    if (!lq) return true;
+    return [(r.channel_id||''),(r.channel_name||''),(r.jira||'')].join(' ').toLowerCase().includes(lq);
+  });
+  if (!filtered.length) return `<div class="del-empty">No channels match.</div>`;
+  const rows_html = filtered.map((r, i) => {
+    const isDel = (r.del_status||'').toLowerCase().trim() === 'deleted';
+    const jiraRaw = (r.jira||'').trim();
+    let jiraHtml = '—';
+    if (jiraRaw) {
+      const isUrl = /^https?:\/\//.test(jiraRaw);
+      const jiraUrl = isUrl ? jiraRaw : `https://amagiengg.atlassian.net/browse/${jiraRaw}`;
+      const ticketMatch = jiraRaw.match(/([A-Z][A-Z0-9]+-\d+)/);
+      const jiraLabel = ticketMatch ? ticketMatch[1] : (isUrl ? jiraRaw.split('/').pop() : jiraRaw);
+      jiraHtml = `<a href="${esc(jiraUrl)}" target="_blank" rel="noopener" style="font-family:monospace;font-size:.78rem">${esc(jiraLabel)}</a>`;
+    }
+    return `<tr class="${isDel ? 'row-done' : ''}">
+      <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
+      <td><strong>${esc(r.channel_id)||'—'}</strong></td>
+      <td style="font-size:.77rem">${esc(r.channel_name)||'—'}</td>
+      <td>${delStatusChip(r.del_status)}</td>
+      <td>${jiraHtml}</td>
+    </tr>`;
+  }).join('');
+  return `<table>
+    <thead><tr><th>#</th><th>Channel ID</th><th>Channel Name</th><th>Status</th><th>Jira</th></tr></thead>
+    <tbody>${rows_html}</tbody>
+  </table>`;
+}
+
+// ── Daily Log ────────────────────────────────────────────────────────────────
+function parseDDMMYYYY(s) {
+  s = String(s||'').trim();
+  const gviz = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (gviz) return new Date(+gviz[1], +gviz[2], +gviz[3]);
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) return new Date(+dmy[3], +dmy[2]-1, +dmy[1]);
+  return new Date(s);
+}
+
+function formatDailyDateHeader(s) {
+  const d = parseDDMMYYYY(s);
+  if (isNaN(d.getTime())) return { day: s, label: '' };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+  d.setHours(0,0,0,0);
+  const prefix = d.getTime() === today.getTime() ? 'Today'
+               : d.getTime() === yesterday.getTime() ? 'Yesterday'
+               : d.toLocaleDateString([],{weekday:'short'});
+  return { day: prefix, label: d.toLocaleDateString([],{day:'numeric',month:'long',year:'numeric'}) };
+}
+
+function sortKeyDDMMYYYY(s) {
+  const d = parseDDMMYYYY(s);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+async function fetchDailyTab() {
+  const url = `https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${DAILY_SHEET_GID}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response from daily log sheet.');
+  const parsed = JSON.parse(m[1]);
+  if (parsed.status === 'error') throw new Error(parsed.errors?.[0]?.message || 'Sheet error');
+  const labelToKey = buildLabelToKey(parsed, DAILY_ALIASES);
+  const result = [];
+  for (const gvizRow of parsed.table.rows) {
+    if (!gvizRow.c) continue;
+    const cells = gvizRow.c.map(gvizCellValue);
+    if (cells.every(v => !v)) continue;
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(labelToKey)) obj[key] = cells[colIdx] || '';
+    if (!(obj.task || obj.account_name)) continue;
+    result.push(obj);
+  }
+  return result;
+}
+
+function dailyCatStyle(category) {
+  return DAILY_CAT_COLORS[(category||'').toLowerCase().trim()] || {color:'#64748b',bg:'#f8fafc'};
+}
+
+function dailyEntryHtml(r) {
+  const cat     = dailyCatStyle(r.category);
+  const jiraRaw = (r.jira||'').trim();
+  const isUrl   = /^https?:\/\//.test(jiraRaw);
+  const jiraUrl = jiraRaw ? (isUrl ? jiraRaw : `https://amagiengg.atlassian.net/browse/${jiraRaw}`) : '';
+  const jiraKey = jiraRaw.match(/([A-Z][A-Z0-9]+-\d+)/)?.[1] || (isUrl ? jiraRaw.split('/').pop() : jiraRaw);
+  const jiraHtml    = jiraUrl ? `<a class="daily-jira-link" href="${esc(jiraUrl)}" target="_blank" rel="noopener">${esc(jiraKey)} ↗</a>` : '';
+  const actorHtml   = r.actor  ? `<span class="daily-actor">👤 ${esc(r.actor)}</span>` : '';
+  const outcomeHtml = r.outcome ? `<div class="daily-outcome">→ ${esc(r.outcome)}</div>` : '';
+  const acctHtml    = r.account_name ? `<span style="font-size:.82rem;font-weight:600">${esc(r.account_name)}</span>` : '';
+  const amgHtml     = r.amg_id ? `<span class="daily-amg">${esc(r.amg_id)}</span>` : '';
+  return `<div class="daily-entry" style="border-left-color:${cat.color}">
+    <div class="daily-entry-head">
+      <span class="daily-cat-badge" style="background:${cat.bg};color:${cat.color}">${esc(r.category||'General')}</span>
+      ${acctHtml}${amgHtml}
+      <div style="flex:1"></div>
+      ${actorHtml}${jiraHtml}
+    </div>
+    <div class="daily-task">${esc(r.task)}</div>
+    ${outcomeHtml}
+  </div>`;
+}
+
+function renderDailyLog() {
+  const q    = ($('#daily-q')?.value           || '').toLowerCase();
+  const cat  = ($('#daily-cat-filter')?.value  || '').toLowerCase();
+  const act  = ($('#daily-actor-filter')?.value || '').toLowerCase();
+  const dateVal = ($('#daily-date-filter')?.value || ''); // YYYY-MM-DD from input
+  const dateFilterTs = dateVal ? (() => { const d = new Date(dateVal); d.setHours(0,0,0,0); return d.getTime(); })() : 0;
+
+  const filtered = dailyRows.filter(r => {
+    if (cat && (r.category||'').toLowerCase().trim() !== cat) return false;
+    if (act && (r.actor||'').toLowerCase().trim() !== act) return false;
+    if (dateFilterTs) {
+      const d = parseDDMMYYYY(r.date); d.setHours(0,0,0,0);
+      if (d.getTime() !== dateFilterTs) return false;
+    }
+    if (q) {
+      const hay = [r.task,r.account_name,r.amg_id,r.outcome,r.actor,r.category].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  $('#daily-count').textContent = `${filtered.length} of ${dailyRows.length} entries`;
+
+  // KPIs
+  const uniqueAccts  = new Set(filtered.map(r => r.amg_id||r.account_name).filter(Boolean)).size;
+  const uniqueActors = new Set(filtered.filter(r=>r.actor).map(r=>r.actor)).size;
+  const today    = new Date();
+  const todayStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
+  const weekAgo  = new Date(); weekAgo.setDate(today.getDate()-6);
+  const todayCount = filtered.filter(r => r.date === todayStr).length;
+  const weekCount  = filtered.filter(r => sortKeyDDMMYYYY(r.date) >= weekAgo.getTime()).length;
+  $('#daily-kpi-strip').innerHTML = `
+    <div class="daily-kpi"><div class="dk-label">Total Entries</div><div class="dk-value" style="color:var(--primary)">${filtered.length}</div></div>
+    <div class="daily-kpi"><div class="dk-label">Accounts</div><div class="dk-value" style="color:#7c3aed">${uniqueAccts}</div></div>
+    <div class="daily-kpi"><div class="dk-label">This Week</div><div class="dk-value" style="color:#0891b2">${weekCount}</div></div>
+    <div class="daily-kpi"><div class="dk-label">Today</div><div class="dk-value" style="color:var(--green)">${todayCount}</div></div>
+    ${uniqueActors ? `<div class="daily-kpi"><div class="dk-label">Team Members</div><div class="dk-value" style="color:#ea580c">${uniqueActors}</div></div>` : ''}`;
+
+  // Populate dropdowns on first render
+  const catSel = $('#daily-cat-filter');
+  const actSel = $('#daily-actor-filter');
+  if (catSel && catSel.options.length <= 1) {
+    [...new Set(dailyRows.map(r=>(r.category||'').trim()).filter(Boolean))].sort().forEach(c => {
+      const o = document.createElement('option'); o.value = c.toLowerCase(); o.textContent = c; catSel.appendChild(o);
+    });
+  }
+  if (actSel && actSel.options.length <= 1) {
+    [...new Set(dailyRows.filter(r=>r.actor).map(r=>r.actor.trim()))].sort().forEach(a => {
+      const o = document.createElement('option'); o.value = a.toLowerCase(); o.textContent = a; actSel.appendChild(o);
+    });
+  }
+
+  if (!filtered.length) {
+    $('#daily-timeline').innerHTML = `<div class="daily-empty">${dailyRows.length===0 ? 'No entries found.' : 'No entries match the filter.'}</div>`;
+    return;
+  }
+
+  // Group by date, newest first
+  const byDate = {};
+  for (const r of filtered) {
+    const d = r.date || 'Unknown';
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  }
+  const sortedDates = Object.keys(byDate).sort((a,b) => sortKeyDDMMYYYY(b) - sortKeyDDMMYYYY(a));
+
+  let html = '';
+  for (const d of sortedDates) {
+    const entries = byDate[d];
+    const { day, label } = formatDailyDateHeader(d);
+    html += `<div class="daily-date-header">
+      <span class="daily-date-day">${esc(day)}</span>
+      <span class="daily-date-label">${esc(label)}</span>
+      <span class="daily-date-count">${entries.length} entr${entries.length===1?'y':'ies'}</span>
+    </div>`;
+    html += entries.map(dailyEntryHtml).join('');
+  }
+  $('#daily-timeline').innerHTML = html;
+}
+
+async function loadDailyLog() {
+  $('#daily-timeline').innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading daily work log…</div></div>`;
+  $('#daily-count').textContent = '';
+  try {
+    dailyRows   = await fetchDailyTab();
+    dailyLoaded = true;
+    renderBanner();
+    renderDailyLog();
+    toast(`Loaded ${dailyRows.length} work log entries`);
+  } catch(err) {
+    $('#daily-timeline').innerHTML = `<div style="padding:1.5rem"><div class="error-box">Could not load Daily Work Log: ${esc(err.message)}</div></div>`;
+  }
+}
+
+// ── Pipeline ──────────────────────────────────────────────────────────────────
+function parsePipelineDate(val) {
+  if (!val) return null;
+  if (typeof val === 'string' && val.startsWith('Date(')) {
+    const parts = val.replace('Date(','').replace(')','').split(',').map(Number);
+    return new Date(parts[0], parts[1], parts[2]);
+  }
+  try { return new Date(String(val).slice(0,10)); } catch { return null; }
+}
+
+function plDaysBlocked(row) {
+  const d = parsePipelineDate(row.stage_since);
+  if (!d) return 0;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function plDaysInStage(row) { return plDaysBlocked(row); }
+
+function plStepBadge(stepIdx, accountStageIdx, isBlocked) {
+  if (isBlocked && stepIdx === accountStageIdx)
+    return '<span style="background:#fef2f2;color:#dc2626;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700">BLOCKED</span>';
+  if (stepIdx < accountStageIdx)
+    return '<span style="background:#dcfce7;color:#16a34a;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700">DONE</span>';
+  if (stepIdx === accountStageIdx)
+    return '<span style="background:#dbeafe;color:#2563eb;padding:.15rem .45rem;border-radius:4px;font-size:.72rem;font-weight:600">IN PROGRESS</span>';
+  return '<span style="background:#f1f5f9;color:#94a3b8;padding:.15rem .45rem;border-radius:4px;font-size:.72rem">NO</span>';
+}
+
+function renderPipeline() {
+  if (!pipelineLoaded) return;
+  const q   = ($('#pl-q')?.value || '').toLowerCase();
+  const emF = ($('#pl-em-filter')?.value || '').toLowerCase();
+
+  // Populate EM dropdown on first render
+  const emSel = $('#pl-em-filter');
+  if (emSel && emSel.options.length <= 1) {
+    const ems = new Set();
+    pipelineRows.forEach(r => (r.assigned_to||'').split(',').forEach(e => { const t=e.trim(); if(t) ems.add(t); }));
+    [...ems].sort().forEach(em => {
+      const o = document.createElement('option'); o.value=em; o.textContent=em; emSel.appendChild(o);
+    });
+  }
+
+  const kpiEl      = $('#pl-kpi-bar');
+  const funnelEl   = $('#pl-funnel');
+  const blockedEl  = $('#pl-blocked-section');
+  const tbodyEl    = $('#pl-table-body');
+  const countEl    = $('#pl-count');
+
+  if (!pipelineRows.length) {
+    kpiEl.innerHTML = '';
+    funnelEl.innerHTML = '';
+    blockedEl.innerHTML = '';
+    tbodyEl.innerHTML = `<tr><td colspan="9" style="padding:2rem;text-align:center;color:var(--muted)">
+      <strong>Pipeline not set up yet.</strong><br>
+      <span style="font-size:.82rem">Run: <code>python3 agent.py setup</code> then <code>python3 agent.py jira-sync</code></span>
+    </td></tr>`;
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  let rows = pipelineRows.filter(r => {
+    if (q && !((r.account_name||'').toLowerCase().includes(q) || (r.amg_id||'').toLowerCase().includes(q))) return false;
+    if (emF && !(r.assigned_to||'').toLowerCase().includes(emF)) return false;
+    return true;
+  });
+
+  const total    = rows.length;
+  const doneRows = rows.filter(r => (r.stage||'') === 'done' || (r.stage||'') === 'approved');
+  const blocked  = rows.filter(r => (r.stage||'') === 'discrepancy');
+  const active   = rows.filter(r => !['done','approved'].includes(r.stage||''));
+
+  if (countEl) countEl.textContent = `${total} accounts`;
+
+  // KPI bar
+  kpiEl.innerHTML = [
+    {num: total,          label: 'Total Accounts', color: ''},
+    {num: active.length,  label: 'Yet to Switch',  color: '#2563eb'},
+    {num: doneRows.length,label: 'Switched Over',  color: '#16a34a'},
+    {num: blocked.length, label: 'Blocked',         color: blocked.length ? '#dc2626' : '#94a3b8'},
+  ].map(k => `
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.6rem 1rem;min-width:110px">
+      <div style="font-size:1.5rem;font-weight:700;line-height:1.1${k.color?';color:'+k.color:''}">${k.num}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${k.label}</div>
+    </div>`).join('');
+
+  // Step funnel — count how many accounts have reached/passed each step
+  funnelEl.innerHTML = PIPELINE_STEPS.map((step, si) => {
+    const reached  = rows.filter(r => (PL_STAGE_IDX[r.stage||''] || 0) >= si + 1).length;
+    const blk      = rows.filter(r => (r.stage||'') === 'discrepancy' && (PL_STAGE_IDX[r.stage||''] || 0) === si).length;
+    const pct      = total ? Math.round(reached / total * 100) : 0;
+    return `<div style="background:#fff;padding:.9rem .75rem;text-align:center">
+      <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem">${step.label}</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">${reached}<span style="font-size:.8rem;font-weight:400;color:var(--muted)">/${total}</span></div>
+      <div style="height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:.3rem">
+        <div style="height:100%;width:${pct}%;background:#2563eb;border-radius:99px;transition:width .4s"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted)">${step.desc}</div>
+      ${blk ? `<div style="font-size:.7rem;color:#dc2626;margin-top:.2rem;font-weight:600">${blk} blocked</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Blocked cards
+  if (blocked.length) {
+    blockedEl.innerHTML = `
+      <div style="font-weight:700;font-size:.85rem;margin-bottom:.6rem;color:#dc2626">Currently Blocked (${blocked.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+        ${blocked.map(r => {
+          const days = plDaysBlocked(r);
+          const jira = (r.jira_tickets||'').trim();
+          const jiraLink = jira ? `<a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="color:#2563eb;font-size:.75rem">${esc(jira)}</a>` : '';
+          return `<div onclick="plOpenHistory('${esc(r.amg_id||'')}','${esc(r.account_name||r.amg_id||'')}')" style="background:#fff;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:.75rem 1rem;min-width:220px;max-width:280px;cursor:pointer" onmouseenter="this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'" onmouseleave="this.style.boxShadow=''">
+            <div style="font-weight:600;font-size:.85rem;margin-bottom:.2rem">${esc(r.account_name||r.amg_id||'?')}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">${esc(r.amg_id||'')}</div>
+            ${days ? `<div style="font-size:.75rem;color:#dc2626;font-weight:600;margin-bottom:.3rem">${days}d blocked</div>` : ''}
+            ${r.assigned_to ? `<div style="font-size:.75rem;margin-bottom:.3rem">👤 ${esc(r.assigned_to)}</div>` : ''}
+            ${jiraLink ? `<div>${jiraLink}</div>` : ''}
+            ${r.notes ? `<div style="font-size:.72rem;color:var(--muted);font-style:italic;margin-top:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(r.notes)}">${esc(r.notes)}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    blockedEl.innerHTML = '';
+  }
+
+  // Migration details table
+  tbodyEl.innerHTML = rows.map(r => {
+    const stageIdx  = PL_STAGE_IDX[r.stage||''] ?? 0;
+    const isBlocked = (r.stage||'') === 'discrepancy';
+    const days      = plDaysBlocked(r);
+    const jira      = (r.jira_tickets||'').trim();
+    const jiraCell  = jira
+      ? `<a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="color:#2563eb">${esc(jira)}</a>`
+      : '<span style="color:var(--muted)">—</span>';
+    const stepBadges = PIPELINE_STEPS.map((_, si) => `<td style="padding:.5rem .4rem;text-align:center;border-bottom:1px solid var(--border)">${plStepBadge(si, stageIdx, isBlocked)}</td>`).join('');
+    const blockedCell = isBlocked && days
+      ? `<span style="color:#dc2626;font-weight:600">${days}d</span>`
+      : (isBlocked ? '<span style="color:#dc2626">yes</span>' : '—');
+    return `<tr onclick="plOpenHistory('${esc(r.amg_id||'')}','${esc(r.account_name||r.amg_id||'')}')" style="cursor:pointer" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <td style="padding:.5rem .6rem;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap">${esc(r.account_name||r.amg_id||'?')}</td>
+      <td style="padding:.5rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem;color:var(--muted);white-space:nowrap">${esc(r.amg_id||'')}</td>
+      ${stepBadges}
+      <td style="padding:.5rem .4rem;text-align:center;border-bottom:1px solid var(--border);font-size:.8rem">${blockedCell}</td>
+      <td style="padding:.5rem .6rem;border-bottom:1px solid var(--border);font-size:.78rem">${jiraCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+function plOpenHistory(amg, name) {
+  const panel = $('#pl-history-panel');
+  const title = $('#pl-history-title');
+  const body  = $('#pl-history-body');
+  title.textContent = name + ' — History';
+  body.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--muted)">Loading…</div>`;
+  panel.style.display = 'block';
+
+  const rows = pipelineHistory.filter(r => (r.amg_id||'').trim() === amg.trim());
+  if (!rows.length) {
+    body.innerHTML = `<div style="padding:.5rem;font-size:.82rem;color:var(--muted)">No history yet.</div>`;
+    return;
+  }
+  body.innerHTML = rows.map(r => {
+    const ts   = (String(r.timestamp||'')).slice(0,16);
+    const from = r.from_stage||'';
+    const to   = r.to_stage||'';
+    const actor= r.actor||'';
+    const em   = r.assigned_to||'';
+    const jira = r.jira_ticket||'';
+    const note = r.notes||'';
+    const arrow = from ? `<span style="color:var(--muted)">${from}</span> → <strong>${to}</strong>` : `<strong>${to}</strong>`;
+    return `<div style="border-left:3px solid var(--border);padding:.5rem .75rem;margin-bottom:.75rem">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${ts}</div>
+      <div style="font-size:.82rem;margin-bottom:.2rem">${arrow}</div>
+      ${em ? `<div style="font-size:.76rem">👤 ${esc(em)}</div>` : ''}
+      ${actor ? `<div style="font-size:.75rem;color:var(--muted)">by ${esc(actor)}</div>` : ''}
+      ${jira ? `<div style="font-size:.75rem"><a href="https://amagiengg.atlassian.net/browse/${esc(jira)}" target="_blank" rel="noopener" style="color:#2563eb">${esc(jira)}</a></div>` : ''}
+      ${note ? `<div style="font-size:.75rem;color:var(--muted);font-style:italic">${esc(note)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function loadPipeline() {
+  $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem;text-align:center"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Loading pipeline…</div></div></td></tr>`;
+  try {
+    const [wfParsed, histParsed] = await Promise.all([
+      fetchTab(PIPELINE_WORKFLOW_SHEET).catch(() => null),
+      fetchTab(PIPELINE_HISTORY_SHEET).catch(() => null),
+    ]);
+
+    if (wfParsed) {
+      const labelMap = buildLabelToKey(wfParsed, {
+        amg_id:['amg id','amg_id'], account_name:['account name','account_name'],
+        type:['type'], stage:['stage'], assigned_to:['assigned to','assigned_to'],
+        stage_since:['stage since','stage_since'], jira_tickets:['jira tickets','jira_tickets'],
+        notes:['notes'],
+      });
+      // If 'stage' column not found, gviz returned the wrong sheet (AN3_Workflow not created yet)
+      const hasStageCol = Object.values(labelMap).includes('stage');
+      if (hasStageCol) {
+        pipelineRows = wfParsed.table.rows
+          .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
+          .filter(o => o.stage);  // only rows with a real stage value
+      }
+    }
+
+    if (histParsed) {
+      const labelMap = buildLabelToKey(histParsed, {
+        timestamp:['timestamp'], amg_id:['amg id','amg_id'], account_name:['account name','account_name'],
+        from_stage:['from stage','from_stage'], to_stage:['to stage','to_stage'],
+        assigned_to:['assigned to','assigned_to'], actor:['actor'],
+        jira_ticket:['jira ticket','jira_ticket'], notes:['notes'],
+      });
+      const hasFromCol = Object.values(labelMap).includes('from_stage');
+      if (hasFromCol) {
+        pipelineHistory = histParsed.table.rows
+          .map(r => { const cells=r.c.map(gvizCellValue); const o={}; for(const[i,k] of Object.entries(labelMap)) o[k]=cells[i]||''; return o; })
+          .filter(o => o.amg_id);
+      }
+    }
+
+    pipelineLoaded = true;
+    renderBanner();
+    renderPipeline();
+    if (pipelineRows.length) toast(`Pipeline: ${pipelineRows.length} accounts`);
+    else toast('Pipeline sheets not set up yet — run: python3 agent.py setup && python3 agent.py jira-sync');
+  } catch(err) {
+    $('#pl-table-body').innerHTML = `<tr><td colspan="9" style="padding:1.5rem"><div class="error-box">Could not load pipeline: ${esc(err.message)}</div></td></tr>`;
+  }
+}
+
+// ── Banner ────────────────────────────────────────────────────────────────────
+function renderBanner() {
+  const hash       = location.hash || '';
+  const onDel      = hash.startsWith('#deletions');
+  const onDaily    = hash.startsWith('#daily');
+  const onPipeline = hash.startsWith('#pipeline');
+  const now     = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  $('#last-updated').textContent = `Updated ${now}`;
+  if (onPipeline && pipelineLoaded) {
+    const total  = pipelineRows.length;
+    const done   = pipelineRows.filter(r => r.stage === 'done').length;
+    const active = total - done;
+    const stale  = pipelineRows.filter(r => plDaysInStage(r) >= 5 && r.stage !== 'done').length;
+    const sheetId = getSheetId();
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:#2563eb;font-weight:600">${active} active</span>
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} done</span>
+      ${stale ? `<span class="banner-dot">·</span><span style="color:#dc2626;font-weight:600">⚠ ${stale} stale</span>` : ''}
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${sheetId}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onPipeline) {
+    $('#banner').innerHTML = `<span style="color:var(--muted)">Click ↻ Refresh to load pipeline</span>`;
+  } else if (onDaily && dailyLoaded) {
+    const today    = new Date();
+    const todayStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
+    const todayCount  = dailyRows.filter(r => r.date === todayStr).length;
+    const uniqueAccts = new Set(dailyRows.map(r=>r.amg_id||r.account_name).filter(Boolean)).size;
+    $('#banner').innerHTML = `
+      <strong>${dailyRows.length}</strong> entries
+      <span class="banner-dot">·</span>
+      <strong>${uniqueAccts}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${todayCount} today</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDel && deletionsLoaded) {
+    const totalCh  = deletionsRows.length;
+    const deleted  = deletionsRows.filter(r => (r.del_status||'').toLowerCase().trim() === 'deleted').length;
+    const pending  = totalCh - deleted;
+    $('#banner').innerHTML = `
+      <strong>${delAccounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <strong>${totalCh}</strong> channels
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${deleted} deleted</span>
+      <span class="banner-dot">·</span>
+      <span style="color:#dc2626;font-weight:600">${pending} pending</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDel) {
+    if (!rows.length) return;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DEL_SHEET_ID}/edit#gid=${DEL_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else if (onDaily) {
+    if (!rows.length) return;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${DAILY_SHEET_ID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  } else {
+    if (!rows.length) return;
+    const done  = rows.filter(r => f(r,'status')==='switchover completed').length;
+    const total = rows.length;
+    $('#banner').innerHTML = `
+      <strong>${total}</strong> deliveries
+      <span class="banner-dot">·</span>
+      <strong>${accounts.length}</strong> accounts
+      <span class="banner-dot">·</span>
+      <span style="color:var(--green);font-weight:600">${done} completed (${pct(done,total)}%)</span>
+      <span class="banner-dot">·</span>
+      <a href="https://docs.google.com/spreadsheets/d/${getSheetId()}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>`;
+  }
+}
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function load() {
+  hideAll();
+  $('#error-container').innerHTML =
+    `<div class="page"><div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Fetching sheet data…</div></div></div>`;
+  try {
+    rows     = await fetchRows();
+    accounts = aggregate(rows);
+    deletionsLoaded = false;
+    $('#error-container').innerHTML = '';
+    renderBanner();
+    renderFromHash();
+    toast(`Loaded ${rows.length} rows across ${accounts.length} accounts`);
+  } catch(err) {
+    $('#error-container').innerHTML = `
+      <div class="page"><div class="error-box">
+        ⚠ Could not load sheet: ${esc(err.message)}<br/>
+        Share the sheet as <strong>"Anyone with the link can view"</strong> then refresh.
+        <a href="#" id="err-config-link" style="margin-left:.5rem">Configure Sheet ID</a>
+      </div></div>`;
+    document.getElementById('err-config-link')?.addEventListener('click', e => {
+      e.preventDefault();
+      $('#setup-card').classList.remove('hidden');
+      $('#sheet-id-input').value = getSheetId();
+      $('#sheet-id-input').focus();
+    });
+  }
+}
+
+// ── JSONP ─────────────────────────────────────────────────────────────────────
+function jsonp(params) {
+  return new Promise((resolve,reject) => {
+    const cbName = '_as' + Math.random().toString(36).slice(2);
+    const url = new URL(APPS_SCRIPT_URL);
+    for (const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
+    url.searchParams.set('callback',cbName);
+    const script = document.createElement('script');
+    const cleanup = () => { delete window[cbName]; script.remove(); };
+    window[cbName] = data => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('Script load failed')); };
+    script.src = url.toString();
+    document.head.appendChild(script);
+  });
+}
+
+// ── Status update ─────────────────────────────────────────────────────────────
+async function updateStatus(distribution_id, row_num, new_status, selectEl) {
+  if (!canEdit) return;
+  selectEl.classList.add('saving');
+  const feedback = selectEl.nextElementSibling;
+  if (feedback) feedback.textContent = '';
+  try {
+    const params = {key:getEditKey(), new_status};
+    if (distribution_id) params.distribution_id = distribution_id;
+    else if (row_num)    params.row_num = row_num;
+    const data = await jsonp(params);
+    if (data.ok) {
+      const row = distribution_id
+        ? rows.find(r => f(r,'distribution_id')===distribution_id)
+        : rows.find(r => String(r._row_num)===String(row_num));
+      if (row) row.status = new_status;
+      if (feedback) { feedback.textContent='✓ saved'; feedback.className='save-ok'; }
+      renderOverview();
+    } else {
+      if (data.error==='Invalid key') { clearEditKey(); setEditMode(false); toast('Edit key rejected.'); }
+      if (feedback) { feedback.textContent='✗ '+(data.error||'failed'); feedback.className='save-err'; }
+    }
+  } catch(err) {
+    if (feedback) { feedback.textContent='✗ '+err.message; feedback.className='save-err'; }
+  } finally { selectEl.classList.remove('saving'); }
+}
+
+// ── Edit mode ─────────────────────────────────────────────────────────────────
+function setEditMode(on) {
+  canEdit = on;
+  $('#edit-badge').style.display    = on ? 'inline' : 'none';
+  $('#btn-edit-toggle').textContent = on ? '🔓 Lock' : '🔒 Edit';
+  $('#mode-label').textContent      = on ? 'Edit mode · changes sync to sheet' : 'Read-only · Live from Google Sheet';
+  if (detailRows.length) renderDetailTable();
+}
+
+function showEditKeyModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Enter edit key</h3>
+      <p class="modal-desc">Enter the shared edit key to change statuses. Changes sync directly to the Google Sheet.</p>
+      <div class="modal-field">
+        <label class="modal-label">Edit key</label>
+        <input id="cfg-edit-key" class="modal-input" type="password" placeholder="••••••••••••" autocomplete="off" />
+        <div id="cfg-key-error" class="modal-error" style="display:none">Incorrect key — check with the team.</div>
+      </div>
+      <div class="modal-actions">
+        <button id="cfg-cancel" class="modal-btn">Cancel</button>
+        <button id="cfg-unlock" class="modal-btn primary">Unlock</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const keyInput = overlay.querySelector('#cfg-edit-key');
+  const errEl    = overlay.querySelector('#cfg-key-error');
+  keyInput.focus();
+  overlay.querySelector('#cfg-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#cfg-unlock').onclick = async () => {
+    const k = keyInput.value.trim(); if (!k) return;
+    const btn = overlay.querySelector('#cfg-unlock');
+    btn.disabled=true; btn.textContent='Checking…';
+    try {
+      const data = await jsonp({key:k, distribution_id:'__probe__'});
+      if (data.error==='Invalid key') {
+        errEl.style.display=''; btn.disabled=false; btn.textContent='Unlock'; return;
+      }
+      setEditKey(k); overlay.remove(); setEditMode(true);
+      toast('Edit mode on — status changes will sync to the sheet');
+    } catch(err) {
+      errEl.textContent='Network error: '+err.message; errEl.style.display='';
+      btn.disabled=false; btn.textContent='Unlock';
+    }
+  };
+  keyInput.addEventListener('keydown', e => { if (e.key==='Enter') overlay.querySelector('#cfg-unlock').click(); });
+}
+
+// ── Wire up ───────────────────────────────────────────────────────────────────
+$('#btn-refresh').addEventListener('click', load);
+$('#btn-config').addEventListener('click', () => {
+  $('#setup-card').classList.toggle('hidden');
+  $('#sheet-id-input').value = getSheetId();
+});
+$('#btn-sheet-save').addEventListener('click', () => {
+  const raw = $('#sheet-id-input').value.trim();
+  const match = raw.match(/\/spreadsheets\/d\/([^/]+)/) || raw.match(/^([A-Za-z0-9_-]{20,})/);
+  const id = match ? match[1] : raw; if (!id) return;
+  localStorage.setItem(STORAGE_KEY, id);
+  $('#setup-card').classList.add('hidden');
+  load();
+});
+$('#btn-back').addEventListener('click', () => { location.hash = '#overview'; });
+$('#btn-status-back').addEventListener('click', () => { location.hash = '#overview'; });
+$('#account-search').addEventListener('input', e => renderAccountCards(e.target.value));
+$('#filter-status').addEventListener('change', renderDetailTable);
+$('#filter-q').addEventListener('input', renderDetailTable);
+$('#sv-search').addEventListener('input', e => { if (svRows.length) renderSvTable(e.target.value); });
+$('#btn-edit-toggle').addEventListener('click', () => {
+  if (canEdit) { clearEditKey(); setEditMode(false); toast('Edit mode off'); }
+  else showEditKeyModal();
+});
+document.querySelectorAll('.fchip').forEach(btn => {
+  btn.addEventListener('click', () => setDashboardFilter(btn.dataset.key));
+});
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'deletions') location.hash = '#deletions';
+    else if (btn.dataset.tab === 'daily') location.hash = '#daily';
+    else if (btn.dataset.tab === 'pipeline') location.hash = '#pipeline';
+    else location.hash = '#overview';
+  });
+});
+$('#del-filter-q').addEventListener('input', () => { if (deletionsLoaded) renderDelOverview(); });
+$('#del-filter-status').addEventListener('change', () => { if (deletionsLoaded) renderDelOverview(); });
+$('#btn-del-refresh').addEventListener('click', loadDeletions);
+$('#daily-q').addEventListener('input', () => {
+  if ($('#daily-q').value) $('#daily-date-filter').value = '';
+  if (dailyLoaded) renderDailyLog();
+});
+$('#daily-date-filter').addEventListener('change', () => {
+  if ($('#daily-date-filter').value) $('#daily-q').value = '';
+  if (dailyLoaded) renderDailyLog();
+});
+$('#daily-cat-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
+$('#daily-actor-filter').addEventListener('change', () => { if (dailyLoaded) renderDailyLog(); });
+$('#btn-daily-refresh').addEventListener('click', loadDailyLog);
+
+$('#btn-pl-refresh').addEventListener('click', () => { pipelineLoaded = false; loadPipeline(); });
+$('#pl-q').addEventListener('input', () => { if (pipelineLoaded) renderPipeline(); });
+$('#pl-em-filter').addEventListener('change', () => { if (pipelineLoaded) renderPipeline(); });
+$('#pl-history-close').addEventListener('click', () => { $('#pl-history-panel').style.display='none'; });
+
+if (getEditKey()) setEditMode(true);
+load();
+</script>
+</body>
+</html>
