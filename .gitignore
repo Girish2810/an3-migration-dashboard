@@ -1,0 +1,8 @@
+exports/
+secrets/
+config.yaml
+data/
+.venv/
+__pycache__/
+*.pyc
+build/

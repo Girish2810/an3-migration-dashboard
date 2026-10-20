@@ -1,0 +1,69 @@
+# Copy to config.yaml and fill in secrets (config.yaml is gitignored).
+
+server:
+  host: 0.0.0.0
+  port: 8790
+  public_url: https://deliverymigration.now3.amagi.tv
+
+auth:
+  enabled: true
+  username: migration
+  # Prefer env: DASHBOARD_PASSWORD=...
+  password: change-me
+
+database:
+  path: data/migration.db
+
+# Google Sheet (private) via OAuth 2.0 Client ID — NOT a service account.
+# Flow: auth-google once → refresh token stored → Sheets API as your user.
+google_sheets:
+  spreadsheet_id: 1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw
+  worksheet_name: Deliveries
+  oauth_client_secrets_json: secrets/google-oauth-client.json
+  oauth_token_json: secrets/google-token.json
+  columns:
+    - amg_id
+    - initial_start_date
+    - eta_provided_date
+    - completed_date
+    - account_name
+    - channel_id
+    - distribution_id
+    - status
+    - remarks
+    - platform
+    - platform_id
+    - channel_name
+    - stream_type
+    - jira_creation_key
+    - jira_switchover_key
+    - migration_resources
+
+jira:
+  cloud_id: 467048aa-ea7b-46fc-bcb6-348c45f335e2
+  site_url: https://amagiengg.atlassian.net
+  email: you@amagi.com
+  api_token: ""
+  project_key: AN3OB
+  issue_type: Migration-Support
+  parent_creation: AN3OB-8205
+  parent_switchover: AN3OB-8206
+  poll_jql: 'project = AN3OB AND (summary ~ "OTT Studios" OR labels = migration-dashboard) ORDER BY updated DESC'
+
+fabric:
+  host: linear-api-internal-silver1.now3.amagi.tv
+  cert: ~/Downloads/jammer-apigee-client (8).crt
+  key: ~/Downloads/jammer-apigee-client (8).key
+
+gaia:
+  host: https://api-gaia.now3.amagi.tv
+  cert: ~/Downloads/gaia-apigee-client (1).crt
+  key: ~/Downloads/gaia-apigee-client (1).key
+
+sync:
+  auto_pull_interval_seconds: 0
+
+# Groq free-tier API for Jira pending-on analysis (llama-3.1-8b-instant).
+# Get a free key at https://console.groq.com — or set env: GROQ_API_KEY=...
+groq:
+  api_key: ""

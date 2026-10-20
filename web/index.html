@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AN3 Migration Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo">AN3</div>
+      <div>
+        <h1>Migration Dashboard</h1>
+        <p class="sub">One-click Refresh from Google Sheet · Push when ready</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-refresh" class="btn primary">Refresh from Sheet</button>
+      <button id="btn-push" class="btn">Push to Sheet</button>
+      <button id="btn-add" class="btn">+ Account</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner"></div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="migration">Migration</button>
+    <button class="tab" data-tab="deletion">Channel Deletion</button>
+  </nav>
+  <div id="toast"></div>
+  <input id="csv-file" type="file" accept=".csv,text/csv" hidden />
+
+  <section id="overview" class="page">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid-2">
+      <div class="card">
+        <h2>Status breakdown</h2>
+        <div id="status-chart"></div>
+      </div>
+      <div class="card">
+        <h2>Progress</h2>
+        <div id="progress-block"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Accounts</h2>
+        <input id="account-search" type="search" placeholder="Filter accounts…" />
+      </div>
+      <div id="accounts-grid" class="accounts-grid"></div>
+    </div>
+  </section>
+
+  <section id="detail" class="page hidden">
+    <button id="btn-back" class="btn ghost">← Back to overview</button>
+    <div class="detail-head">
+      <div>
+        <h2 id="detail-title"></h2>
+        <p id="detail-meta" class="muted"></p>
+      </div>
+      <div class="actions">
+        <button id="btn-add-here" class="btn">+ Ticket</button>
+        <button id="btn-enrich" class="btn">Enrich Fabric</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <select id="filter-status">
+          <option value="">All statuses</option>
+          <option>not-started</option>
+          <option>in-progress</option>
+          <option>non-ssai pending</option>
+          <option>ready for switchover</option>
+          <option>switchover completed</option>
+          <option>blocked</option>
+        </select>
+        <input id="filter-q" type="search" placeholder="Search channel / platform / dist…" />
+      </div>
+      <div id="detail-table" class="table-wrap"></div>
+    </div>
+  </section>
+
+  <section id="deletion-overview" class="page hidden">
+    <div class="kpis" id="del-kpis"></div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Channel Deletion Tracker</h2>
+        <div class="actions">
+          <button id="del-btn-refresh" class="btn primary">Refresh from Sheet</button>
+          <button id="del-btn-push" class="btn">Push to Sheet</button>
+          <button id="del-btn-add" class="btn">+ Add Channel</button>
+          <input id="del-search" type="search" placeholder="Filter accounts…" />
+        </div>
+      </div>
+      <div id="del-accounts-grid" class="accounts-grid"></div>
+    </div>
+  </section>
+
+  <section id="deletion-detail" class="page hidden">
+    <button id="del-btn-back" class="btn ghost">← Back to Channel Deletion</button>
+    <div class="detail-head">
+      <div>
+        <h2 id="del-detail-title"></h2>
+        <p id="del-detail-meta" class="muted"></p>
+      </div>
+      <div class="actions">
+        <button id="del-btn-add-here" class="btn">+ Add Channel</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <select id="del-filter-status">
+          <option value="">All statuses</option>
+          <option>Pending</option>
+          <option>Deleted</option>
+        </select>
+        <input id="del-filter-q" type="search" placeholder="Search channel…" />
+      </div>
+      <div id="del-detail-table" class="table-wrap"></div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

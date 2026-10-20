@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AN3 Migration Dashboard — Lambda (zip) + CloudFront
+
+Parameters:
+  DataBucket:
+    Type: String
+    Description: S3 bucket name (already exists — created by deploy script)
+  CodeS3Key:
+    Type: String
+    Default: code/function.zip
+    Description: S3 key for the Lambda zip
+  DomainName:
+    Type: String
+    Default: delivery-migration.now3.amagi.tv
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: ACM cert ARN in us-east-1 (leave empty to skip custom domain HTTPS)
+
+Conditions:
+  HasCert: !Not [!Equals [!Ref CertificateArn, ""]]
+
+Resources:
+
+  # ── IAM role for Lambda ──────────────────────────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3DataAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub "arn:aws:s3:::${DataBucket}/*"
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${DataBucket}"
+
+  # ── Lambda function (zip) ────────────────────────────────────────────────────
+  DashboardFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      PackageType: Zip
+      Runtime: python3.11
+      Handler: lambda_handler.handler
+      Code:
+        S3Bucket: !Ref DataBucket
+        S3Key: !Ref CodeS3Key
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          DB_PATH: /tmp/migration.db
+          OAUTH_TOKEN_JSON: /tmp/secrets/google-token.json
+          S3_DATA_BUCKET: !Ref DataBucket
+
+  # ── Lambda Function URL (public) ─────────────────────────────────────────────
+  DashboardFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt DashboardFunction.Arn
+      AuthType: NONE
+      Cors:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - "*"
+        AllowHeaders:
+          - "*"
+
+  FunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt DashboardFunction.Arn
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+  # ── CloudFront distribution ──────────────────────────────────────────────────
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: AN3 Migration Dashboard
+        Origins:
+          - Id: LambdaFunctionUrl
+            DomainName: !Select
+              - 2
+              - !Split
+                - "/"
+                - !GetAtt DashboardFunctionUrl.FunctionUrl
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+        DefaultCacheBehavior:
+          TargetOriginId: LambdaFunctionUrl
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - POST
+            - PATCH
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: true
+            Headers:
+              - Authorization
+              - Content-Type
+            Cookies:
+              Forward: all
+          MinTTL: 0
+          DefaultTTL: 0
+          MaxTTL: 0
+        Aliases: !If
+          - HasCert
+          - - !Ref DomainName
+          - !Ref AWS::NoValue
+        ViewerCertificate: !If
+          - HasCert
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+
+Outputs:
+  LambdaFunctionUrl:
+    Value: !GetAtt DashboardFunctionUrl.FunctionUrl
+
+  CloudFrontDomain:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+
+  CloudFrontDistributionId:
+    Value: !Ref CloudFrontDistribution
