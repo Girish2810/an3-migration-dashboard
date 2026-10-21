@@ -26,6 +26,7 @@ class Config:
     deletion_columns: list[str]
     deletion_spreadsheet_id: str
     deletion_sheet_gid: str
+    sheets_config: dict[str, dict[str, Any]] = field(default_factory=dict)
     # Prefer OAuth (your Google login + refresh token). Service account optional fallback.
     oauth_client_secrets_json: str
     oauth_token_json: str
@@ -79,6 +80,8 @@ class Config:
         # Lambda overrides: env vars take priority so /tmp paths work on Lambda
         db_path_override = os.environ.get("DB_PATH")
         oauth_token_override = os.environ.get("OAUTH_TOKEN_JSON")
+        # Multiple sheets configuration
+        sheets_config = gs.get("sheets") or {}
         return cls(
             raw=raw,
             db_path=Path(db_path_override) if db_path_override else Path(_expand(db.get("path") or str(ROOT / "data" / "migration.db"))),
@@ -116,4 +119,5 @@ class Config:
             claude_enabled=bool(claude.get("enabled", True)),
             claude_model=str(claude.get("model") or os.environ.get("CLAUDE_MODEL") or "haiku"),
             groq_api_key=os.environ.get("GROQ_API_KEY") or str(raw.get("groq", {}).get("api_key") or ""),
+            sheets_config=sheets_config,
         )
