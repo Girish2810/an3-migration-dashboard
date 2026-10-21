@@ -24,6 +24,46 @@ class SyncEngine:
         self.jira = JiraClient(cfg)
         self.fabric = FabricClient(cfg)
 
+    def pull_from_multiple_sheets(self) -> dict[str, Any]:
+        """Pull data from all configured sheets (deliveries, deletions, daily_log, etc.)."""
+        results = {}
+        sheets_config = self.cfg.sheets_config or {}
+
+        # Pull from each configured sheet
+        for sheet_key, sheet_info in sheets_config.items():
+            try:
+                worksheet_name = sheet_info.get("worksheet_name")
+                columns = sheet_info.get("columns") or []
+
+                if not worksheet_name or not columns:
+                    continue
+
+                # Read sheet tab
+                header, rows = self.sheets.read_tab(worksheet_name)
+
+                # Apply columns if configured
+                if columns:
+                    # Filter to only configured columns
+                    row_dicts = []
+                    for row in rows:
+                        row_dict = {}
+                        for i, col in enumerate(header):
+                            if i < len(row):
+                                row_dict[col] = str(row[i]).strip() if row[i] else ""
+                        row_dicts.append(row_dict)
+                else:
+                    row_dicts = rows
+
+                results[sheet_key] = {
+                    "worksheet": worksheet_name,
+                    "rows": len(row_dicts),
+                    "data": row_dicts
+                }
+            except Exception as e:
+                results[sheet_key] = {"error": str(e)}
+
+        return {"ok": True, "sheets": results}
+
     def _pull_from_gviz(self) -> dict[str, Any]:
         """Pull rows from the public Google Sheets gviz/tq endpoint (no auth needed)."""
         import json
