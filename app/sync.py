@@ -44,11 +44,12 @@ class SyncEngine:
                 # Apply columns if configured
                 if columns:
                     # Filter to only configured columns
+                    col_set = set(columns)
                     row_dicts = []
                     for row in rows:
                         row_dict = {}
                         for i, col in enumerate(header):
-                            if i < len(row):
+                            if col in col_set and i < len(row):
                                 row_dict[col] = str(row[i]).strip() if row[i] else ""
                         row_dicts.append(row_dict)
                 else:
