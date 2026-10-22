@@ -18,9 +18,56 @@ database:
 # Flow: auth-google once → refresh token stored → Sheets API as your user.
 google_sheets:
   spreadsheet_id: 1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw
-  worksheet_name: Deliveries
   oauth_client_secrets_json: secrets/google-oauth-client.json
   oauth_token_json: secrets/google-token.json
+
+  # Multiple sheet tabs configuration (optional)
+  sheets:
+    deliveries:
+      worksheet_name: data
+      columns:
+        - amg_id
+        - account_name
+        - channel_id
+        - distribution_id
+        - status
+        - initial_start_date
+        - eta_provided_date
+        - completed_date
+        - remarks
+
+    deletions:
+      worksheet_name: Channel deletion sheet
+      columns:
+        - amg_id
+        - account_name
+        - channel_name
+        - channel_id
+        - deletion_status
+        - jira
+
+    workflow:
+      worksheet_name: AN3_Workflow
+      columns:
+        - amg_id
+        - account_name
+        - stage
+        - assigned_to
+
+    daily_log:
+      worksheet_name: daily_log
+      columns:
+        - date
+        - category
+        - account_name
+        - amg_id
+        - task_description
+        - jira
+        - actor
+        - outcome
+
+  # Legacy single-sheet configuration (for backwards compatibility)
+  worksheet_name: Deliveries
   columns:
     - amg_id
     - initial_start_date
