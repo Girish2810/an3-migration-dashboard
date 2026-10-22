@@ -26,7 +26,6 @@ class Config:
     deletion_columns: list[str]
     deletion_spreadsheet_id: str
     deletion_sheet_gid: str
-    sheets_config: dict[str, dict[str, Any]] = field(default_factory=dict)
     # Prefer OAuth (your Google login + refresh token). Service account optional fallback.
     oauth_client_secrets_json: str
     oauth_token_json: str
@@ -55,6 +54,7 @@ class Config:
     claude_enabled: bool
     claude_model: str
     groq_api_key: str
+    sheets_config: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: Path | None = None) -> Config:
