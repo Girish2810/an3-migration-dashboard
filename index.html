@@ -260,6 +260,14 @@
     .save-err{color:var(--red);font-size:.72rem;margin-left:.3rem}
     #edit-badge{font-size:.75rem;padding:.3rem .65rem;border-radius:6px;background:rgba(22,163,74,.2);color:#86efac;font-weight:700;border:1px solid rgba(134,239,172,.3)}
     #last-updated{font-size:.76rem;color:rgba(255,255,255,.5)}
+    .btn-row-action{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--muted);padding:.18rem .42rem;font-size:.8rem;cursor:pointer;font-family:inherit;line-height:1;transition:background .12s,color .12s}
+    .btn-row-action:hover{background:#f1f5f9;color:var(--primary)}
+    .btn-row-action.del{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
+    .btn-row-action.del:hover{background:#fecaca}
+    .modal-box.wide{width:min(780px,100%);max-height:90vh;overflow-y:auto}
+    .modal-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .85rem}
+    @media(max-width:580px){.modal-fields-grid{grid-template-columns:1fr}}
+    .mfg-full{grid-column:1/-1}
 
     /* DELETIONS */
     .del-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
@@ -1251,16 +1259,18 @@ function renderDetailTable() {
     return true;
   });
   $('#detail-count').textContent = `${filtered.length} / ${detailRows.length} rows`;
+  const colCount = canEdit ? 9 : 8;
   $('#detail-table').innerHTML = `
     <table>
       <thead><tr>
         <th>#</th><th>Channel ID</th><th>Distribution ID</th>
         <th>Status</th><th>Prepare Date</th><th>ETA Date</th>
         <th>Switchover Date</th><th>Remarks</th>
+        ${canEdit ? '<th>Actions</th>' : ''}
       </tr></thead>
       <tbody>
         ${filtered.length===0
-          ? `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
+          ? `<tr><td colspan="${colCount}" style="text-align:center;padding:2.5rem;color:var(--muted)">No rows match the current filter.</td></tr>`
           : filtered.map((r,i) => {
               const isDone = f(r,'status')==='switchover completed';
               return `<tr class="${isDone?'row-done':''}">
@@ -1275,6 +1285,10 @@ function renderDetailTable() {
                 <td style="white-space:nowrap;font-size:.77rem">${esc(f(r,'switchover_date'))||'—'}</td>
                 <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
                     title="${f(r,'remarks').replace(/"/g,'&quot;')}">${esc(f(r,'remarks'))||'—'}</td>
+                ${canEdit ? `<td style="white-space:nowrap;vertical-align:middle">
+                  <button class="btn-row-action" data-row="${r._row_num||''}" data-action="edit" title="Edit all fields">✏</button>
+                  <button class="btn-row-action del" data-row="${r._row_num||''}" data-action="delete" title="Delete entry">🗑</button>
+                </td>` : ''}
               </tr>`;
             }).join('')
         }
@@ -1283,6 +1297,15 @@ function renderDetailTable() {
   if (canEdit) {
     document.querySelectorAll('.status-select').forEach(sel => {
       sel.addEventListener('change', () => updateStatus(sel.dataset.dist, sel.dataset.row, sel.value, sel));
+    });
+    document.querySelectorAll('.btn-row-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rowNum = parseInt(btn.dataset.row);
+        const row = rows.find(r => r._row_num === rowNum);
+        if (!row) return;
+        if (btn.dataset.action === 'edit') openEditModal(row);
+        else confirmDeleteRow(row);
+      });
     });
   }
 }
@@ -2125,6 +2148,133 @@ function showEditKeyModal() {
     }
   };
   keyInput.addEventListener('keydown', e => { if (e.key==='Enter') overlay.querySelector('#cfg-unlock').click(); });
+}
+
+// ── Full-row edit / delete ────────────────────────────────────────────────────
+const EDIT_FIELDS = [
+  {key:'amg_id',            label:'AMG ID',            type:'text'},
+  {key:'account_name',      label:'Account Name',      type:'text'},
+  {key:'channel_id',        label:'Channel ID',        type:'text'},
+  {key:'distribution_id',   label:'Distribution ID',   type:'text'},
+  {key:'status',            label:'Status',            type:'select'},
+  {key:'prepare_date',      label:'Prepare Date',      type:'text'},
+  {key:'eta_provided_date', label:'ETA Date',          type:'text'},
+  {key:'switchover_date',   label:'Switchover Date',   type:'text'},
+  {key:'hls_sheet',         label:'HLS Sheet URL',     type:'text',     wide:true},
+  {key:'non_hls_sheet',     label:'Non-HLS Sheet URL', type:'text',     wide:true},
+  {key:'discrepancies',     label:'Discrepancies URL', type:'text',     wide:true},
+  {key:'jira_links',        label:'Jira Links',        type:'text',     wide:true},
+  {key:'remarks',           label:'Remarks',           type:'textarea', wide:true},
+];
+
+function openEditModal(row) {
+  const fieldsHtml = EDIT_FIELDS.map(fld => {
+    const val = esc(f(row, fld.key));
+    let input;
+    if (fld.type === 'select') {
+      input = `<select id="ef-${fld.key}" class="modal-input">${STATUSES.map(s=>`<option value="${s}"${f(row,'status')===s?' selected':''}>${s}</option>`).join('')}</select>`;
+    } else if (fld.type === 'textarea') {
+      input = `<textarea id="ef-${fld.key}" class="modal-input" rows="2" style="resize:vertical">${val}</textarea>`;
+    } else {
+      input = `<input id="ef-${fld.key}" class="modal-input" type="text" value="${val}" />`;
+    }
+    return `<div class="modal-field${fld.wide?' mfg-full':''}">
+      <label class="modal-label" for="ef-${fld.key}">${fld.label}</label>${input}
+    </div>`;
+  }).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box wide">
+      <h3>Edit delivery</h3>
+      <p class="modal-desc">Row #${row._row_num||'?'} · <strong>${esc(f(row,'channel_id'))||'no channel'}</strong> · ${esc(f(row,'account_name'))}</p>
+      <div class="modal-fields-grid">${fieldsHtml}</div>
+      <div id="ef-error" class="modal-error" style="display:none"></div>
+      <div class="modal-actions">
+        <button id="ef-cancel" class="modal-btn">Cancel</button>
+        <button id="ef-save" class="modal-btn primary">Save Changes</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#ef-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#ef-save').onclick   = () => saveRowFull(row, overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function saveRowFull(row, overlay) {
+  const saveBtn = overlay.querySelector('#ef-save');
+  const errEl   = overlay.querySelector('#ef-error');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; errEl.style.display = 'none';
+  const params = { key: getEditKey(), action: 'updateRowFull', row_num: row._row_num || '' };
+  EDIT_FIELDS.forEach(fld => {
+    const el = overlay.querySelector(`#ef-${fld.key}`);
+    if (el) params[fld.key] = el.value.trim();
+  });
+  try {
+    const data = await jsonp(params);
+    if (data.ok) {
+      EDIT_FIELDS.forEach(fld => {
+        const el = overlay.querySelector(`#ef-${fld.key}`);
+        if (el) row[fld.key] = el.value.trim();
+      });
+      accounts = aggregate(rows);
+      renderDetailTable();
+      renderOverview();
+      overlay.remove();
+      toast('Row updated successfully');
+    } else {
+      if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); overlay.remove(); toast('Edit key rejected.'); return; }
+      errEl.textContent = data.error || 'Save failed'; errEl.style.display = '';
+      saveBtn.disabled = false; saveBtn.textContent = 'Save Changes';
+    }
+  } catch(err) {
+    errEl.textContent = err.message; errEl.style.display = '';
+    saveBtn.disabled = false; saveBtn.textContent = 'Save Changes';
+  }
+}
+
+function confirmDeleteRow(row) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Delete entry?</h3>
+      <p class="modal-desc">This will permanently remove row #${row._row_num||'?'} from the Google Sheet.<br/>
+        <strong>${esc(f(row,'channel_id'))||'no channel'}</strong> · ${esc(f(row,'account_name'))}</p>
+      <div id="del-row-error" class="modal-error" style="display:none"></div>
+      <div class="modal-actions">
+        <button id="del-cancel" class="modal-btn">Cancel</button>
+        <button id="del-confirm" class="modal-btn" style="background:var(--red);border-color:var(--red);color:#fff">Delete</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#del-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#del-confirm').onclick = async () => {
+    const btn = overlay.querySelector('#del-confirm');
+    const err = overlay.querySelector('#del-row-error');
+    btn.disabled = true; btn.textContent = 'Deleting…'; err.style.display = 'none';
+    try {
+      const data = await jsonp({ key: getEditKey(), action: 'deleteRow', row_num: row._row_num || '' });
+      if (data.ok) {
+        rows       = rows.filter(r => r._row_num !== row._row_num);
+        detailRows = detailRows.filter(r => r._row_num !== row._row_num);
+        accounts   = aggregate(rows);
+        renderDetailTable();
+        renderOverview();
+        overlay.remove();
+        toast('Row deleted');
+      } else {
+        if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); overlay.remove(); toast('Edit key rejected.'); return; }
+        err.textContent = data.error || 'Delete failed'; err.style.display = '';
+        btn.disabled = false; btn.textContent = 'Delete';
+      }
+    } catch(e) {
+      err.textContent = e.message; err.style.display = '';
+      btn.disabled = false; btn.textContent = 'Delete';
+    }
+  };
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 // ── Wire up ───────────────────────────────────────────────────────────────────

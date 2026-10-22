@@ -55,6 +55,9 @@ function doGet(e) {
       return json(appendAccountRow(amg_id, account_name, status), cb);
     }
 
+    if (action === 'updateRowFull') { return json(updateRowFull(e.parameter), cb); }
+    if (action === 'deleteRow')     { return json(deleteRow(e.parameter), cb); }
+
     if (!new_status) return json({ ok: false, error: 'Missing fields' }, cb);
     if (!VALID_STATUS.includes(new_status))
       return json({ ok: false, error: 'Invalid status: ' + new_status }, cb);
@@ -287,6 +290,38 @@ function appendAccountRow(amg_id, account_name, status) {
   sheet.appendRow(newRow);
   Logger.log('[%s] appended account %s (%s) → %s', new Date().toISOString(), account_name, amg_id, status);
   return { ok: true, amg_id: amg_id, account_name: account_name, status: status };
+}
+
+function updateRowFull(p) {
+  const row_num = parseInt(p.row_num || '0', 10);
+  if (row_num < 2) return { ok: false, error: 'row_num required (>=2)' };
+  const sheet = getSheet();
+  if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function(h) { return (h || '').toString().trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, ''); });
+  var EDITABLE = ['amg_id','account_name','channel_id','distribution_id','status',
+                  'remarks','prepare_date','eta_provided_date','switchover_date',
+                  'hls_sheet','non_hls_sheet','discrepancies','jira_links'];
+  var updated = [];
+  EDITABLE.forEach(function(field) {
+    if (p[field] === undefined) return;
+    var colIdx = headers.indexOf(field);
+    if (colIdx < 0) return;
+    sheet.getRange(row_num, colIdx + 1).setValue(p[field]);
+    updated.push(field);
+  });
+  Logger.log('[%s] updateRowFull: row %s updated: %s', new Date().toISOString(), row_num, updated.join(', '));
+  return { ok: true, row: row_num, updated: updated };
+}
+
+function deleteRow(p) {
+  const row_num = parseInt(p.row_num || '0', 10);
+  if (row_num < 2) return { ok: false, error: 'row_num required (>=2)' };
+  const sheet = getSheet();
+  if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
+  sheet.deleteRow(row_num);
+  Logger.log('[%s] deleteRow: row %s deleted', new Date().toISOString(), row_num);
+  return { ok: true, row: row_num, deleted: true };
 }
 
 function json(data, callback) {
