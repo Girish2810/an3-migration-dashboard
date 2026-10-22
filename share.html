@@ -2240,8 +2240,10 @@ function confirmDeleteRow(row) {
   overlay.innerHTML = `
     <div class="modal-box">
       <h3>Delete entry?</h3>
-      <p class="modal-desc">This will permanently remove row #${row._row_num||'?'} from the Google Sheet.<br/>
-        <strong>${esc(f(row,'channel_id'))||'no channel'}</strong> · ${esc(f(row,'account_name'))}</p>
+      <p class="modal-desc">This will permanently remove row #${row._row_num||'?'} from the Google Sheet.</p>
+      <table style="font-size:.85rem;border-collapse:collapse;margin:.5rem 0 .75rem;width:100%">
+        ${[['Account',f(row,'account_name')],['Channel',f(row,'channel_name')||f(row,'channel_id')],['Distribution ID',f(row,'distribution_id')],['Status',f(row,'status')]].filter(([,v])=>v).map(([k,v])=>`<tr><td style="color:var(--muted);padding:.15rem .5rem .15rem 0;white-space:nowrap">${k}</td><td style="font-weight:500">${esc(v)}</td></tr>`).join('')}
+      </table>
       <div id="del-row-error" class="modal-error" style="display:none"></div>
       <div class="modal-actions">
         <button id="del-cancel" class="modal-btn">Cancel</button>
