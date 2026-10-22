@@ -57,8 +57,19 @@ function doGet(e) {
 
     if (action === 'updateRowFull') { return json(updateRowFull(e.parameter), cb); }
     if (action === 'deleteRow')     { return json(deleteRow(e.parameter), cb); }
+    if (action === 'capabilities') {
+      return json({
+        ok: true,
+        version: '2026-10-22-delete',
+        actions: ['setupWorkflow','addWorkflow','updateWorkflow','appendHistory','jiraSync',
+                  'appendAccount','updateRowFull','deleteRow','capabilities'],
+      }, cb);
+    }
+    if (action) {
+      return json({ ok: false, error: 'Unknown action: ' + action + ' — redeploy Apps Script from apps-script.js' }, cb);
+    }
 
-    if (!new_status) return json({ ok: false, error: 'Missing fields' }, cb);
+    if (!new_status) return json({ ok: false, error: 'Missing fields: new_status required for status update' }, cb);
     if (!VALID_STATUS.includes(new_status))
       return json({ ok: false, error: 'Invalid status: ' + new_status }, cb);
 
@@ -315,9 +326,27 @@ function updateRowFull(p) {
 }
 
 function deleteRow(p) {
-  const row_num = parseInt(p.row_num || '0', 10);
-  if (row_num < 2) return { ok: false, error: 'row_num required (>=2)' };
   const sheet = getSheet();
+  var row_num = parseInt(p.row_num || '0', 10);
+  const distribution_id = (p.distribution_id || '').trim();
+
+  // Prefer explicit sheet row; fall back to lookup by distribution_id
+  if (row_num < 2 && distribution_id) {
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0].map(function(h) {
+      return (h || '').toString().trim().toLowerCase().replace(/\s+/g, '_');
+    });
+    const distCol = headers.indexOf('distribution_id');
+    if (distCol < 0) return { ok: false, error: 'distribution_id column not found' };
+    for (var i = 1; i < data.length; i++) {
+      if ((data[i][distCol] || '').toString().trim() === distribution_id) {
+        row_num = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (row_num < 2) return { ok: false, error: 'row_num required (>=2) or distribution_id' };
   if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
   sheet.deleteRow(row_num);
   Logger.log('[%s] deleteRow: row %s deleted', new Date().toISOString(), row_num);

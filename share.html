@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>AN3 Migration Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -578,6 +581,7 @@ const DAILY_CAT_COLORS = {
 const DEFAULT_ID    = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const STATUSES      = ['switchover completed','ready for switchover','in-progress','blocked','non-ssai pending','no need of migration','not yet picked for migration'];
 const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzt7xKCQmQMITLxFlOykqDoq3zAXO05g7MEEkZfE5Z8mFHZKTySEEUxPEq_nDboQIadrQ/exec';
+const DASHBOARD_BUILD  = '2026-10-22-delete-fix';
 
 const ALIASES = {
   amg_id:            ['amg_id','amg id','amgid'],
@@ -2257,7 +2261,12 @@ function confirmDeleteRow(row) {
     const err = overlay.querySelector('#del-row-error');
     btn.disabled = true; btn.textContent = 'Deleting…'; err.style.display = 'none';
     try {
-      const data = await jsonp({ key: getEditKey(), action: 'deleteRow', row_num: row._row_num || '' });
+      const data = await jsonp({
+        key: getEditKey(),
+        action: 'deleteRow',
+        row_num: row._row_num || '',
+        distribution_id: f(row, 'distribution_id') || '',
+      });
       if (data.ok) {
         rows       = rows.filter(r => r._row_num !== row._row_num);
         detailRows = detailRows.filter(r => r._row_num !== row._row_num);
@@ -2268,7 +2277,12 @@ function confirmDeleteRow(row) {
         toast('Row deleted');
       } else {
         if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); overlay.remove(); toast('Edit key rejected.'); return; }
-        err.textContent = data.error || 'Delete failed'; err.style.display = '';
+        const msg = data.error || 'Delete failed';
+        // Old Apps Script deployments ignore action=deleteRow and return "Missing fields"
+        err.textContent = /missing fields/i.test(msg)
+          ? 'Delete API not available — hard-refresh this page (Cmd+Shift+R). If it persists, redeploy Apps Script from apps-script.js.'
+          : msg;
+        err.style.display = '';
         btn.disabled = false; btn.textContent = 'Delete';
       }
     } catch(e) {
