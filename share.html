@@ -446,8 +446,8 @@
         <select id="merge-filter-status" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.44rem .65rem;font:inherit;background:#fff;color:var(--text);font-size:.82rem">
           <option value="">All statuses</option>
           <option value="completed">Completed</option>
+          <option value="verification pending on onboarding">Verification pending on onboarding</option>
           <option value="not started">Not started</option>
-          <option value="verification pending">Verification pending</option>
         </select>
         <button class="btn light" id="btn-merge-refresh">↻ Refresh</button>
       </div>
@@ -1436,12 +1436,13 @@ function renderMergesTable() {
     return;
   }
   const MERGE_COLORS = {
-    'completed':        {color:'#16a34a',bg:'#f0fdf4'},
-    'not started':      {color:'#6b7280',bg:'#f9fafb'},
+    'completed':                           {color:'#16a34a',bg:'#f0fdf4'},
+    'not started':                         {color:'#6b7280',bg:'#f3f4f6'},
+    'verification pending on onboarding':  {color:'#d97706',bg:'#fffbeb'},
   };
   function mergeChip(s) {
     const key = (s||'').toLowerCase();
-    const sc = MERGE_COLORS[key] || {color:'#d97706',bg:'#fffbeb'};
+    const sc = MERGE_COLORS[key] || {color:'#6b7280',bg:'#f3f4f6'};
     return `<span style="background:${sc.bg};color:${sc.color};border-radius:9999px;padding:.15rem .6rem;font-size:.72rem;font-weight:600;white-space:nowrap">${esc(s||'—')}</span>`;
   }
   $('#merges-table').innerHTML = `
