@@ -1108,14 +1108,46 @@ function notPickedCardHtml(a) {
 
 function renderAccountCards(filter) {
   const q = filter.trim().toLowerCase();
+  const grid = $('#accounts-grid');
+
+  // Build cross-tab results first so they show even when delivery migration has no matches
+  let xhtml = '';
+  if (q) {
+    const mergeMatches = mergesRows.filter(r =>
+      (r.account_name||'').toLowerCase().includes(q) || (r.amgid||'').toLowerCase().includes(q)
+    );
+    const delMatches = deletionsRows.filter(r =>
+      (r.account_name||'').toLowerCase().includes(q) || (r.amg_id||'').toLowerCase().includes(q)
+    );
+    if (mergeMatches.length) {
+      xhtml += `<div class="section-label" style="grid-column:1/-1;margin-top:.75rem">Also in Channel Merge</div>`;
+      xhtml += mergeMatches.map(r => `
+        <div class="account" style="cursor:pointer" onclick="location.hash='#merges'">
+          <div class="acct-name">${esc(r.account_name||'—')}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${esc(r.amgid||'')}${r.status?' · '+esc(r.status):''}</div>
+          ${r.remarks?`<div style="font-size:.72rem;color:var(--muted);margin-top:.2rem">${esc((r.remarks||'').slice(0,100))}${(r.remarks||'').length>100?'…':''}</div>`:''}
+        </div>`).join('');
+    }
+    if (delMatches.length) {
+      xhtml += `<div class="section-label" style="grid-column:1/-1;margin-top:.75rem">Also in Channel Deletion</div>`;
+      xhtml += delMatches.map(r => `
+        <div class="account" style="cursor:pointer" onclick="location.hash='#deletions'">
+          <div class="acct-name">${esc(r.account_name||'—')}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${esc(r.amg_id||'')}</div>
+        </div>`).join('');
+    }
+  }
+
   const list = accounts.filter(a =>
     matchesDashboardFilter(a) &&
     (!q || a.account_name.toLowerCase().includes(q) || (a.amg_id||'').toLowerCase().includes(q))
   );
-  const grid = $('#accounts-grid');
+
   if (!list.length) {
-    grid.innerHTML = `<p class="muted">${accounts.length?'No matches.':'No data — click Refresh.'}</p>`; return;
+    grid.innerHTML = xhtml || `<p class="muted">${accounts.length?'No matches in delivery migration.':'No data — click Refresh.'}</p>`;
+    return;
   }
+
   const active    = list.filter(a => !(a.total > 0 && a.notpicked === a.total));
   const notPicked = list.filter(a =>   a.total > 0 && a.notpicked === a.total);
 
@@ -1139,34 +1171,7 @@ function renderAccountCards(filter) {
     });
   });
 
-  // Cross-tab: surface Channel Merge and Channel Deletion matches
-  if (q) {
-    const mergeMatches = mergesRows.filter(r =>
-      (r.account_name||'').toLowerCase().includes(q) || (r.amgid||'').toLowerCase().includes(q)
-    );
-    const delMatches = deletionsRows.filter(r =>
-      (r.account_name||'').toLowerCase().includes(q) || (r.amg_id||'').toLowerCase().includes(q)
-    );
-    let xhtml = '';
-    if (mergeMatches.length) {
-      xhtml += `<div class="section-label" style="grid-column:1/-1;margin-top:.75rem">Also in Channel Merge</div>`;
-      xhtml += mergeMatches.map(r => `
-        <div class="account" style="cursor:pointer" onclick="location.hash='#merges'">
-          <div class="acct-name">${esc(r.account_name||'—')}</div>
-          <div style="font-size:.72rem;color:var(--muted)">${esc(r.amgid||'')}${r.status?' · '+esc(r.status):''}</div>
-          ${r.remarks?`<div style="font-size:.72rem;color:var(--muted);margin-top:.2rem">${esc((r.remarks||'').slice(0,80))}${(r.remarks||'').length>80?'…':''}</div>`:''}
-        </div>`).join('');
-    }
-    if (delMatches.length) {
-      xhtml += `<div class="section-label" style="grid-column:1/-1;margin-top:.75rem">Also in Channel Deletion</div>`;
-      xhtml += delMatches.map(r => `
-        <div class="account" style="cursor:pointer" onclick="location.hash='#deletions'">
-          <div class="acct-name">${esc(r.account_name||'—')}</div>
-          <div style="font-size:.72rem;color:var(--muted)">${esc(r.amg_id||'')}</div>
-        </div>`).join('');
-    }
-    if (xhtml) grid.insertAdjacentHTML('beforeend', xhtml);
-  }
+  if (xhtml) grid.insertAdjacentHTML('beforeend', xhtml);
 }
 
 // ── Global status view ────────────────────────────────────────────────────────
@@ -1455,20 +1460,27 @@ function renderMergesTable() {
       </tr></thead>
       <tbody>
         ${filtered.map((r,i) => {
-          const jiraVal = r.jira || '';
-          const jiraHtml = /^https?:\/\//.test(jiraVal)
-            ? `<a href="${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary)">${esc(jiraVal.match(/[A-Z]+-\d+/)?.[0] || jiraVal)}</a>`
-            : `<span style="font-size:.77rem">${esc(jiraVal)||'—'}</span>`;
+          const jiraVal = (r.jira || '').toString().trim();
+          let jiraHtml;
+          if (/^https?:\/\//.test(jiraVal)) {
+            const label = jiraVal.match(/[A-Z]+-\d+/)?.[0] || jiraVal;
+            jiraHtml = `<a href="${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary);font-family:monospace">${esc(label)}</a>`;
+          } else if (/^[A-Z]+-\d+$/.test(jiraVal)) {
+            jiraHtml = `<a href="https://amagimedia.atlassian.net/browse/${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary);font-family:monospace">${esc(jiraVal)}</a>`;
+          } else {
+            jiraHtml = `<span style="font-size:.77rem">${esc(jiraVal)||'—'}</span>`;
+          }
+          const toMerge  = r.channels_to_be_merged != null ? r.channels_to_be_merged : (r.channels_to_be_ != null ? r.channels_to_be_ : '—');
+          const merged   = r.channels_merged       != null ? r.channels_merged       : (r.channels_merge != null  ? r.channels_merge  : '—');
           return `<tr>
             <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
             <td style="font-weight:600;font-size:.82rem">${esc(r.account_name||'—')}</td>
             <td style="font-size:.74rem;color:var(--muted)">${esc(r.amgid||'—')}</td>
-            <td style="text-align:center;font-weight:600">${esc(r.channels_to_be_merged||r.channels_to_be_||'—')}</td>
-            <td style="text-align:center;font-weight:600;color:var(--green,#16a34a)">${esc(r.channels_merged||r.channels_merge||'—')}</td>
+            <td style="text-align:center;font-weight:600">${esc(toMerge)}</td>
+            <td style="text-align:center;font-weight:600;color:#16a34a">${esc(merged)}</td>
             <td>${jiraHtml}</td>
             <td>${mergeChip(r.status)}</td>
-            <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"
-                title="${(r.remarks||'').replace(/"/g,'&quot;')}">${esc(r.remarks)||'—'}</td>
+            <td style="max-width:320px;white-space:normal;word-break:break-word;color:var(--muted);font-size:.8rem;line-height:1.4">${esc(r.remarks)||'—'}</td>
           </tr>`;
         }).join('')}
       </tbody>
