@@ -1,0 +1,116 @@
+# Local development config
+server:
+  host: 0.0.0.0
+  port: 8790
+  public_url: http://localhost:8790
+
+auth:
+  enabled: true
+  username: migration
+  password: test123
+
+database:
+  path: data/migration.db
+
+# Google Sheet (private) via OAuth 2.0 Client ID — NOT a service account.
+google_sheets:
+  spreadsheet_id: 1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw
+  oauth_client_secrets_json: secrets/google-oauth-client.json
+  oauth_token_json: secrets/google-token.json
+
+  # Multiple sheet tabs configuration
+  sheets:
+    deliveries:
+      worksheet_name: data
+      columns:
+        - amg_id
+        - initial_start_date
+        - eta_provided_date
+        - completed_date
+        - account_name
+        - channel_id
+        - distribution_id
+        - status
+        - remarks
+        - platform
+        - platform_id
+        - channel_name
+        - stream_type
+        - jira_creation_key
+        - jira_switchover_key
+        - migration_resources
+
+    deletions:
+      worksheet_name: Channel deletion sheet
+      columns:
+        - amg_id
+        - account_name
+        - channel_name
+        - channel_id
+        - deletion_status
+        - jira
+
+    workflow:
+      worksheet_name: AN3_Workflow
+      columns:
+        - amg_id
+        - account_name
+        - type
+        - stage
+        - assigned_to
+        - notes
+
+    daily_log:
+      worksheet_name: daily_log
+      columns:
+        - date
+        - category
+        - account_name
+        - amg_id
+        - task_description
+        - jira
+        - actor
+        - outcome
+
+  # Legacy support (backwards compatibility)
+  worksheet_name: data
+  columns:
+    - amg_id
+    - initial_start_date
+    - eta_provided_date
+    - completed_date
+    - account_name
+    - channel_id
+    - distribution_id
+    - status
+    - remarks
+    - platform
+    - platform_id
+    - channel_name
+    - stream_type
+    - jira_creation_key
+    - jira_switchover_key
+    - migration_resources
+
+jira:
+  cloud_id: 467048aa-ea7b-46fc-bcb6-348c45f335e2
+  site_url: https://amagiengg.atlassian.net
+  email: you@amagi.com
+  api_token: ""
+  project_key: AN3OB
+  issue_type: Migration-Support
+  parent_creation: AN3OB-8205
+  parent_switchover: AN3OB-8206
+  poll_jql: 'project = AN3OB AND (summary ~ "OTT Studios" OR labels = migration-dashboard) ORDER BY updated DESC'
+
+fabric:
+  host: linear-api-internal-silver1.now3.amagi.tv
+
+gaia:
+  host: https://api-gaia.now3.amagi.tv
+
+sync:
+  auto_pull_interval_seconds: 0
+
+groq:
+  api_key: ""
