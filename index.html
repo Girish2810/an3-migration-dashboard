@@ -1440,6 +1440,7 @@ function renderMergesTable() {
     $('#merges-table').innerHTML = `<p class="muted" style="padding:1rem">No entries match.</p>`;
     return;
   }
+  const colCount = canEdit ? 9 : 8;
   const MERGE_COLORS = {
     'completed':                           {color:'#16a34a',bg:'#f0fdf4'},
     'not started':                         {color:'#6b7280',bg:'#f3f4f6'},
@@ -1457,6 +1458,7 @@ function renderMergesTable() {
         <th style="text-align:center">To Merge</th>
         <th style="text-align:center">Merged</th>
         <th>Jira</th><th>Status</th><th>Remarks</th>
+        ${canEdit ? '<th>Actions</th>' : ''}
       </tr></thead>
       <tbody>
         ${filtered.map((r,i) => {
@@ -1466,7 +1468,7 @@ function renderMergesTable() {
             const label = jiraVal.match(/[A-Z]+-\d+/)?.[0] || jiraVal;
             jiraHtml = `<a href="${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary);font-family:monospace">${esc(label)}</a>`;
           } else if (/^[A-Z]+-\d+$/.test(jiraVal)) {
-            jiraHtml = `<a href="https://amagimedia.atlassian.net/browse/${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary);font-family:monospace">${esc(jiraVal)}</a>`;
+            jiraHtml = `<a href="https://amagiengg.atlassian.net/browse/${esc(jiraVal)}" target="_blank" rel="noopener" style="font-size:.77rem;color:var(--primary);font-family:monospace">${esc(jiraVal)}</a>`;
           } else {
             jiraHtml = `<span style="font-size:.77rem">${esc(jiraVal)||'—'}</span>`;
           }
@@ -1481,6 +1483,10 @@ function renderMergesTable() {
             <td>${jiraHtml}</td>
             <td>${mergeChip(r.status)}</td>
             <td style="max-width:320px;white-space:normal;word-break:break-word;color:var(--muted);font-size:.8rem;line-height:1.4">${esc(r.remarks)||'—'}</td>
+            ${canEdit ? `<td style="white-space:nowrap;vertical-align:middle">
+              <button class="btn-row-action mrg-edit" data-row="${r._row_num||''}" title="Edit entry">✏</button>
+              <button class="btn-row-action del mrg-del" data-row="${r._row_num||''}" title="Delete entry">🗑</button>
+            </td>` : ''}
           </tr>`;
         }).join('')}
       </tbody>
@@ -1488,6 +1494,22 @@ function renderMergesTable() {
     <p style="font-size:.75rem;color:var(--muted);margin-top:.5rem;padding:0 .25rem">
       <a href="https://docs.google.com/spreadsheets/d/${MERGE_SHEET_ID}/edit#gid=${MERGE_SHEET_GID}" target="_blank" rel="noopener">Open in Google Sheets ↗</a>
     </p>`;
+  if (canEdit) {
+    document.querySelectorAll('.mrg-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rowNum = parseInt(btn.dataset.row);
+        const row = mergesRows.find(r => r._row_num === rowNum);
+        if (row) openMergeEditModal(row);
+      });
+    });
+    document.querySelectorAll('.mrg-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rowNum = parseInt(btn.dataset.row);
+        const row = mergesRows.find(r => r._row_num === rowNum);
+        if (row) confirmDeleteMergeRow(row);
+      });
+    });
+  }
 }
 
 function aggregateDeletions(data) {
@@ -2274,6 +2296,7 @@ function setEditMode(on) {
   $('#btn-edit-toggle').textContent = on ? '🔓 Lock' : '🔒 Edit';
   $('#mode-label').textContent      = on ? 'Edit mode · changes sync to sheet' : 'Read-only · Live from Google Sheet';
   if (detailRows.length) renderDetailTable();
+  if (mergesLoaded) renderMergesTable();
 }
 
 function showEditKeyModal() {
@@ -2446,6 +2469,125 @@ function confirmDeleteRow(row) {
           ? 'Delete API not available — hard-refresh this page (Cmd+Shift+R). If it persists, redeploy Apps Script from apps-script.js.'
           : msg;
         err.style.display = '';
+        btn.disabled = false; btn.textContent = 'Delete';
+      }
+    } catch(e) {
+      err.textContent = e.message; err.style.display = '';
+      btn.disabled = false; btn.textContent = 'Delete';
+    }
+  };
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+// ── Channel Merge edit / delete ───────────────────────────────────────────────
+const MERGE_STATUSES = ['Completed','Verification pending on onboarding','Not started'];
+const MERGE_EDIT_FIELDS = [
+  {key:'account_name',            label:'Account Name',      type:'text'},
+  {key:'amgid',                   label:'AMG ID',            type:'text'},
+  {key:'channels_to_be_merged',   label:'Channels to Merge', type:'text'},
+  {key:'channels_merge_completed',label:'Channels Merged',   type:'text'},
+  {key:'jira',                    label:'Jira',              type:'text'},
+  {key:'status',                  label:'Status',            type:'select'},
+  {key:'remarks',                 label:'Remarks',           type:'textarea', wide:true},
+];
+
+function openMergeEditModal(row) {
+  const fieldsHtml = MERGE_EDIT_FIELDS.map(fld => {
+    const val = esc((row[fld.key] != null ? row[fld.key] : '').toString());
+    let input;
+    if (fld.type === 'select') {
+      input = `<select id="mef-${fld.key}" class="modal-input">${MERGE_STATUSES.map(s=>`<option value="${s}"${row.status===s?' selected':''}>${s}</option>`).join('')}</select>`;
+    } else if (fld.type === 'textarea') {
+      input = `<textarea id="mef-${fld.key}" class="modal-input" rows="2" style="resize:vertical">${val}</textarea>`;
+    } else {
+      input = `<input id="mef-${fld.key}" class="modal-input" type="text" value="${val}" />`;
+    }
+    return `<div class="modal-field${fld.wide?' mfg-full':''}">
+      <label class="modal-label" for="mef-${fld.key}">${fld.label}</label>${input}
+    </div>`;
+  }).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box wide">
+      <h3>Edit merge entry</h3>
+      <p class="modal-desc">Row #${row._row_num||'?'} · <strong>${esc(row.account_name||'')}</strong> · ${esc(row.amgid||'')}</p>
+      <div class="modal-fields-grid">${fieldsHtml}</div>
+      <div id="mef-error" class="modal-error" style="display:none"></div>
+      <div class="modal-actions">
+        <button id="mef-cancel" class="modal-btn">Cancel</button>
+        <button id="mef-save" class="modal-btn primary">Save Changes</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#mef-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#mef-save').onclick   = () => saveMergeRowFull(row, overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function saveMergeRowFull(row, overlay) {
+  const saveBtn = overlay.querySelector('#mef-save');
+  const errEl   = overlay.querySelector('#mef-error');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; errEl.style.display = 'none';
+  const params = { key: getEditKey(), action: 'updateMergeRow', row_num: row._row_num || '' };
+  MERGE_EDIT_FIELDS.forEach(fld => {
+    const el = overlay.querySelector(`#mef-${fld.key}`);
+    if (el) params[fld.key] = el.value.trim();
+  });
+  try {
+    const data = await jsonp(params);
+    if (data.ok) {
+      MERGE_EDIT_FIELDS.forEach(fld => {
+        const el = overlay.querySelector(`#mef-${fld.key}`);
+        if (el) row[fld.key] = el.value.trim();
+      });
+      renderMergesTable();
+      overlay.remove();
+      toast('Merge entry updated');
+    } else {
+      if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); overlay.remove(); toast('Edit key rejected.'); return; }
+      errEl.textContent = data.error || 'Save failed'; errEl.style.display = '';
+      saveBtn.disabled = false; saveBtn.textContent = 'Save Changes';
+    }
+  } catch(err) {
+    errEl.textContent = err.message; errEl.style.display = '';
+    saveBtn.disabled = false; saveBtn.textContent = 'Save Changes';
+  }
+}
+
+function confirmDeleteMergeRow(row) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Delete merge entry?</h3>
+      <p class="modal-desc">This will permanently remove row #${row._row_num||'?'} from the Channel Merge sheet.</p>
+      <table style="font-size:.85rem;border-collapse:collapse;margin:.5rem 0 .75rem;width:100%">
+        ${[['Account',row.account_name],['AMG ID',row.amgid],['Status',row.status]].filter(([,v])=>v).map(([k,v])=>`<tr><td style="color:var(--muted);padding:.15rem .5rem .15rem 0;white-space:nowrap">${k}</td><td style="font-weight:500">${esc(v)}</td></tr>`).join('')}
+      </table>
+      <div id="merdel-error" class="modal-error" style="display:none"></div>
+      <div class="modal-actions">
+        <button id="merdel-cancel" class="modal-btn">Cancel</button>
+        <button id="merdel-confirm" class="modal-btn" style="background:var(--red);border-color:var(--red);color:#fff">Delete</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#merdel-cancel').onclick = () => overlay.remove();
+  overlay.querySelector('#merdel-confirm').onclick = async () => {
+    const btn = overlay.querySelector('#merdel-confirm');
+    const err = overlay.querySelector('#merdel-error');
+    btn.disabled = true; btn.textContent = 'Deleting…'; err.style.display = 'none';
+    try {
+      const data = await jsonp({ key: getEditKey(), action: 'deleteMergeRow', row_num: row._row_num || '' });
+      if (data.ok) {
+        mergesRows = mergesRows.filter(r => r._row_num !== row._row_num);
+        renderMergesTable();
+        overlay.remove();
+        toast('Merge entry deleted');
+      } else {
+        if (data.error === 'Invalid key') { clearEditKey(); setEditMode(false); overlay.remove(); toast('Edit key rejected.'); return; }
+        err.textContent = data.error || 'Delete failed'; err.style.display = '';
         btn.disabled = false; btn.textContent = 'Delete';
       }
     } catch(e) {

@@ -55,14 +55,16 @@ function doGet(e) {
       return json(appendAccountRow(amg_id, account_name, status), cb);
     }
 
-    if (action === 'updateRowFull') { return json(updateRowFull(e.parameter), cb); }
-    if (action === 'deleteRow')     { return json(deleteRow(e.parameter), cb); }
+    if (action === 'updateRowFull')  { return json(updateRowFull(e.parameter), cb); }
+    if (action === 'deleteRow')      { return json(deleteRow(e.parameter), cb); }
+    if (action === 'updateMergeRow') { return json(updateMergeRow(e.parameter), cb); }
+    if (action === 'deleteMergeRow') { return json(deleteMergeRow(e.parameter), cb); }
     if (action === 'capabilities') {
       return json({
         ok: true,
-        version: '2026-10-22-delete',
+        version: '2026-10-23-merge-edit',
         actions: ['setupWorkflow','addWorkflow','updateWorkflow','appendHistory','jiraSync',
-                  'appendAccount','updateRowFull','deleteRow','capabilities'],
+                  'appendAccount','updateRowFull','deleteRow','updateMergeRow','deleteMergeRow','capabilities'],
       }, cb);
     }
     if (action) {
@@ -350,6 +352,47 @@ function deleteRow(p) {
   if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
   sheet.deleteRow(row_num);
   Logger.log('[%s] deleteRow: row %s deleted', new Date().toISOString(), row_num);
+  return { ok: true, row: row_num, deleted: true };
+}
+
+// ── Channel Merge sheet helpers ───────────────────────────────────────────────
+
+const MERGE_SHEET_GID = 334319022;
+
+function getMergeSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  return ss.getSheets().filter(function(s) { return s.getSheetId() === MERGE_SHEET_GID; })[0];
+}
+
+function updateMergeRow(p) {
+  var row_num = parseInt(p.row_num || '0', 10);
+  if (row_num < 2) return { ok: false, error: 'row_num required (>=2)' };
+  var sheet = getMergeSheet();
+  if (!sheet) return { ok: false, error: 'Channel Merge sheet not found (GID ' + MERGE_SHEET_GID + ')' };
+  if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function(h) { return (h || '').toString().trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, ''); });
+  var EDITABLE = ['account_name','amgid','channels_to_be_merged','channels_merge_completed','jira','status','remarks'];
+  var updated = [];
+  EDITABLE.forEach(function(field) {
+    if (p[field] === undefined) return;
+    var colIdx = headers.indexOf(field);
+    if (colIdx < 0) return;
+    sheet.getRange(row_num, colIdx + 1).setValue(p[field]);
+    updated.push(field);
+  });
+  Logger.log('[%s] updateMergeRow: row %s updated: %s', new Date().toISOString(), row_num, updated.join(', '));
+  return { ok: true, row: row_num, updated: updated };
+}
+
+function deleteMergeRow(p) {
+  var row_num = parseInt(p.row_num || '0', 10);
+  if (row_num < 2) return { ok: false, error: 'row_num required (>=2)' };
+  var sheet = getMergeSheet();
+  if (!sheet) return { ok: false, error: 'Channel Merge sheet not found (GID ' + MERGE_SHEET_GID + ')' };
+  if (row_num > sheet.getLastRow()) return { ok: false, error: 'row_num out of range' };
+  sheet.deleteRow(row_num);
+  Logger.log('[%s] deleteMergeRow: row %s deleted', new Date().toISOString(), row_num);
   return { ok: true, row: row_num, deleted: true };
 }
 
