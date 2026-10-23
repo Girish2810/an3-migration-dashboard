@@ -1470,8 +1470,8 @@ function renderMergesTable() {
           } else {
             jiraHtml = `<span style="font-size:.77rem">${esc(jiraVal)||'—'}</span>`;
           }
-          const toMerge  = r.channels_to_be_merged != null ? r.channels_to_be_merged : (r.channels_to_be_ != null ? r.channels_to_be_ : '—');
-          const merged   = r.channels_merged       != null ? r.channels_merged       : (r.channels_merge != null  ? r.channels_merge  : '—');
+          const toMerge  = r.channels_to_be_merged != null ? r.channels_to_be_merged : '—';
+          const merged   = r.channels_merge_completed != null ? r.channels_merge_completed : '—';
           return `<tr>
             <td style="color:var(--muted2);font-size:.72rem">${i+1}</td>
             <td style="font-weight:600;font-size:.82rem">${esc(r.account_name||'—')}</td>
