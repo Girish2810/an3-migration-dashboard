@@ -1065,6 +1065,15 @@ function renderOverview() {
 }
 
 // ── Account cards ─────────────────────────────────────────────────────────────
+function ovSectionHtml(amgId) {
+  const ov = overviewByAmgid[(amgId||'').trim().toLowerCase()];
+  if (!ov || !ov.current_status) return '';
+  const key = ovStatusKey(ov.current_status);
+  const pendHtml = ovPendingChips(ov.pending_on);
+  const remHtml = ov.remark ? '<div class="ov-remark" title="' + esc(ov.remark) + '">' + esc(ov.remark) + '</div>' : '';
+  return '<div class="ov-section"><div class="ov-row"><span class="ov-chip ov-' + key + '">' + esc(ov.current_status) + '</span>' + pendHtml + '</div>' + remHtml + '</div>';
+}
+
 function activeCardHtml(a) {
   const t = a.total||1, w = n => `${pct(n||0,t)}%`;
   const n = encodeURIComponent(a.account_name);
@@ -1106,20 +1115,7 @@ function activeCardHtml(a) {
         }</div>`:''}
       </div>
     </div>`:''}
-    ${(()=>{
-      const ov = overviewByAmgid[(a.amg_id||'').trim().toLowerCase()];
-      if (!ov || !ov.current_status) return '';
-      const statusKey = ovStatusKey(ov.current_status);
-      const pendingHtml = ovPendingChips(ov.pending_on);
-      const remarkHtml = ov.remark ? `<div class="ov-remark" title="${esc(ov.remark)}">${esc(ov.remark)}</div>` : '';
-      return `<div class="ov-section">
-        <div class="ov-row">
-          <span class="ov-chip ov-${statusKey}">${esc(ov.current_status)}</span>
-          ${pendingHtml}
-        </div>
-        ${remarkHtml}
-      </div>`;
-    })()}
+    ${ovSectionHtml(a.amg_id)}
   </div>`;
 }
 
@@ -1460,9 +1456,12 @@ async function loadMerges(silent) {
 async function loadOverviewData() {
   try {
     const url = `https://docs.google.com/spreadsheets/d/${MERGE_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${OVERVIEW_SHEET_GID}`;
-    const raw = await fetch(url).then(r => r.text());
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = await res.text();
     const json = raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
     const parsed = JSON.parse(json);
+    if (!parsed.table) throw new Error('No table in overview sheet response');
     const cols = parsed.table.cols.map(c => (c.label||c.id||'').trim().toLowerCase().replace(/[\s\-]+/g,'_').replace(/[^a-z0-9_]/g,''));
     overviewRows = parsed.table.rows
       .filter(r => r && r.c && r.c.some(c => c && c.v != null))
@@ -1472,12 +1471,15 @@ async function loadOverviewData() {
       const amgid = (r.amgid||'').trim().toLowerCase();
       if (amgid) overviewByAmgid[amgid] = r;
     }
-    // Re-render account cards if the overview tab is currently visible
-    const hash = location.hash || '';
-    if (!hash || hash === '#' || hash === '#overview' || hash.startsWith('#account/')) {
-      renderAccountCards($('#account-search')?.value || '');
+    if (Object.keys(overviewByAmgid).length > 0) {
+      const hash = location.hash || '';
+      if (!hash || hash === '#' || hash === '#overview' || hash.startsWith('#status/')) {
+        renderAccountCards($('#account-search')?.value || '');
+      }
     }
-  } catch(e) { /* silent — overview data is supplementary */ }
+  } catch(e) {
+    console.error('Overview data load failed:', e);
+  }
 }
 
 function ovStatusKey(status) {
