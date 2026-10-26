@@ -1069,9 +1069,8 @@ function ovSectionHtml(amgId) {
   const ov = overviewByAmgid[(amgId||'').trim().toLowerCase()];
   if (!ov || !ov.current_status) return '';
   const key = ovStatusKey(ov.current_status);
-  const pendHtml = ovPendingChips(ov.pending_on);
-  const remHtml = ov.remark ? '<div class="ov-remark" title="' + esc(ov.remark) + '">' + esc(ov.remark) + '</div>' : '';
-  return '<div class="ov-section"><div class="ov-row"><span class="ov-chip ov-' + key + '">' + esc(ov.current_status) + '</span>' + pendHtml + '</div>' + remHtml + '</div>';
+  const pendHtml = ovPendingChips(ov.pending_on, ov.remark);
+  return '<div class="ov-section"><div class="ov-row"><span class="ov-chip ov-' + key + '">' + esc(ov.current_status) + '</span>' + pendHtml + '</div></div>';
 }
 
 function activeCardHtml(a) {
@@ -1086,24 +1085,6 @@ function activeCardHtml(a) {
         <div class="acct-meta">${esc(a.amg_id||'—')} · ${a.total} deliveries · ${pct(a.completed,a.total)}% done</div>
       </div>
       ${a.fully_done?`<span class="badge-done">✓ Done</span>`:''}
-    </div>
-    <div class="mini-bars">
-      <span style="width:${w(a.completed)};background:#16a34a" title="completed"></span>
-      <span style="width:${w(a.ready)};background:#b45309" title="ready"></span>
-      <span style="width:${w(a.inprog)};background:#1d4ed8" title="in-progress"></span>
-      <span style="width:${w(a.pending)};background:#7c3aed" title="pending"></span>
-      <span style="width:${w(a.blocked)};background:#dc2626" title="blocked"></span>
-      <span style="width:${w(a.noneed)};background:#0891b2" title="no need"></span>
-      <span style="width:${w(a.notstarted)};background:#cbd5e1" title="not started"></span>
-    </div>
-    <div class="pills">
-      ${a.completed ?`<span class="pill done    pill-nav" data-name="${n}" data-fk="done"       title="View completed">✓ ${a.completed} done</span>`:''}
-      ${a.ready     ?`<span class="pill ready   pill-nav" data-name="${n}" data-fk="ready"      title="View ready">→ ${a.ready} ready</span>`:''}
-      ${a.inprog    ?`<span class="pill inprog  pill-nav" data-name="${n}" data-fk="inprog"     title="View in progress">⚡ ${a.inprog} in progress</span>`:''}
-      ${a.pending   ?`<span class="pill pending pill-nav" data-name="${n}" data-fk="pending"    title="View pending">◷ ${a.pending} pending</span>`:''}
-      ${a.blocked   ?`<span class="pill blocked pill-nav" data-name="${n}" data-fk="blocked"    title="View blocked">✗ ${a.blocked} blocked</span>`:''}
-      ${a.noneed    ?`<span class="pill noneed  pill-nav" data-name="${n}" data-fk="noneed"     title="View no-migration">⊘ ${a.noneed} no migration</span>`:''}
-      ${a.notstarted?`<span class="pill         pill-nav" data-name="${n}" data-fk="notstarted" title="View not started">○ ${a.notstarted} not started</span>`:''}
     </div>
     ${a.blocked>0?`
     <div class="blocked-detail pill-nav" data-name="${n}" data-fk="blocked">
@@ -1493,12 +1474,22 @@ function ovStatusKey(status) {
   return 'not-started';
 }
 
-function ovPendingChips(pendingOn) {
+function ovPendingChips(pendingOn, remark) {
   if (!pendingOn || !pendingOn.trim()) return '';
   const parts = pendingOn.split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
+  // Parse remark into per-team segments: "deliveries: X | migration: Y"
+  const remarkMap = {};
+  if (remark) {
+    remark.split('|').forEach(seg => {
+      const ci = seg.indexOf(':');
+      if (ci > 0) remarkMap[seg.slice(0, ci).trim().toLowerCase()] = seg.slice(ci + 1).trim();
+    });
+  }
   return parts.map(p => {
     const cls = p === 'deliveries' ? 'pend-deliveries' : p === 'migration' ? 'pend-migration' : p === 'onboarding' ? 'pend-onboarding' : '';
-    return `<span class="pend-chip ${cls}">${p === 'deliveries' ? '📦' : p === 'migration' ? '🔄' : '🚀'} ${esc(p)}</span>`;
+    const icon = p === 'deliveries' ? '📦' : p === 'migration' ? '🔄' : '🚀';
+    const tip = remarkMap[p] || (remark && parts.length === 1 ? remark : '');
+    return '<span class="pend-chip ' + cls + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '>' + icon + ' ' + esc(p) + '</span>';
   }).join('');
 }
 
