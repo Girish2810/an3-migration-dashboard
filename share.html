@@ -296,6 +296,22 @@
     .daily-kpi .dk-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
     .daily-kpi .dk-value{font-size:1.45rem;font-weight:800;margin-top:.1rem}
     .daily-empty{text-align:center;padding:3.5rem 1rem;color:var(--muted);font-size:.85rem}
+
+    /* ACCOUNT OVERVIEW STATUS (from overview sheet) */
+    .ov-section{margin-top:.6rem;padding-top:.55rem;border-top:1px solid var(--border)}
+    .ov-row{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin-bottom:.3rem}
+    .ov-chip{display:inline-flex;align-items:center;font-size:.67rem;font-weight:700;padding:.15rem .52rem;border-radius:999px;white-space:nowrap;border:1px solid transparent;letter-spacing:.01em}
+    .ov-not-started{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+    .ov-data-gathering{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+    .ov-preparation{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+    .ov-non-hls{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
+    .ov-ready{background:#fff7ed;color:#c2410c;border-color:#fdba74}
+    .ov-completed{background:#dcfce7;color:#15803d;border-color:#86efac}
+    .pend-chip{display:inline-flex;align-items:center;font-size:.64rem;font-weight:600;padding:.12rem .42rem;border-radius:999px;border:1px solid transparent}
+    .pend-deliveries{background:#fff7ed;color:#c2410c;border-color:#fdba74}
+    .pend-migration{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+    .pend-onboarding{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
+    .ov-remark{font-size:.72rem;color:var(--muted);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   </style>
 </head>
 <body>
@@ -558,6 +574,7 @@ const DEL_SHEET_ID  = '1oKd7Dx02mIA8b_k9d4VRbXlHZIMv956B6CuJ4kzmTdA';
 const DEL_SHEET_GID = '1182719966';
 const MERGE_SHEET_ID  = '1CkDZuX_Cs0gRhzZT_iKgMIQUyowUyo4u3l4uI5UFrWw';
 const MERGE_SHEET_GID = '334319022';
+const OVERVIEW_SHEET_GID = '2084284591';
 const DAILY_SHEET_ID  = '1uM1F9S9B072XyvjZICNJ-_qzBlIOI-P_5lGTIEep0ps';
 const DAILY_SHEET_GID = '0';
 const PIPELINE_WORKFLOW_SHEET = 'AN3_Workflow';
@@ -664,6 +681,7 @@ let svRows = [];
 let dailyRows = [], dailyLoaded = false;
 
 let pipelineRows = [], pipelineHistory = [], pipelineLoaded = false;
+let overviewRows = [], overviewByAmgid = {};
 
 // ── Edit key ─────────────────────────────────────────────────────────────────
 function getEditKey()   { return sessionStorage.getItem('an3_edit_key') || ''; }
@@ -1088,6 +1106,20 @@ function activeCardHtml(a) {
         }</div>`:''}
       </div>
     </div>`:''}
+    ${(()=>{
+      const ov = overviewByAmgid[(a.amg_id||'').trim().toLowerCase()];
+      if (!ov || !ov.current_status) return '';
+      const statusKey = ovStatusKey(ov.current_status);
+      const pendingHtml = ovPendingChips(ov.pending_on);
+      const remarkHtml = ov.remark ? `<div class="ov-remark" title="${esc(ov.remark)}">${esc(ov.remark)}</div>` : '';
+      return `<div class="ov-section">
+        <div class="ov-row">
+          <span class="ov-chip ov-${statusKey}">${esc(ov.current_status)}</span>
+          ${pendingHtml}
+        </div>
+        ${remarkHtml}
+      </div>`;
+    })()}
   </div>`;
 }
 
@@ -1422,6 +1454,50 @@ async function loadMerges(silent) {
   } catch(e) {
     if (!silent) $('#merges-table').innerHTML = `<p style="color:var(--red);padding:1rem">Failed to load: ${esc(e.message)}</p>`;
   }
+}
+
+// ── Account Overview Status ───────────────────────────────────────────────────
+async function loadOverviewData() {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${MERGE_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&gid=${OVERVIEW_SHEET_GID}`;
+    const raw = await fetch(url).then(r => r.text());
+    const json = raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
+    const parsed = JSON.parse(json);
+    const cols = parsed.table.cols.map(c => (c.label||c.id||'').trim().toLowerCase().replace(/[\s\-]+/g,'_').replace(/[^a-z0-9_]/g,''));
+    overviewRows = parsed.table.rows
+      .filter(r => r && r.c && r.c.some(c => c && c.v != null))
+      .map(r => { const obj = {}; r.c.forEach((cell, i) => { obj[cols[i]||`col${i}`] = gvizCellValue(cell); }); return obj; });
+    overviewByAmgid = {};
+    for (const r of overviewRows) {
+      const amgid = (r.amgid||'').trim().toLowerCase();
+      if (amgid) overviewByAmgid[amgid] = r;
+    }
+    // Re-render account cards if the overview tab is currently visible
+    const hash = location.hash || '';
+    if (!hash || hash === '#' || hash === '#overview' || hash.startsWith('#account/')) {
+      renderAccountCards($('#account-search')?.value || '');
+    }
+  } catch(e) { /* silent — overview data is supplementary */ }
+}
+
+function ovStatusKey(status) {
+  const s = (status||'').toLowerCase().trim();
+  if (s === 'not started')             return 'not-started';
+  if (s === 'delivery data gathering') return 'data-gathering';
+  if (s === 'preparation')             return 'preparation';
+  if (s === 'non hls seeding')         return 'non-hls';
+  if (s === 'ready for switchover')    return 'ready';
+  if (s === 'switchover completed')    return 'completed';
+  return 'not-started';
+}
+
+function ovPendingChips(pendingOn) {
+  if (!pendingOn || !pendingOn.trim()) return '';
+  const parts = pendingOn.split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
+  return parts.map(p => {
+    const cls = p === 'deliveries' ? 'pend-deliveries' : p === 'migration' ? 'pend-migration' : p === 'onboarding' ? 'pend-onboarding' : '';
+    return `<span class="pend-chip ${cls}">${p === 'deliveries' ? '📦' : p === 'migration' ? '🔄' : '🚀'} ${esc(p)}</span>`;
+  }).join('');
 }
 
 function renderMergesTable() {
@@ -2228,8 +2304,9 @@ async function load() {
     renderBanner();
     renderFromHash();
     toast(`Loaded ${rows.length} rows across ${accounts.length} accounts`);
-    // Background-load Channel Merge so cross-tab search works immediately
+    // Background-load supplementary sheets so cross-tab search and overview cards work immediately
     loadMerges(true);
+    loadOverviewData();
   } catch(err) {
     $('#error-container').innerHTML = `
       <div class="page"><div class="error-box">
