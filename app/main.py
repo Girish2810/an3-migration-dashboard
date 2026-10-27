@@ -294,6 +294,15 @@ def sync_sheets_pull() -> dict[str, Any]:
         raise HTTPException(400, str(exc)) from exc
 
 
+@app.post("/api/sync/sheets/pull-multiple")
+def sync_sheets_pull_multiple() -> dict[str, Any]:
+    """Pull data from all configured sheet tabs (deliveries, deletions, daily_log, etc.)."""
+    try:
+        return sync.pull_from_multiple_sheets()
+    except Exception as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
 @app.post("/api/sync/sheets/push")
 def sync_sheets_push() -> dict[str, Any]:
     try:
